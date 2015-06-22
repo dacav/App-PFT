@@ -10,14 +10,14 @@ use File::Spec::Functions qw/catdir catfile abs2rel/;
 use File::Path qw/make_path/;
 use File::Slurp qw/write_file/;
 
-use PFT::Content::Entry;
-use PFT::Content::Page;
-use PFT::Content::MonthPage;
+use App::PFT::Content::Entry;
+use App::PFT::Content::Page;
+use App::PFT::Content::MonthPage;
 
-use PFT::Data::Date;
-use PFT::Data::Header;
+use App::PFT::Data::Date;
+use App::PFT::Data::Header;
 
-use PFT::Util;
+use App::PFT::Util;
 
 use feature qw/state/;
 
@@ -52,7 +52,7 @@ my $get_header = sub {
         $hdr;
     } else {
         my($title, $hide) = @{$opts}{'title', '-hide'};
-        PFT::Data::Header->new(
+        App::PFT::Data::Header->new(
             title => $title,
             hide => $hide,
         )
@@ -72,7 +72,7 @@ sub entry {
         sprintf('%04d-%02d', $date->year, $date->month),
     );
     my $path = catfile $basedir, $fname;
-    my $out = PFT::Content::Entry->new(
+    my $out = App::PFT::Content::Entry->new(
         tree => $self,
         path => $path,
         fname => $fname,
@@ -86,7 +86,7 @@ sub entry {
 
 has entries => (
     is => 'ro',
-    isa => 'HashRef[PFT::Content::Entry]',
+    isa => 'HashRef[App::PFT::Content::Entry]',
     lazy => 1,
     predicate => 'entries_loaded',
     default => sub {
@@ -102,11 +102,11 @@ has entries => (
                 my($d,$fn) = (abs2rel $l2, $l1) =~ m/^(\d{2})-(.*)$/
                     or die "Junk in $l1: $l2";
 
-                $out{$l2} = PFT::Content::Entry->new(
+                $out{$l2} = App::PFT::Content::Entry->new(
                     tree => $self,
                     path => $l2,
                     fname => $fn,
-                    date => PFT::Data::Date->new(
+                    date => App::PFT::Data::Date->new(
                         year => $y,
                         month => $m,
                         day => $d,
@@ -130,7 +130,7 @@ sub page {
     my $basedir = catdir($_[0]->basepath, 'content', 'pages');
     my $path = catfile $basedir, $fname;
 
-    my $out = PFT::Content::Page->new(
+    my $out = App::PFT::Content::Page->new(
         tree => $self,
         path => $path,
         fname => $fname,
@@ -143,7 +143,7 @@ sub page {
 
 has pages => (
     is => 'ro',
-    isa => 'HashRef[PFT::Content::Page]',
+    isa => 'HashRef[App::PFT::Content::Page]',
     lazy => 1,
     predicate => 'pages_loaded',
     default => sub {
@@ -152,7 +152,7 @@ has pages => (
         my $base = catfile $self->basepath, 'content', 'pages';
 
         for my $path (glob "$base/*") {
-            $out{$path} = PFT::Content::Page->new(
+            $out{$path} = App::PFT::Content::Page->new(
                 self => $self,
                 path => $path,
                 fname => abs2rel($path, $base),
@@ -170,14 +170,14 @@ sub link_months {
     my @es = sort {$a->cmp cmp $b->cmp} $self->list_entries;
     return [] unless @es;
 
-    my %months = PFT::Util::groupby
+    my %months = App::PFT::Util::groupby
         { sprintf('%04d%02d', $_->date->year, $_->date->month) }
         @es
     ;
 
     my($prev_e, $prev_m, @out);
     for my $k (sort keys %months) {
-        my $mp = PFT::Content::MonthPage->new(
+        my $mp = App::PFT::Content::MonthPage->new(
             tree => $self,
             year  => 0 + substr($k, 0, 4),
             month => 0 + substr($k, 4, 2),
@@ -221,8 +221,8 @@ sub dir_templates() { catdir $_[0]->basepath, 'templates' }
 sub dir_build() { catdir $_[0]->basepath, 'build' }
 sub dir_pics() { catdir $_[0]->basepath, 'content', 'pics' }
 
-#has pictures => ( is => 'ro', isa => 'ArrayRef[PFT::Content::Picture]' );
-#has blobs => ( is => 'ro', isa => 'ArrayRef[PFT::Content::Picture]' );
+#has pictures => ( is => 'ro', isa => 'ArrayRef[App::PFT::Content::Picture]' );
+#has blobs => ( is => 'ro', isa => 'ArrayRef[App::PFT::Content::Picture]' );
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
