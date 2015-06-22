@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+
+=head1 NAME
+
+pft - Static blog and website manager
+
+=cut
+
+use strict;
+use warnings;
+
+use Pod::Usage;
+
+use App::PFT::Cmd::Blog;
+
+=head1 SYNOPSYS
+
+pft <command> [options]
+
+=head1 AVAILABLE COMMANDS
+
+Here follows a list of available commands:
+
+=over
+
+=item *
+B<blog> Create a new blog entry
+
+=item *
+B<page> Create a new page
+
+=item *
+B<build> Build the website
+
+=back
+
+For options of a specific command I<cmd> use C<pft I<cmd> --help>
+
+=cut
+
+pod2usage -exitval => 1, -verbose => 2 unless @ARGV;
+
+my %COMMANDS = (
+    blog => \&App::PFT::Cmd::Blog::main,
+);
+
+my $command = shift @ARGV;
+my $call = $COMMANDS{$command} or die "Unknown command $command"; 
+
+$call->(@_);
