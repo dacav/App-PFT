@@ -1,12 +1,12 @@
-package App::PFT::Cmd::Blog;
+package App::PFT::Cmd::Page;
 
 =head1 NAME
 
-pft blog
+pft page
 
 =head1 SYNOPSYS
 
-pft blog ...
+pft page ...
 
 =cut
 
