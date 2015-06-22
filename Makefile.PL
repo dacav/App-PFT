@@ -8,7 +8,7 @@ WriteMakefile(
     AUTHOR           => q{Giovanni Simoni <dacav@openmailbox.org>},
     VERSION_FROM     => 'lib/App/PFT.pm',
     ABSTRACT_FROM    => 'lib/App/PFT.pm',
-    LICENSE          => 'artistic_2',
+    LICENSE          => 'GNU GPL v3',
     PL_FILES         => {},
     MIN_PERL_VERSION => 5.006,
     CONFIGURE_REQUIRES => {
@@ -18,8 +18,8 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-        #'ABC'              => 1.6,
-        #'Foo::Bar::Module' => 5.0401,
+        'Text::MultiMarkdown'   => 0,
+        'Template::Alloy'       => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'App-PFT-*' },
