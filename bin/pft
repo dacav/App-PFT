@@ -4,15 +4,6 @@
 
 pft - Static blog and website manager
 
-=cut
-
-use strict;
-use warnings;
-
-use Pod::Usage;
-
-use App::PFT::Cmd::Blog;
-
 =head1 SYNOPSYS
 
 pft <command> [options]
@@ -38,13 +29,34 @@ For options of a specific command I<cmd> use C<pft I<cmd> --help>
 
 =cut
 
-pod2usage -exitval => 1, -verbose => 2 unless @ARGV;
+
+
+use strict;
+use warnings;
+
+use Pod::Usage;
+use App::PFT::Cmd::Blog;
+use File::Basename qw/basename/;
+use feature qw/say/;
 
 my %COMMANDS = (
     blog => \&App::PFT::Cmd::Blog::main,
 );
 
+unless(@ARGV) {
+    my $p = basename $0;
+    say 'Usage:';
+    say "  $p --help";
+    say "  $p $_ [options]" foreach keys %COMMANDS;
+    exit 1;
+}
+
 my $command = shift @ARGV;
+
+if ($command eq '-h' || $command eq '--help') {
+    pod2usage -exitval => 1, -verbose => 2;
+}
+
 my $call = $COMMANDS{$command} or die "Unknown command $command"; 
 
-$call->(@_);
+$call->();
