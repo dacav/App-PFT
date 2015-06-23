@@ -41,11 +41,13 @@ use App::PFT::Util qw/findroot/;
 
 use App::PFT::Cmd::Init;
 use App::PFT::Cmd::Blog;
+use App::PFT::Cmd::Page;
 
 use feature qw/say/;
 
 my %COMMANDS = (
     blog => \&App::PFT::Cmd::Blog::main,
+    page => \&App::PFT::Cmd::Page::main,
     init => \&App::PFT::Cmd::Init::main,
 );
 
