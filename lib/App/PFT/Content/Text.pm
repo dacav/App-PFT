@@ -23,13 +23,8 @@ sub title() { shift->header->title }
 
 sub file {
     my $self = shift;
-
-    my $create = -e $self->path && $self->header_is_loaded;
-    my $out = IO::File->new($self->path, @_) # Has autoclose upon undef.
+    IO::File->new($self->path, @_) # Has autoclose upon undef.
         or die 'Cannot open "' . $self->path . ": $!";
-
-    print $out, $self->header->dump if $create;
-    $out;
 }
 
 has lines => (

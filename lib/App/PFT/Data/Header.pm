@@ -6,7 +6,9 @@ use warnings;
 use namespace::autoclean;
 use Moose;
 
-use YAML::XS;
+use Carp;
+
+use YAML::Tiny;
 
 has title => (
     isa => 'Str',
@@ -32,7 +34,7 @@ has encoding => (
 
 sub dump() {
     my($self) = @_;
-    YAML::XS::Dump {
+    YAML::Tiny::Dump {
         Title => $self->title(),
         Hide => $self->hide(),
         Author => $self->author(),
@@ -52,8 +54,6 @@ sub flat_title() {
 around BUILDARGS => sub {
     my ($orig, $class, %params) = @_;
 
-    die 'Missing title' unless $params{title};
-
     if (my $from = $params{'-load'}) {
         my $hdr = do {
             # Header starts with a valid YAML document (including the leading
@@ -71,7 +71,7 @@ around BUILDARGS => sub {
                 die "Only supporting GLOB and strings. Got $type" if $type;
                 $text = $from;
             }
-            YAML::XS::Load($text)
+            YAML::Tiny::Load($text)
         };
 
         $params{title} = $hdr->{Title};
@@ -82,6 +82,7 @@ around BUILDARGS => sub {
         $params{encoding} = $hdr->{Encoding};
     }
 
+    confess 'Missing title' unless $params{title};
     $class->$orig(%params);
 };
 
