@@ -29,32 +29,52 @@ For options of a specific command I<cmd> use C<pft I<cmd> --help>
 
 =cut
 
-
-
 use strict;
 use warnings;
 
 use Pod::Usage;
-use App::PFT::Cmd::Blog;
 use File::Basename qw/basename/;
+use File::Spec::Functions qw/catfile/;
+
+use App::PFT::Struct::Conf qw/$CONF_FILENAME cfg_default cfg_load cfg_dump/;
+use App::PFT::Util qw/findroot/;
+
+use App::PFT::Cmd::Init;
+use App::PFT::Cmd::Blog;
+
 use feature qw/say/;
 
 my %COMMANDS = (
     blog => \&App::PFT::Cmd::Blog::main,
+    init => \&App::PFT::Cmd::Init::main,
 );
 
+$0 = basename $0;
 unless(@ARGV) {
-    my $p = basename $0;
     say 'Usage:';
-    say "  $p --help";
-    say "  $p $_ [options]" foreach keys %COMMANDS;
+    say "  $0 --help";
+    say "  $0 $_ [options]" foreach keys %COMMANDS;
     exit 1;
 }
 
 my $command = shift @ARGV;
 
-if ($command eq '-h' || $command eq '--help') {
+if ($command =~ /help|-h/) {
     pod2usage -exitval => 1, -verbose => 2;
+}
+
+if (my $root = findroot type=>'file', name=>$CONF_FILENAME) {
+    if ($command eq 'init') {
+        say STDERR "Already initialized in $root";
+        exit 1;
+    }
+    cfg_load $root;
+} elsif ($command ne 'init') {
+    say STDERR "Not a $0 site. Try running: $0 init";
+    exit 1;
+} else {
+    cfg_default;
+    cfg_dump '.';
 }
 
 my $call = $COMMANDS{$command} or die "Unknown command $command"; 

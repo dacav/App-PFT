@@ -27,10 +27,12 @@ use Carp;
 
 Getopt::Long::Configure qw/bundling/;
 
+use App::PFT::Struct::Conf qw/$ROOT/;
+
 sub main {
     my %opts;
     my %datespec;
-    GetOptionsFromArray(\@_,
+    GetOptions(
         'year|y=i'  => \$datespec{year},
         'month|m=s' => \$datespec{month},
         'day|d=i'   => \$datespec{day},
@@ -44,7 +46,7 @@ sub main {
         },
     );
 
-    my $tree = App::PFT::Struct::Tree->new(basepath => '.');
+    my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
     my $entry = $tree->entry(
         title => join(' ', @_),
         date => App::PFT::Data::Date->new(

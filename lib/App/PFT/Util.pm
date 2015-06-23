@@ -3,17 +3,15 @@ package App::PFT::Util;
 use strict;
 use warnings;
 
-BEGIN {
-    require Exporter;
+use Exporter qw/import/;
+our @EXPORT_OK = qw/groupby ln findroot/;
 
-    our $VERSION     = 1.00;
-    our @ISA         = qw/Exporter/;
-    our @EXPORT;
-    our @EXPORT_OK   = qw/groupby ln/;
-}
+use Carp;
 
 use File::Copy::Recursive qw/dircopy/;
 use File::Path qw/remove_tree/;
+use File::Spec::Functions qw/updir catfile catdir rootdir/;
+use Cwd qw/abs_path cwd/;
 
 sub ln ($$) {
     # Not clear which modern system doesn't support symlinks. I think even
@@ -40,5 +38,26 @@ sub groupby(&@) {
     wantarray ? %groups : \%groups;
 }
 
-1;
+sub findroot {
+    my %opts = @_;
 
+    my $name = $opts{name};
+    croak "Missing name" unless $name;
+    my $cur = $opts{start} || cwd;
+    my $cat = do {
+        my $type = $opts{type};
+        $type eq 'file' ? \&catfile :
+        $type eq 'dir'  ? \&catdir :
+        croak "Unsupported type $type";
+    };
+
+    while ($cur ne rootdir) {
+        my $attempt = $cat->($cur, $name);
+        return $cur if -e $attempt;
+        $cur = abs_path catdir $cur, updir;
+    }
+
+    undef
+}
+
+1;
