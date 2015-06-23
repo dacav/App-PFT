@@ -23,21 +23,23 @@ use App::PFT::Struct::Tree;
 use App::PFT::Data::Date;
 
 use Getopt::Long qw/GetOptionsFromArray/;
-use Carp;
 
 Getopt::Long::Configure qw/bundling/;
 
-use App::PFT::Struct::Conf qw/$ROOT/;
+use App::PFT::Struct::Conf qw/$ROOT $AUTHOR/;
 
 sub main {
-    my %opts;
+    my %opts = (
+        author => $AUTHOR,
+    );
     my %datespec;
     GetOptions(
-        'year|y=i'  => \$datespec{year},
-        'month|m=s' => \$datespec{month},
-        'day|d=i'   => \$datespec{day},
-        'hide=s'    => \$opts{'-hide'},
-        'help|h!'   => sub {
+        'year|y=i'      => \$datespec{year},
+        'month|m=s'     => \$datespec{month},
+        'day|d=i'       => \$datespec{day},
+        'hide=s'        => \$opts{hide},
+        'author|a=s'    => \$opts{author},
+        'help|h!'       => sub {
             pod2usage
                 -exitval => 1,
                 -verbose => 2,
@@ -46,9 +48,14 @@ sub main {
         },
     );
 
+    unless (@ARGV) {
+        say STDERR "Usage: $0 blog [options] <title>";
+        exit 1;
+    }
+
     my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
     my $entry = $tree->entry(
-        title => join(' ', @_),
+        title => join(' ', @ARGV),
         date => App::PFT::Data::Date->new(
             %datespec,
             -fill => 'now',

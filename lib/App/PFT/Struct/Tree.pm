@@ -51,11 +51,8 @@ my $get_header = sub {
     if (my $hdr = $opts->{header}) {
         $hdr;
     } else {
-        my($title, $hide) = @{$opts}{'title', '-hide'};
-        App::PFT::Data::Header->new(
-            title => $title,
-            hide => $hide,
-        )
+        my($title, $hide, $author) = @{$opts}{'title', 'hide', 'author'};
+        App::PFT::Data::Header->new(%$opts);
     }
 };
 
