@@ -39,7 +39,7 @@ sub cfg_default {
 }
 
 sub cfg_dump {
-    DumpFile (catfile shift, $CONF_FILENAME), {
+    DumpFile catfile(shift, $CONF_FILENAME), {
         Author => $AUTHOR,
         SiteTitle => $SITE_TITLE,
         SiteURL => $SITE_URL,
@@ -64,6 +64,8 @@ sub cfg_load {
         'InputEnc',
         'OutputEnc',
     };
+
+    $SITE_URL =~ s/\/*$//;
 }
 
 1;
