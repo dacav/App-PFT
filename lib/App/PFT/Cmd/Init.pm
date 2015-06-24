@@ -18,6 +18,7 @@ use File::Spec::Functions qw/catfile/;
 
 use App::PFT::Struct::Tree;
 use App::PFT::Struct::Conf qw/cfg_dump/;
+use App::PFT::Util;
 
 use Exporter qw/import/;
 use feature qw/say/;
@@ -35,12 +36,15 @@ sub help {
 
 sub main {
     my $tree = App::PFT::Struct::Tree->new(basepath => '.');
-    my $default_templ = IO::File->new(
-        catfile($tree->dir_templates, 'default.html'),
-        'w'
-    );
+
+    my $default = catfile($tree->dir_templates, 'default.html');
+    my $default_templ = IO::File->new($default, 'w');
     say $default_templ <App::PFT::Cmd::Init::DATA>;
     close App::PFT::Cmd::Init::DATA;
+
+    App::PFT::Util::ln $default, catfile($tree->dir_templates, 'page.html');
+    App::PFT::Util::ln $default, catfile($tree->dir_templates, 'entry.html');
+    App::PFT::Util::ln $default, catfile($tree->dir_templates, 'month.html');
 }
 
 1;
