@@ -7,8 +7,9 @@ use namespace::autoclean;
 use Moose;
 
 use Carp;
-
 use YAML::Tiny;
+
+use App::PFT::Struct::Conf qw/$AUTHOR $INPUT_ENC/;
 
 has title => (
     isa => 'Str',
@@ -21,15 +22,23 @@ has hide => (
     predicate => 'is_hidden',
 );
 
+has template => (
+    isa => 'Str',
+    is => 'ro',
+);
+
 has author => (
     isa => 'Maybe[Str]',
     is => 'ro',
+    lazy => 1,
+    default => sub { $AUTHOR },
 );
 
 has encoding => (
     isa => 'Maybe[Str]',
     is => 'ro',
-    default => sub { 'utf-8' },
+    lazy => 1,
+    default => sub { $INPUT_ENC },
 );
 
 sub dump() {
@@ -39,6 +48,7 @@ sub dump() {
         Hide => $self->hide(),
         Author => $self->author(),
         Encoding => $self->encoding(),
+        Template => $self->template(),
     }
 }
 

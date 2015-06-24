@@ -6,6 +6,7 @@ use warnings;
 use Template::Alloy;
 use Text::MultiMarkdown qw/markdown/;
 use IO::File;
+use Encode;
 
 use File::Spec::Functions qw/catdir catfile/;
 use File::Path qw/remove_tree make_path/;
@@ -118,7 +119,7 @@ sub resolve {
 }
 
 sub process {
-    my($self, $template, $content) = @_;
+    my($self, $content) = @_;
     my $be = $self->backend;
 
     my $vars = {
@@ -127,9 +128,12 @@ sub process {
             encoding => $self->outputenc,
         },
         content => {
-            title => $content->title,
-            text => $content->text,
-            html => $self->resolve($content, markdown $content->text),
+            title => encode($self->outputenc, $content->title),
+            text => encode($self->outputenc, $content->text),
+            html => encode(
+                $self->outputenc,
+                $self->resolve($content, markdown $content->text),
+            ),
         },
     };
 
@@ -144,7 +148,7 @@ sub process {
     my $fn = catfile($self->build_path, $content->from_root) . '.html';
     make_path dirname($fn), { verbose => 1 };
     $be->process(
-        $template,
+        $content->header->template . '.html',
         $vars,
         (IO::File->new($fn, 'w') or die "Unable to open $fn: $!")
     ) or die $be->error;

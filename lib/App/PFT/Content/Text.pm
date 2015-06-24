@@ -35,6 +35,7 @@ has lines => (
         my $self = shift;
         my $fd = $self->file;
         my $hdr = App::PFT::Data::Header->new(
+            template => $self->template_name,
             -load => $fd
         );
         $self->header($hdr) unless $self->header_is_loaded;
@@ -53,6 +54,7 @@ has header => (
     default => sub {
         my $self = shift;
         App::PFT::Data::Header->new(
+            template => $self->template_name,
             -load => $self->file,
         );
     }

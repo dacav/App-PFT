@@ -25,5 +25,7 @@ sub from_root() {
     @out
 }
 
+sub template_name() { 'page' }
+
 no Moose;
 __PACKAGE__->meta->make_immutable;

@@ -65,6 +65,8 @@ sub cfg_load {
         'OutputEnc',
     };
 
+    # TODO: die when undef or bad format
+
     $SITE_URL =~ s/\/*$//;
 }
 

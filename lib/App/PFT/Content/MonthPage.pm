@@ -56,14 +56,20 @@ sub from_root() {
     @out
 }
 
-sub title() {
-    my $self = shift;
-    sprintf(
-        '%04d / %02d',
-        $self->year,
-        $self->month,
-    )
-}
+has header => (
+    is => 'ro',
+    isa => 'App::PFT::Data::Header',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        App::PFT::Data::Header->new(
+            title => sprintf('%04d / %02d', $self->year, $self->month),
+            template => 'month'
+        );
+    }
+);
+
+sub title() { shift->header->title }
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

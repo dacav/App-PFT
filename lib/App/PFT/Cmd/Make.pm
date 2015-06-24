@@ -62,7 +62,7 @@ sub main {
 
     my %vars;
     for my $e ($tree->list_entries, $tree->list_pages, @$months) {
-        $html->process('default.html', $e)
+        $html->process($e)
     }
 }
 
