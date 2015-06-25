@@ -34,7 +34,6 @@ sub BUILD {
         catdir($bp, 'inject'),
         catdir($bp, 'templates'),
         catdir($bp, 'build'),
-        catdir($bp, 'preview'),
         { verbose => 1 }
 }
 
