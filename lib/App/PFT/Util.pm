@@ -13,7 +13,10 @@ use File::Path qw/remove_tree/;
 use File::Spec::Functions qw/updir catfile catdir rootdir/;
 use Cwd qw/abs_path cwd/;
 
-sub ln ($$) {
+sub ln {
+    if ($_[2]) {
+        print STDERR "Linking $_[1] -> $_[0]\n";
+    }
     # Not clear which modern system doesn't support symlinks. I think even
     # Windows does that. ...anyway....
     eval { symlink $_[0], $_[1]; 1 } or do {

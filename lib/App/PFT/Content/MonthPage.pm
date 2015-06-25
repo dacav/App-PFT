@@ -64,7 +64,7 @@ has header => (
         my $self = shift;
         App::PFT::Data::Header->new(
             title => sprintf('%04d / %02d', $self->year, $self->month),
-            template => 'month'
+            template => 'gen'
         );
     }
 );
