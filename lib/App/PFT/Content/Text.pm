@@ -7,6 +7,7 @@ use namespace::autoclean;
 use Moose;
 
 use IO::File;
+use Carp;
 
 use Encode;
 
@@ -53,10 +54,14 @@ has header => (
     predicate => 'header_is_loaded',
     default => sub {
         my $self = shift;
-        App::PFT::Data::Header->new(
-            template => $self->template_name,
-            -load => $self->file,
-        );
+        my $hdr = eval {
+            App::PFT::Data::Header->new(
+                template => $self->template_name,
+                -load => $self->file,
+            );
+        };
+        croak 'Bad file format in ', $self->path, ': ', $@ if $@;
+        $hdr
     }
 );
 

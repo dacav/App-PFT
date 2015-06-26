@@ -81,8 +81,9 @@ around BUILDARGS => sub {
                 die "Only supporting GLOB and strings. Got $type" if $type;
                 $text = $from;
             }
-            YAML::Tiny::Load($text)
+            eval { YAML::Tiny::Load($text) };
         };
+        confess $@ if $@;
 
         $params{title} = $hdr->{Title};
         if (my $hide = $hdr->{Hide}) {
