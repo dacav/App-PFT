@@ -20,14 +20,31 @@ use Pod::Usage;
 use Pod::Find qw/pod_where/;
 
 use Getopt::Long;
-use File::Spec::Functions qw/catdir catfile/;
+use File::Spec::Functions qw/catdir catfile no_upwards/;
 use File::Path qw/make_path/;
 
 use App::PFT::Struct::Conf qw/$ROOT $SITE_TITLE $SITE_URL $OUTPUT_ENC/;
 use App::PFT::Struct::Tree;
 use App::PFT::Output::HTML;
+use App::PFT::Util qw/ln/;
 
 Getopt::Long::Configure ("bundling");
+
+sub inject {
+    my $tree = shift;
+    my $inject = $tree->dir_inject;
+    App::PFT::Util::ln
+            catfile($inject, $_),
+            catfile($tree->dir_build, $_),
+            1
+        foreach
+            no_upwards
+            map { substr($_, 1 + length $inject) }
+        (
+            glob(catfile $inject, '*'),
+            glob(catfile $inject, '.*'),
+        )
+}
 
 sub main {
     my %opts;
@@ -60,10 +77,11 @@ sub main {
 
     my $months = $tree->link_months;
 
-    my %vars;
     for my $e ($tree->list_entries, $tree->list_pages, @$months) {
         $html->process($e)
     }
+
+    inject $tree;
 }
 
 1;

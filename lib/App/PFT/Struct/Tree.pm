@@ -215,6 +215,8 @@ sub lookup {
 
 sub dir_templates() { catdir $_[0]->basepath, 'templates' }
 sub dir_build() { catdir $_[0]->basepath, 'build' }
+sub dir_inject() { catdir $_[0]->basepath, 'inject' }
+
 sub dir_pics() { catdir $_[0]->basepath, 'content', 'pics' }
 
 #has pictures => ( is => 'ro', isa => 'ArrayRef[App::PFT::Content::Picture]' );
