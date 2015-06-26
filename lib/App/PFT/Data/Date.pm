@@ -62,7 +62,7 @@ around BUILDARGS => sub {
     }
 
     my $d = $params{day};
-    die "Invalid day: $d" if ($d !~ m/^\d{1,2}$/ || $d < 1 || $d > 30);
+    die "Invalid day: $d" if ($d !~ m/^\d{1,2}$/ || $d < 1 || $d > 31);
 
     return $class->$orig(%params);
 };
