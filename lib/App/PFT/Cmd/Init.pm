@@ -133,15 +133,56 @@ __DATA__
   </ul>
 </div>
 
-<div id="content">
-  [% content.html %]
-  [% IF links.related %]
+<div id="sitemap">
+  [% IF links.pages %]
+  <h1>Pages:</h1>
   <ul>
-    [% FOREACH l = links.related %]
-      <li>Day [% l.date.d %]: <a href="[% l.href %]">[% l.slug %]</a></li>
+    [% FOREACH p = links.pages %]
+      <li><a href="[% p.href %]">[% p.slug %]</a></li>
     [% END %]
   </ul>
   [% END %]
+
+  [% IF links.backlog %]
+  <h1>Last 5 entries:</h1>
+  <ul>
+    [% FOREACH e = links.backlog; IF loop.count > 5 BREAK END %]
+      <li>
+        <a href="[% e.href %]">
+        [% e.date.y %] / [% e.date.m %] / [% e.date.d %]: [% e.slug %]
+        </a>
+      </li>
+    [% END %]
+  </ul>
+  [% END %]
+
+  [% IF links.months %]
+  <h1>Last 5 months:</h1>
+  <ul>
+    [% FOREACH m = links.months; IF loop.count > 5 BREAK END %]
+      <li>
+        <a href="[% m.href %]">[% m.slug %]</a>
+      </li>
+    [% END %]
+  </ul>
+  [% END %]
+</div>
+
+<div id="content">
+  <div id="title">
+    <h1>[% content.title %]</h1>
+  </div>
+  <div id="text">
+    [% content.html %]
+
+    [% IF links.related %]
+    <ul>
+      [% FOREACH l = links.related %]
+        <li>Day [% l.date.d %]: <a href="[% l.href %]">[% l.slug %]</a></li>
+      [% END %]
+    </ul>
+    [% END %]
+  </div>
 </div>
 
 </body>
