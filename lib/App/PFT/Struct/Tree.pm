@@ -198,7 +198,7 @@ sub link_months {
         $prev_m = $mp;
     }
 
-    \@out;
+    wantarray ? @out : \@out;
 };
 
 sub lookup {

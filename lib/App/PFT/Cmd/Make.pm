@@ -69,24 +69,19 @@ sub main {
         basepath => $ROOT
     );
 
-    my $html = App::PFT::Output::HTML->new(
-        template_dirs => [
-            $tree->dir_templates,
-        ],
-        site_title => $SITE_TITLE,
-        # site_footer => $ENV{SITE_FOOTER},
-        site_home => $tree->page(title => $SITE_HOME, -noinit => 1),
-        base_url => $preview ? $tree->dir_build : $SITE_URL,
-        outputenc => $OUTPUT_ENC || 'utf-8',
-        pics_path => $tree->dir_pics,
-        build_path => $tree->dir_build,
-    );
-
+    my @pages = $tree->list_pages;
+    my @entries = sort { $b->cmp cmp $a->cmp } $tree->list_entries;
     my $months = $tree->link_months;
 
-    for my $e ($tree->list_entries, $tree->list_pages, @$months) {
-        $html->process($e)
-    }
+    App::PFT::Output::HTML->new(
+        site_title => $SITE_TITLE,
+        site_home => $SITE_HOME,
+        # site_footer => $ENV{SITE_FOOTER},
+        base_url => $preview ? $tree->dir_build : $SITE_URL,
+        outputenc => $OUTPUT_ENC || 'utf-8',
+
+        tree => $tree,
+    )->build;
 
     inject $tree;
 }

@@ -19,17 +19,39 @@ use App::PFT::Util;
 use namespace::autoclean;
 use Moose;
 
+use feature qw/say/;
+
 has site_title => (is => 'ro', isa => 'Str');
-has site_footer => (is => 'ro', isa => 'Str');
-has site_home => (is => 'ro', isa => 'App::PFT::Content::Text');
+has site_home => (is => 'ro', isa => 'Str');
 has base_url => (is => 'ro', isa => 'Str');
 has outputenc => (is => 'ro', isa => 'Str', default => sub{'utf-8'});
-has build_path => (is => 'ro', isa => 'Str');
+has tree => (is => 'ro', isa => 'App::PFT::Struct::Tree');
 
-has template_dirs => (
+sub build_path { shift->tree->dir_build }
+sub pages { shift->tree->list_pages }
+sub entries { shift->tree->list_entries }
+
+has links => (
     is => 'ro',
-    isa => 'ArrayRef[Str]',
-    default => sub{[]},
+    isa => 'HashRef',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        my(@pages, @entries);
+        for my $p ($self->pages) {
+            push @pages, $self->mkhref($p);
+        };
+
+        # Reverse chronological order
+        for my $e (sort { $b->cmp cmp $a->cmp } $self->entries) {
+            push @entries, $self->mkhref($e);
+        };
+
+        {
+            pages => \@pages,
+            backlog => \@entries,
+        }
+    },
 );
 
 has lookups => (
@@ -43,7 +65,9 @@ has backend => (
     lazy => 1,
     default => sub {
         Template::Alloy->new(
-            INCLUDE_PATH => $_[0]->template_dirs,
+            INCLUDE_PATH => [
+                shift->tree->dir_templates,
+            ]
             #AUTO_FILTER => 'auto',
             #FILTERS => {
             #    markdown => sub { $hrefs->(markdown shift) },
@@ -56,8 +80,9 @@ has backend => (
 around BUILDARGS => sub {
     my ($orig, $class, %params) = @_;
 
-    my($build_path, $base_url) = @params{'build_path','base_url'};
-    die unless $build_path;
+    my $base_url = $params{base_url};
+    my $tree = $params{tree};
+    my $build_path = $tree->dir_build;
     die unless $base_url;
 
     remove_tree $build_path;
@@ -65,13 +90,10 @@ around BUILDARGS => sub {
 
     $params{lookups} = {
         pic => do {
-            if (my $from_pics = $params{pics_path}) {
-                my $to_pics = catdir($build_path, 'pics');
-                App::PFT::Util::ln $from_pics, $to_pics;
-                sub { catfile($to_pics, @_) };
-            } else {
-                undef;
-            }
+            my $from_pics = $tree->dir_pics;
+            my $to_pics = catdir($build_path, 'pics');
+            App::PFT::Util::ln $from_pics, $to_pics;
+            sub { catfile($to_pics, @_) };
         },
         page => sub {
             my $cur_content = shift;
@@ -84,11 +106,14 @@ around BUILDARGS => sub {
             join('/', $base_url, $got_content->from_root) . '.html';
         },
     };
+
     $class->$orig(%params);
 };
 
 sub mkhref {
-    my($self, $content) = @_;
+    my $self = shift;
+    my $content = shift;
+
     my $out = {
         href => join('/', $self->base_url, $content->from_root) . '.html',
         slug => $content->title,
@@ -125,6 +150,7 @@ sub process {
     my($self, $content) = @_;
     my $be = $self->backend;
 
+    my %links;
     my $vars = {
         site => {
             title => $self->site_title,
@@ -138,14 +164,17 @@ sub process {
                 $self->resolve($content, markdown $content->text),
             ),
         },
+        links => \%links,
     };
 
-    $vars->{links}{prev} = $self->mkhref($content->prev) if $content->has_prev;
-    $vars->{links}{next} = $self->mkhref($content->next) if $content->has_next;
-    $vars->{links}{root} = $self->mkhref($content->month) if $content->has_month;
+    @links{keys %{$self->links}} = values %{$self->links};
+    $links{prev} = $self->mkhref($content->prev) if $content->has_prev;
+    $links{next} = $self->mkhref($content->next) if $content->has_next;
+    $links{root} = $self->mkhref($content->month) if $content->has_month;
+
     if ($content->has_links) {
         my @hrefs = map { $self->mkhref($_) } @{$content->links};
-        $vars->{links}{related} = \@hrefs;
+        $links{related} = \@hrefs;
     }
 
     my $fn = catfile($self->build_path, $content->from_root) . '.html';
@@ -155,31 +184,37 @@ sub process {
         $vars,
         (IO::File->new($fn, 'w') or die "Unable to open $fn: $!")
     ) or croak
-        'Cannot process page ', $content->fname,
+        'Cannot process page ', $fn,
         "\n\ttemplate engine says: ", $be->error,
         "\n\t(Missing template?)",
     ;
 }
 
+sub build {
+    my $self = shift;
+
+    # Order matters: link_months builds the structure.
+    for my $e ($self->tree->link_months, $self->entries, $self->pages) {
+        $self->process($e);
+    }
+}
+
 sub DEMOLISH {
     my $self = shift;
-    if (my $h = $self->site_home) {
-        if ($h->exists) {
-            my $fn = catfile($self->build_path, 'index.html');
-            my $f = IO::File->new($fn, 'w') or die "Unable to open $fn: $!";
-            my $href = $self->mkhref($h);
-            print $f
-                "<!--\n",
-                "    This file is generated automatically. Do not edit, it will be\n",
-                "    overwritten. It points browsers to $href->{slug}\n",
-                "-->\n",
-                "<meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=$href->{href}\">"
-            ;
-        } else {
-            say STDERR 'SiteHome page ', $h->path, ' does not exist';
-        }
+    my $h = $self->tree->page(title => $self->site_home, -noinit => 1);
+    if ($h->exists) {
+        my $fn = catfile($self->build_path, 'index.html');
+        my $f = IO::File->new($fn, 'w') or die "Unable to open $fn: $!";
+        my $href = $self->mkhref($h);
+        print $f
+            "<!--\n",
+            "    This file is generated automatically. Do not edit, it will be\n",
+            "    overwritten. It points browsers to $href->{slug}\n",
+            "-->\n",
+            "<meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=$href->{href}\">"
+        ;
     } else {
-        die 'Site-home not defined. Skipping';
+        say STDERR 'SiteHome page ', $h->path, ' does not exist';
     }
 }
 
