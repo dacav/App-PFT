@@ -19,6 +19,7 @@ use Moose;
 
 has site_title => (is => 'ro', isa => 'Str');
 has site_footer => (is => 'ro', isa => 'Str');
+has site_home => (is => 'ro', isa => 'App::PFT::Content::Text');
 has base_url => (is => 'ro', isa => 'Str');
 has outputenc => (is => 'ro', isa => 'Str', default => sub{'utf-8'});
 has build_path => (is => 'ro', isa => 'Str');
@@ -152,6 +153,28 @@ sub process {
         $vars,
         (IO::File->new($fn, 'w') or die "Unable to open $fn: $!")
     ) or die $be->error;
+}
+
+sub DEMOLISH {
+    my $self = shift;
+    if (my $h = $self->site_home) {
+        if ($h->exists) {
+            my $fn = catfile($self->build_path, 'index.html');
+            my $f = IO::File->new($fn, 'w') or die "Unable to open $fn: $!";
+            my $href = $self->mkhref($h);
+            print $f
+                "<!--\n",
+                "    This file is generated automatically. Do not edit, it will be\n",
+                "    overwritten. It points browsers to $href->{slug}\n",
+                "-->\n",
+                "<meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=$href->{href}\">"
+            ;
+        } else {
+            say STDERR 'SiteHome page ', $h->path, ' does not exist';
+        }
+    } else {
+        die 'Site-home not defined. Skipping';
+    }
 }
 
 no Moose;

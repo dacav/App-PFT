@@ -16,6 +16,7 @@ our @EXPORT_OK = qw/
     $AUTHOR
     $SITE_TITLE
     $SITE_URL
+    $SITE_HOME
     $INPUT_ENC
     $OUTPUT_ENC
     cfg_load
@@ -30,6 +31,7 @@ our $ROOT;
 our $AUTHOR;
 our $SITE_TITLE;
 our $SITE_URL;
+our $SITE_HOME;
 our $INPUT_ENC;
 our $OUTPUT_ENC;
 
@@ -37,6 +39,7 @@ sub cfg_default {
     $AUTHOR = $ENV{USER} || 'John Doe';
     $SITE_TITLE = "My $0 website";
     $SITE_URL = 'http://example.org/';
+    $SITE_HOME = 'Welcome';
     $INPUT_ENC = $OUTPUT_ENC = 'utf-8';
 }
 
@@ -45,6 +48,7 @@ sub cfg_dump {
         Author => $AUTHOR,
         SiteTitle => $SITE_TITLE,
         SiteURL => $SITE_URL,
+        SiteHome => $SITE_HOME,
         InputEnc => $INPUT_ENC,
         OutputEnc => $OUTPUT_ENC,
     };
@@ -71,12 +75,14 @@ sub cfg_load {
         $AUTHOR,
         $SITE_TITLE,
         $SITE_URL,
+        $SITE_HOME,
         $INPUT_ENC,
         $OUTPUT_ENC,
     ) = check_assign $cfg,
         'Author',
         'SiteTitle',
         'SiteURL',
+        'SiteHome',
         'InputEnc',
         'OutputEnc',
     ;

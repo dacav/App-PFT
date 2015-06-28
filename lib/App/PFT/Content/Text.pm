@@ -22,6 +22,8 @@ sub edit() { system($ENV{EDITOR}, shift->path) }
 
 sub title() { shift->header->title }
 
+sub exists { -e shift->path }
+
 sub file {
     my $self = shift;
     IO::File->new($self->path, @_) # Has autoclose upon undef.

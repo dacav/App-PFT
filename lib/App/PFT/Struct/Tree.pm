@@ -74,8 +74,10 @@ sub entry {
         date => $date,
     );
 
-    $textinit->($basedir, $path, $hdr);
-    $self->entries->{$path} = $out if $self->entries_loaded;
+    unless ($opts{'-noinit'}) {
+        $textinit->($basedir, $path, $hdr);
+        $self->entries->{$path} = $out if $self->entries_loaded;
+    }
     $out;
 }
 
@@ -131,8 +133,10 @@ sub page {
         fname => $fname,
     );
 
-    $textinit->($basedir, $path, $hdr);
-    $self->pages->{$path} = $out if $self->pages_loaded;
+    unless ($opts{'-noinit'}) {
+        $textinit->($basedir, $path, $hdr);
+        $self->pages->{$path} = $out if $self->pages_loaded;
+    }
     $out;
 }
 

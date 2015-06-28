@@ -23,7 +23,13 @@ use Getopt::Long;
 use File::Spec::Functions qw/catdir catfile no_upwards/;
 use File::Path qw/make_path/;
 
-use App::PFT::Struct::Conf qw/$ROOT $SITE_TITLE $SITE_URL $OUTPUT_ENC/;
+use App::PFT::Struct::Conf qw/
+    $ROOT
+    $SITE_TITLE
+    $SITE_URL
+    $SITE_HOME
+    $OUTPUT_ENC
+/;
 use App::PFT::Struct::Tree;
 use App::PFT::Output::HTML;
 use App::PFT::Util qw/ln/;
@@ -47,9 +53,9 @@ sub inject {
 }
 
 sub main {
-    my %opts;
+    my $preview;
     GetOptions(
-        'preview|p!' => \$opts{preview},
+        'preview|p!' => \$preview,
         'help|h' => sub {
             pod2usage
                 -exitval => 1,
@@ -69,7 +75,8 @@ sub main {
         ],
         site_title => $SITE_TITLE,
         # site_footer => $ENV{SITE_FOOTER},
-        base_url => $opts{preview} ? $tree->dir_build : $SITE_URL,
+        site_home => $tree->page(title => $SITE_HOME, -noinit => 1),
+        base_url => $preview ? $tree->dir_build : $SITE_URL,
         outputenc => $OUTPUT_ENC || 'utf-8',
         pics_path => $tree->dir_pics,
         build_path => $tree->dir_build,
