@@ -31,25 +31,43 @@ sub build_path { shift->tree->dir_build }
 sub pages { shift->tree->list_pages }
 sub entries { shift->tree->list_entries }
 
+has months => (
+    is => 'ro',
+    isa => 'ArrayRef[App::PFT::Content::MonthPage]',
+    lazy => 1,
+    default => sub {
+        my @months = shift->tree->link_months;
+        \@months;
+    }
+);
+
+use Data::Dumper;
+
 has links => (
     is => 'ro',
     isa => 'HashRef',
     lazy => 1,
     default => sub {
         my $self = shift;
-        my(@pages, @entries);
+        my(@pages, @entries, @months);
+
         for my $p ($self->pages) {
             push @pages, $self->mkhref($p);
-        };
+        }
 
         # Reverse chronological order
         for my $e (sort { $b->cmp cmp $a->cmp } $self->entries) {
             push @entries, $self->mkhref($e);
-        };
+        }
+
+        for my $m (@{$self->months}) {
+            push @months, $self->mkhref($m);
+        }
 
         {
             pages => \@pages,
             backlog => \@entries,
+            months => [reverse @months],
         }
     },
 );
@@ -194,7 +212,7 @@ sub build {
     my $self = shift;
 
     # Order matters: link_months builds the structure.
-    for my $e ($self->tree->link_months, $self->entries, $self->pages) {
+    for my $e (@{$self->months}, $self->entries, $self->pages) {
         $self->process($e);
     }
 }
