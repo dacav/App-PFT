@@ -134,7 +134,7 @@ sub mkhref {
 
     my $out = {
         href => join('/', $self->base_url, $content->from_root) . '.html',
-        slug => $content->title,
+        slug => encode($self->outputenc, $content->title),
     };
     if (my $date = $content->date) {
         $out->{date} = {
@@ -171,7 +171,7 @@ sub process {
     my %links;
     my $vars = {
         site => {
-            title => $self->site_title,
+            title => encode($self->outputenc, $self->site_title),
             encoding => $self->outputenc,
         },
         content => {

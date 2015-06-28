@@ -6,6 +6,8 @@ use warnings;
 use namespace::autoclean;
 use Moose;
 
+use Encode;
+
 use Carp;
 use YAML::Tiny;
 
@@ -85,12 +87,12 @@ around BUILDARGS => sub {
         };
         confess $@ if $@;
 
-        $params{title} = $hdr->{Title};
+        my $enc = $params{encoding} = $hdr->{Encoding};
+        $params{title} = decode($enc, $hdr->{Title});
         if (my $hide = $hdr->{Hide}) {
-            $params{hide} = $hide;
+            $params{hide} = decode($enc, $hide);
         }
-        $params{author} = $hdr->{Author};
-        $params{encoding} = $hdr->{Encoding};
+        $params{author} = decode($enc, $hdr->{Author});
     }
 
     confess 'Missing title' unless $params{title};
