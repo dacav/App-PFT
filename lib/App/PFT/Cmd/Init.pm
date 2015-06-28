@@ -109,31 +109,140 @@ sub main {
 
 __DATA__
 
-
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-  <title>[% site.title %] :: [% content.title %]</title>
   <meta http-equiv="content-type" content="text/html; charset=[% site.encoding %]">
+  <title>[% site.title %] :: [% content.title %]</title>
+
+    <style type="text/css">
+
+        html {
+            margin : 0;
+            padding : 0;
+            font-family : sans-serif;
+            line-height : 1.5em;
+        }
+
+        body {
+            margin : 0 auto 0;
+            padding : 5em 5em 0;
+            min-width : 40em;
+            max-width : 50em;
+        }
+
+        div#title {
+            text-align : center;
+        }
+
+        a a:link a:visited {
+            color : cornflowerblue;
+            text-decoration : none;
+        }
+
+        a:hover {
+            color : #87aced;
+        }
+
+        div#nav {
+            width : 100%;
+            display : table;
+            margin-bottom : .5em;
+            padding-bottom : .5em;
+            border-bottom : 1px solid cornflowerblue;
+        }
+
+        div#nav ul {
+            width : 100%;
+            display : table-row;
+        }
+
+        div#nav ul li {
+            margin : 0 auto 0;
+            display : table-cell;
+        }
+
+        div#nav #prev {
+            text-align : left;
+        }
+
+        div#nav #root {
+            text-align : center;
+        }
+
+        div#nav #next {
+            text-align : right;
+        }
+
+        .side {
+            float : right;
+            max-width : 38%;
+            padding : 10px;
+        }
+
+        div#sitemap h1 {
+            font-size : 1em;
+        }
+
+        h1#sitetitle {
+            margin-bottom : 1em;
+        }
+
+        div#pagetitle {
+            margin : 2em;
+        }
+
+        div#content {
+            max-width : 60%;
+            font-family : serif;
+        }
+
+        div#content #title h1 {
+            font-size : 2em;
+        }
+
+        div#content #text pre {
+            overflow : auto;
+            background : #ccc;
+            padding : .5em;
+        }
+
+        div#footer {
+            color : silver;
+            clear : right;
+            margin-right : 0;
+            margin-left : auto;
+            font-size : .8em;
+            text-align : left;
+        }
+
+    </style>
 </head>
 
-<body>
+<body id="top">
+
+<h1 id="sitetitle">[% site.title %]</h1>
 
 <div id="nav">
   <ul>
     [% IF links.prev %]
-    <li>Prev: <a href="[% links.prev.href %]">[% links.prev.slug %]</a></li>
-    [% END %]
-    [% IF links.next %]
-    <li>Next: <a href="[% links.next.href %]">[% links.next.slug %]</a></li>
+    <li id="prev">Prev: <a href="[% links.prev.href %]">[% links.prev.slug %]</a></li>
     [% END %]
     [% IF links.root %]
-    <li>Month: <a href="[% links.root.href %]">[% links.root.slug %]</a></li>
+    <li id="root">Up: <a href="[% links.root.href %]">[% links.root.slug %]</a></li>
+    [% END %]
+    [% IF links.next %]
+    <li id="next">Next: <a href="[% links.next.href %]">[% links.next.slug %]</a></li>
     [% END %]
   </ul>
 </div>
 
-<div id="sitemap">
+
+<div id="pagetitle">
+  <h2>[% content.title %]</h2>
+</div>
+
+<div id="sitemap" class="side">
   [% IF links.pages %]
   <h1>Pages:</h1>
   <ul>
@@ -149,7 +258,7 @@ __DATA__
     [% FOREACH e = links.backlog; IF loop.count > 5 BREAK END %]
       <li>
         <a href="[% e.href %]">
-        [% e.date.y %] / [% e.date.m %] / [% e.date.d %]: [% e.slug %]
+          [% e.slug %]
         </a>
       </li>
     [% END %]
@@ -169,9 +278,6 @@ __DATA__
 </div>
 
 <div id="content">
-  <div id="title">
-    <h1>[% content.title %]</h1>
-  </div>
   <div id="text">
     [% content.html %]
 
@@ -183,6 +289,10 @@ __DATA__
     </ul>
     [% END %]
   </div>
+</div>
+
+<div id="footer">
+    <a href="#top">Back ↥</a>
 </div>
 
 </body>
