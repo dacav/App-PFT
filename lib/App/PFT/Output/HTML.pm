@@ -8,6 +8,8 @@ use Text::MultiMarkdown qw/markdown/;
 use IO::File;
 use Encode;
 
+use Carp;
+
 use File::Spec::Functions qw/catdir catfile/;
 use File::Path qw/remove_tree make_path/;
 use File::Basename qw/dirname/;
@@ -152,7 +154,11 @@ sub process {
         $content->header->template . '.html',
         $vars,
         (IO::File->new($fn, 'w') or die "Unable to open $fn: $!")
-    ) or die $be->error;
+    ) or croak
+        'Cannot process page ', $content->fname,
+        "\n\ttemplate engine says: ", $be->error,
+        "\n\t(Missing template?)",
+    ;
 }
 
 sub DEMOLISH {
