@@ -33,7 +33,6 @@ sub BUILD {
         catdir($bp, 'content', 'attachments'),
         catdir($bp, 'inject'),
         catdir($bp, 'templates'),
-        catdir($bp, 'build'),
         { verbose => 1 }
 }
 
