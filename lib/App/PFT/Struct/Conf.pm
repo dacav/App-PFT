@@ -7,6 +7,8 @@ use YAML::Tiny qw/DumpFile LoadFile/;
 use File::Basename qw/basename/;
 use File::Spec::Functions qw/catfile/;
 
+use Carp;
+
 use Exporter qw/import/;
 our @EXPORT_OK = qw/
     $ROOT
@@ -48,24 +50,36 @@ sub cfg_dump {
     };
 }
 
+sub check_assign {
+    my $cfg = shift;
+
+    my @out;
+    for my $name (@_) {
+        my $val = $cfg->{$name};
+        croak "Configuration $name is missing" unless $val;
+        push @out, $val;
+    }
+
+    @out;
+}
+
 sub cfg_load {
     $ROOT = shift;
     my $cfg = LoadFile (catfile $ROOT, $CONF_FILENAME);
+
     (
         $AUTHOR,
         $SITE_TITLE,
         $SITE_URL,
         $INPUT_ENC,
         $OUTPUT_ENC,
-    ) = @$cfg{
+    ) = check_assign $cfg,
         'Author',
         'SiteTitle',
         'SiteURL',
         'InputEnc',
         'OutputEnc',
-    };
-
-    # TODO: die when undef or bad format
+    ;
 
     $SITE_URL =~ s/\/*$//;
 }
