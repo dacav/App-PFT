@@ -32,8 +32,10 @@ For options of a specific command I<cmd> use C<pft I<cmd> --help>
 use strict;
 use warnings;
 
-use Pod::Usage;
 use File::Basename qw/basename/;
+BEGIN { $0 = basename $0 }
+
+use Pod::Usage;
 use File::Spec::Functions qw/catfile/;
 
 use App::PFT::Struct::Conf qw/$CONF_FILENAME cfg_default cfg_load cfg_dump/;
@@ -53,7 +55,6 @@ my %COMMANDS = (
     make => \&App::PFT::Cmd::Make::main,
 );
 
-$0 = basename $0;
 unless(@ARGV) {
     say 'Usage:';
     say "  $0 --help";
