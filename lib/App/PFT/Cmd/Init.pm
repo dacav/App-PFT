@@ -189,7 +189,8 @@ __DATA__
         }
 
         div#pagetitle {
-            margin : 2em;
+            margin-top : 2em;
+            margin-bottom : 2em;
         }
 
         div#content {
@@ -205,6 +206,10 @@ __DATA__
             overflow : auto;
             background : #ccc;
             padding : .5em;
+        }
+
+        div#content p img {
+            max-width : 100%;
         }
 
         div#footer {
@@ -237,9 +242,11 @@ __DATA__
   </ul>
 </div>
 
-
 <div id="pagetitle">
   <h2>[% content.title %]</h2>
+  [% IF content.date %]
+  <h3>[% content.date.y %] / [% content.date.m %] / [% content.date.d %]</h3>
+  [% END %]
 </div>
 
 <div id="sitemap" class="side">
