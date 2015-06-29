@@ -110,8 +110,9 @@ around BUILDARGS => sub {
         pic => do {
             my $from_pics = $tree->dir_pics;
             my $to_pics = catdir($build_path, 'pics');
+            # FIXME: probably this works bad.
             App::PFT::Util::ln $from_pics, $to_pics;
-            sub { catfile($to_pics, @_) };
+            sub { catfile($to_pics, $_[1]) };
         },
         page => sub {
             my $cur_content = shift;
@@ -137,11 +138,7 @@ sub mkhref {
         slug => encode($self->outputenc, $content->title),
     };
     if (my $date = $content->date) {
-        $out->{date} = {
-            y => $date->year,
-            m => $date->month,
-            d => $date->day,
-        }
+        $out->{date} = $date->to_hash;
     }
 
     $out;
@@ -181,6 +178,7 @@ sub process {
                 $self->outputenc,
                 $self->resolve($content, markdown $content->text),
             ),
+            date => $content->date ? $content->date->to_hash : undef,
         },
         links => \%links,
     };

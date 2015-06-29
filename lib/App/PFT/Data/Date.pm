@@ -16,6 +16,15 @@ sub repr {
     return join $sep, $self->year, $self->month, $self->day;
 }
 
+sub to_hash {
+    my $self = shift;
+    {
+        y => $self->year,
+        m => $self->month,
+        d => $self->day,
+    }
+}
+
 my %MONTHS = (
     ja  => 1,
     f   => 2,
