@@ -131,6 +131,10 @@ __DATA__
             max-width : 50em;
         }
 
+        h1,h2,h3,h4,h5,h6 {
+            line-height : 1em;
+        }
+
         div#title {
             text-align : center;
         }
@@ -144,40 +148,13 @@ __DATA__
             color : #87aced;
         }
 
-        div#nav {
-            width : 100%;
-            display : table;
-            margin-bottom : .5em;
-            padding-bottom : .5em;
-            border-bottom : 1px solid cornflowerblue;
-        }
-
-        div#nav ul {
-            width : 100%;
-            display : table-row;
-        }
-
-        div#nav ul li {
-            margin : 0 auto 0;
-            display : table-cell;
-        }
-
-        div#nav #prev {
-            text-align : left;
-        }
-
-        div#nav #root {
-            text-align : center;
-        }
-
-        div#nav #next {
-            text-align : right;
-        }
-
         .side {
             float : right;
-            max-width : 38%;
-            padding : 10px;
+        }
+
+        div#sitemap {
+            margin-top : 2em;
+            width : 25%;
         }
 
         div#sitemap h1 {
@@ -186,16 +163,20 @@ __DATA__
 
         h1#sitetitle {
             margin-bottom : 1em;
+            border-bottom : 1px solid cornflowerblue;
         }
 
         div#pagetitle {
-            margin-top : 2em;
-            margin-bottom : 2em;
+            margin : 2em 0 2em;
+        }
+
+        div#pagetitle h2 {
+            font-size : 1em;
         }
 
         div#content {
-            max-width : 60%;
             font-family : serif;
+            width : 65%;
         }
 
         div#content #title h1 {
@@ -212,6 +193,14 @@ __DATA__
             max-width : 100%;
         }
 
+        div#content h1,h2,h3,h4,h5,h6 { font-family : sans; }
+        div#content h1 { font-size : 1.7em; }
+        div#content h2 { font-size : 1.5em; }
+        div#content h3 { font-size : 1.4em; }
+        div#content h4 { font-size : 1.3em; }
+        div#content h5 { font-size : 1.2em; }
+        div#content h6 { font-size : 1.1em; }
+
         div#footer {
             color : silver;
             clear : right;
@@ -227,27 +216,6 @@ __DATA__
 <body id="top">
 
 <h1 id="sitetitle">[% site.title %]</h1>
-
-<div id="nav">
-  <ul>
-    [% IF links.prev %]
-    <li id="prev">Prev: <a href="[% links.prev.href %]">[% links.prev.slug %]</a></li>
-    [% END %]
-    [% IF links.root %]
-    <li id="root">Up: <a href="[% links.root.href %]">[% links.root.slug %]</a></li>
-    [% END %]
-    [% IF links.next %]
-    <li id="next">Next: <a href="[% links.next.href %]">[% links.next.slug %]</a></li>
-    [% END %]
-  </ul>
-</div>
-
-<div id="pagetitle">
-  <h2>[% content.title %]</h2>
-  [% IF content.date %]
-  <h3>[% content.date.y %] / [% content.date.m %] / [% content.date.d %]</h3>
-  [% END %]
-</div>
 
 <div id="sitemap" class="side">
   [% IF links.pages %]
@@ -282,6 +250,37 @@ __DATA__
     [% END %]
   </ul>
   [% END %]
+
+  [% IF (links.root || links.prev || links.next) %]
+  <h1>Navigation:</h1>
+  <ul>
+    [% IF links.root %]
+    <li id="root">
+      Up: <a href="[% links.root.href %]">[% links.root.slug %]</a>
+    </li>
+    [% END %]
+
+    [% IF links.prev %]
+    <li id="prev">
+      Prev: <a href="[% links.prev.href %]">[% links.prev.slug %]</a>
+    </li>
+    [% END %]
+
+    [% IF links.next %]
+    <li id="next">
+      Next: <a href="[% links.next.href %]">[% links.next.slug %]</a>
+    </li>
+    [% END %]
+  </ul>
+  [% END %]
+
+</div>
+
+<div id="pagetitle">
+  <h1>[% content.title %]</h1>
+  [% IF content.date %]
+  <h2>[% content.date.y %] / [% content.date.m %] / [% content.date.d %]</h2>
+  [% END %]
 </div>
 
 <div id="content">
@@ -299,7 +298,7 @@ __DATA__
 </div>
 
 <div id="footer">
-    <a href="#top">Back ↥</a>
+    <a href="#top">Back</a>
 </div>
 
 </body>
