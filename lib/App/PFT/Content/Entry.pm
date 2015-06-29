@@ -56,7 +56,8 @@ sub from_root() {
 }
 
 sub lookup {
-    my ($self, $kind, $hint) = @_;
+    my $self = shift;
+    my($kind, $hint) = @_;
 
     if ($kind eq 'blog') {
         if ($hint eq 'yesterday') {

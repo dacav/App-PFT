@@ -10,9 +10,12 @@ use File::Spec::Functions qw/catdir catfile abs2rel/;
 use File::Path qw/make_path/;
 use File::Slurp qw/write_file/;
 
+use Carp;
+
 use App::PFT::Content::Entry;
 use App::PFT::Content::Page;
 use App::PFT::Content::MonthPage;
+use App::PFT::Content::Blob;
 
 use App::PFT::Data::Date;
 use App::PFT::Data::Header;
@@ -204,16 +207,19 @@ sub link_months {
 sub lookup {
     my($self, %params) = @_;
 
-    print
-        "Looking for kind '$params{kind}' ",
+    if ($params{kind} eq 'pic') {
+        return App::PFT::Content::Blob->new(
+            path => catfile($self->dir_pics, $params{hint}),
+            -verify => 1,
+        );
+    }
+
+    croak
+        "Failed to search for kind '$params{kind}' ",
         "relative to '$params{relative_to}' ",
         $params{hint} ? "using hint '$params{hint}' " : 'no hint',
         "\n",
     ;
-
-    for my $k (%{$self->pages}) {
-        return $self->pages->{$k}
-    }
 }
 
 sub dir_templates() { catdir $_[0]->basepath, 'templates' }

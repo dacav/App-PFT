@@ -110,9 +110,12 @@ around BUILDARGS => sub {
         pic => do {
             my $from_pics = $tree->dir_pics;
             my $to_pics = catdir($build_path, 'pics');
-            # FIXME: probably this works bad.
             App::PFT::Util::ln $from_pics, $to_pics;
-            sub { catfile($to_pics, $_[1]) };
+            sub {
+                my $cur_content = shift;
+                my $got_content = $cur_content->lookup('pic', @_);
+                join('/', $base_url, $got_content->from_root)
+            };
         },
         page => sub {
             my $cur_content = shift;
