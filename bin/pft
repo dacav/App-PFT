@@ -46,6 +46,7 @@ use App::PFT::Cmd::Blog;
 use App::PFT::Cmd::Page;
 use App::PFT::Cmd::Make;
 use App::PFT::Cmd::Clean;
+use App::PFT::Cmd::Publish;
 
 use feature qw/say/;
 
@@ -55,6 +56,7 @@ my %COMMANDS = (
     init => \&App::PFT::Cmd::Init::main,
     make => \&App::PFT::Cmd::Make::main,
     clean => \&App::PFT::Cmd::Clean::main,
+    pub => \&App::PFT::Cmd::Publish::main,
 );
 
 unless(@ARGV) {

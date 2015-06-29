@@ -17,6 +17,8 @@ our @EXPORT_OK = qw/
     $SITE_TITLE
     $SITE_URL
     $SITE_HOME
+    $SITE_LOGIN
+    $SITE_PATH
     $INPUT_ENC
     $OUTPUT_ENC
     cfg_load
@@ -32,6 +34,8 @@ our $AUTHOR;
 our $SITE_TITLE;
 our $SITE_URL;
 our $SITE_HOME;
+our $SITE_LOGIN;
+our $SITE_PATH;
 our $INPUT_ENC;
 our $OUTPUT_ENC;
 
@@ -40,6 +44,8 @@ sub cfg_default {
     $SITE_TITLE = "My $0 website";
     $SITE_URL = 'http://example.org/';
     $SITE_HOME = 'Welcome';
+    $SITE_LOGIN = 'user@example.org';
+    $SITE_PATH = '/home/user/public-html/whatever';
     $INPUT_ENC = $OUTPUT_ENC = 'utf-8';
 }
 
@@ -49,6 +55,8 @@ sub cfg_dump {
         SiteTitle => $SITE_TITLE,
         SiteURL => $SITE_URL,
         SiteHome => $SITE_HOME,
+        SiteLogin => $SITE_LOGIN,
+        SitePath => $SITE_PATH,
         InputEnc => $INPUT_ENC,
         OutputEnc => $OUTPUT_ENC,
     };
@@ -76,6 +84,8 @@ sub cfg_load {
         $SITE_TITLE,
         $SITE_URL,
         $SITE_HOME,
+        $SITE_LOGIN,
+        $SITE_PATH,
         $INPUT_ENC,
         $OUTPUT_ENC,
     ) = check_assign $cfg,
@@ -83,6 +93,8 @@ sub cfg_load {
         'SiteTitle',
         'SiteURL',
         'SiteHome',
+        'SiteLogin',
+        'SitePath',
         'InputEnc',
         'OutputEnc',
     ;
