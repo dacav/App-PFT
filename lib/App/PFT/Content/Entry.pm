@@ -36,6 +36,11 @@ has next => (
     predicate => 'has_next',
 );
 
+sub hname {
+    my $self = shift;
+    'Entry "' . $self->fname . '" (' . $self->date->repr . ')';
+}
+
 sub cmp {
     my($self) = @_;
     $self->date->repr('') . $self->fname;

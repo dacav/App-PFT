@@ -25,6 +25,11 @@ sub from_root() {
     @out
 }
 
+sub hname {
+    my $self = shift;
+    'Page "' . $self->fname . '"';
+}
+
 sub template_name() { 'page' }
 
 no Moose;

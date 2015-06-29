@@ -21,6 +21,8 @@ has path => (
     isa => 'Str',
 );
 
+sub hname { shift->fname }
+
 sub from_root() {
     my $self = shift;
     my @out = (

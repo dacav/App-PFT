@@ -155,7 +155,7 @@ has pages => (
 
         for my $path (glob "$base/*") {
             $out{$path} = App::PFT::Content::Page->new(
-                self => $self,
+                tree => $self,
                 path => $path,
                 fname => abs2rel($path, $base),
             );
@@ -209,6 +209,7 @@ sub lookup {
 
     if ($params{kind} eq 'pic') {
         return App::PFT::Content::Blob->new(
+            tree => $self,
             path => catfile($self->dir_pics, $params{hint}),
             -verify => 1,
         );

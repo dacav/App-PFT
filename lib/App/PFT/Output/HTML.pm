@@ -214,7 +214,14 @@ sub build {
 
     # Order matters: link_months builds the structure.
     for my $e (@{$self->months}, $self->entries, $self->pages) {
-        $self->process($e);
+        eval {
+            $self->process($e);
+        };
+        if ($@) {
+            croak 'While compiling ', $e->hname, ": \n\t", $@;
+        } else {
+            say STDERR 'Compiled ', $e->hname;
+        }
     }
 }
 

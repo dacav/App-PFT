@@ -10,6 +10,11 @@ use Moose;
 
 extends 'App::PFT::Content::Base';
 
+sub hname {
+    my $self = shift;
+    sprintf('Month %04d-%02d', $self->year, $self->month);
+}
+
 has year => ( is=>'ro', isa => 'Int' );
 has month => ( is=>'ro', isa => 'Int' );
 

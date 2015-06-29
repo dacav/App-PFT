@@ -3,6 +3,8 @@ package App::PFT::Content::Base;
 use strict;
 use warnings;
 
+use Carp;
+
 use namespace::autoclean;
 use Moose;
 
@@ -12,7 +14,8 @@ sub has_next() { 0 }
 sub has_month() { 0 }
 sub has_links() { 0 }
 sub text() {''}
-sub date () { undef };
+sub date() { undef };
+sub hname() { confess "Undefined human name for ", shift }
 
 has tree => (
     isa => 'App::PFT::Struct::Tree',
