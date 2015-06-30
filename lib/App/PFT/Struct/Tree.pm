@@ -52,7 +52,7 @@ my $get_header = sub {
     if (my $hdr = $opts->{header}) {
         $hdr;
     } else {
-        my($title, $hide, $author) = @{$opts}{'title', 'hide', 'author'};
+        #my($title, $hide, $author) = @{$opts}{'title', 'hide', 'author'};
         App::PFT::Data::Header->new(%$opts);
     }
 };
@@ -212,6 +212,13 @@ sub lookup {
             tree => $self,
             path => catfile($self->dir_pics, $params{hint}),
             -verify => 1,
+        );
+    }
+
+    if ($params{kind} eq 'page') {
+        return $self->page(
+            title => $params{hint},
+            # TODO: support -verify for Content::Text
         );
     }
 
