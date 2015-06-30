@@ -40,7 +40,7 @@ sub edit() {
     system($ENV{EDITOR}, $path);
 
     if (-z $path) {
-        print STDERR "Removing file $path";
+        print STDERR 'Removing file', $path, "\n";
         unlink $path;
     }
 }
