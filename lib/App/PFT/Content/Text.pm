@@ -37,9 +37,9 @@ has fname => (is => 'ro', isa => 'Str');
 
 sub edit() {
     my $path = shift->path;
-    my $exit = system($ENV{EDITOR}, $path);
+    system($ENV{EDITOR}, $path);
 
-    if ($exit != 0 || -z $path) {
+    if (-z $path) {
         print STDERR "Removing file $path";
         unlink $path;
     }

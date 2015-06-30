@@ -81,19 +81,19 @@ sub from_root() {
 
 sub lookup {
     my $self = shift;
-    my($kind, $hint) = @_;
+    my($kind, @hints) = @_;
 
     if ($kind eq 'blog') {
-        if (my($jumps) = $hint =~ m|back(?:/(\d+))?|) {
+        if ($hints[0] eq 'back') {
             my $prev = $self->prev;
-            my $done = 0;
+            my $jumps = $hints[1];
             while ($jumps && $prev) {
                 $prev = $prev->prev;
                 $jumps --;
-                $done ++;
             }
             unless (defined $prev) {
-                croak "Cannot reach $hint: nothing after $done steps";
+                croak 'Cannot reach ', $hints[0],
+                    ': nothing after ', $hints[1] - $jumps, ' steps';
             }
             return $prev;
         }

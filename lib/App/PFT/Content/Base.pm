@@ -45,7 +45,7 @@ sub lookup {
     $self->tree->lookup(
         relative_to => $self,
         kind => shift,
-        hint => shift,
+        hint => \@_,
     )
 }
 

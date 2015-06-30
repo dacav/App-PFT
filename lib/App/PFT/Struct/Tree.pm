@@ -254,14 +254,14 @@ sub lookup {
     if ($params{kind} eq 'pic') {
         return App::PFT::Content::Blob->new(
             tree => $self,
-            path => catfile($self->dir_pics, $params{hint}),
+            path => catfile($self->dir_pics, @{$params{hint}}),
             -verify => 1,
         );
     }
 
     if ($params{kind} eq 'page') {
         return $self->page(
-            title => $params{hint},
+            title => $params{hint}->[0],
             # TODO: support -verify for Content::Text
         );
     }
@@ -269,7 +269,7 @@ sub lookup {
     croak
         "Failed to search for kind '$params{kind}' ",
         "relative to '$params{relative_to}' ",
-        $params{hint} ? "using hint '$params{hint}' " : 'no hint',
+        "@{$params{hint}}" ? "using hint '@{$params{hint}}' " : 'no hint',
         "\n",
     ;
 }

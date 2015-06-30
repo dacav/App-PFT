@@ -89,9 +89,9 @@ has links => (
     },
 );
 
-has lookups => (
+has lookup => (
     is => 'ro',
-    isa => 'HashRef[CodeRef]',
+    isa => 'CodeRef',
 );
 
 has backend => (
@@ -123,27 +123,22 @@ around BUILDARGS => sub {
     remove_tree $build_path;
     make_path $build_path;
 
-    $params{lookups} = {
-        pic => do {
-            my $from_pics = $tree->dir_pics;
-            my $to_pics = catdir($build_path, 'pics');
-            App::PFT::Util::ln $from_pics, $to_pics;
-            sub {
-                my $cur_content = shift;
-                my $got_content = $cur_content->lookup('pic', @_);
-                join('/', $base_url, $got_content->from_root)
-            };
-        },
-        page => sub {
+    $params{lookup} = do {
+        my $from_pics = $tree->dir_pics;
+        my $to_pics = catdir($build_path, 'pics');
+        App::PFT::Util::ln $from_pics, $to_pics;
+        sub {
             my $cur_content = shift;
-            my $got_content = $cur_content->lookup('page', @_);
-            join('/', $base_url, $got_content->from_root) . '.html';
-        },
-        blog => sub {
-            my $cur_content = shift;
-            my $got_content = $cur_content->lookup('blog', @_);
-            join('/', $base_url, $got_content->from_root) . '.html';
-        },
+            my $got_content = $cur_content->lookup(@_);
+            my $out = join('/', $base_url, $got_content->from_root);
+
+            my $type = shift;
+            if ($type eq 'page' || $type eq 'blog') {
+                $out .= '.html';
+            }
+
+            $out;
+        }
     };
 
     $class->$orig(%params);
@@ -165,16 +160,16 @@ sub mkhref {
 }
 
 sub resolve {
-    my $lookups = shift->lookups;
+    my $lookup = shift->lookup;
     my $curr_content = shift;
     my $str = shift;
 
     $str =~ s/<(a\s.*?href="):(page|blog|tag):(.*?)"/
-        '<' . $1 . $lookups->{$2}->($curr_content, $3) . '"'
+        '<' . $1 . $lookup->($curr_content, $2, split m|\/|, $3) . '"'
     /mge;
 
     $str =~ s/(<img\s.*?src="):pic:(.*?)(".*?>)/
-        my $h = $lookups->{pic}->($curr_content, $2);
+        my $h = $lookup->($curr_content, 'pic', $2);
         "<a href=\"$h\">$1$h$3<\/a>"
     /mge;
 
