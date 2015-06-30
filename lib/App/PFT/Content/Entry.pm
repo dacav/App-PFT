@@ -20,6 +20,8 @@ package App::PFT::Content::Entry;
 use strict;
 use warnings;
 
+use Carp;
+
 use namespace::autoclean;
 use Moose;
 
@@ -82,8 +84,18 @@ sub lookup {
     my($kind, $hint) = @_;
 
     if ($kind eq 'blog') {
-        if ($hint eq 'yesterday') {
-            return $self->prev;
+        if (my($jumps) = $hint =~ m|back(?:/(\d+))?|) {
+            my $prev = $self->prev;
+            my $done = 0;
+            while ($jumps && $prev) {
+                $prev = $prev->prev;
+                $jumps --;
+                $done ++;
+            }
+            unless (defined $prev) {
+                croak "Cannot reach $hint: nothing after $done steps";
+            }
+            return $prev;
         }
     }
 
