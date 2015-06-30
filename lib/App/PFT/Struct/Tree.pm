@@ -57,6 +57,33 @@ my $get_header = sub {
     }
 };
 
+sub latest_entry {
+    my $self = shift;
+    my $base = catfile $self->basepath, 'content', 'blog';
+    for my $l1 (sort {$b cmp $a} glob "$base/*") {
+        my($y,$m) = (abs2rel $l1, $base) =~ m/^(\d{4})-(\d{2})$/
+            or die "Junk in $base: $l1";
+
+        for my $l2 (sort {$b cmp $a} glob "$l1/*") {
+            my($d,$fn) = (abs2rel $l2, $l1) =~ m/^(\d{2})-(.*)$/
+                or die "Junk in $l1: $l2";
+
+            return App::PFT::Content::Entry->new(
+                tree => $self,
+                path => $l2,
+                fname => $fn,
+                date => App::PFT::Data::Date->new(
+                    year => $y,
+                    month => $m,
+                    day => $d,
+                )
+            );
+        }
+    }
+
+    croak "No entries";
+}
+
 sub entry {
     my($self, %opts) = @_;
 

@@ -39,6 +39,7 @@ sub main {
         'day|d=i'       => \$datespec{day},
         'hide=s'        => \$opts{hide},
         'author|a=s'    => \$opts{author},
+        'resume|r!'     => \$opts{resume},
         'help|h!'       => sub {
             pod2usage
                 -exitval => 1,
@@ -48,21 +49,26 @@ sub main {
         },
     );
 
-    unless (@ARGV) {
-        say STDERR "Usage: $0 blog [options] <title>";
-        exit 1;
-    }
-
     my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
-    my $entry = $tree->entry(
-        title => join(' ', @ARGV),
-        date => App::PFT::Data::Date->new(
-            %datespec,
-            -fill => 'now',
-        ),
-        %opts
-    );
+    my $entry;
 
+    if ($opts{resume}) {
+        $entry = $tree->latest_entry
+    } else {
+        unless (@ARGV) {
+            say STDERR "Usage: $0 blog [options] <title>";
+            exit 1;
+        }
+
+        $entry = $tree->entry(
+            title => join(' ', @ARGV),
+            date => App::PFT::Data::Date->new(
+                %datespec,
+                -fill => 'now',
+            ),
+            %opts
+        );
+    }
     $entry->edit;
 }
 
