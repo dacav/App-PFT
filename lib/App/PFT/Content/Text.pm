@@ -35,7 +35,15 @@ extends 'App::PFT::Content::Base';
 has path => (is => 'ro', isa => 'Str');
 has fname => (is => 'ro', isa => 'Str');
 
-sub edit() { system($ENV{EDITOR}, shift->path) }
+sub edit() {
+    my $path = shift->path;
+    my $exit = system($ENV{EDITOR}, $path);
+
+    if ($exit != 0 || -z $path) {
+        print STDERR "Removing file $path";
+        unlink $path;
+    }
+}
 
 sub title() { shift->header->title }
 
