@@ -56,7 +56,8 @@ sub main {
         'day|d=i'       => \$datespec{day},
         'hide=s'        => \$opts{hide},
         'author|a=s'    => \$opts{author},
-        'resume|r!'     => \$opts{resume},
+        'resume|r!'     => sub { $opts{back} = 0 },
+        'back=i'        => \$opts{back},
         'help|h!'       => sub {
             pod2usage
                 -exitval => 1,
@@ -69,8 +70,13 @@ sub main {
     my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
     my $entry;
 
-    if ($opts{resume}) {
-        $entry = $tree->latest_entry
+    if (defined $opts{back}) {
+        $entry = eval {
+            $tree->latest_entry($opts{back});
+        };
+        if ($@) {
+            die 'Cannot go back by ', $opts{back}, ': ', $@;
+        }
     } else {
         unless (@ARGV) {
             say STDERR "Usage: $0 blog [options] <title>";
@@ -86,6 +92,7 @@ sub main {
             %opts
         );
     }
+
     $entry->edit;
 }
 
