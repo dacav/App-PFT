@@ -76,6 +76,8 @@ my $get_header = sub {
 
 sub latest_entry {
     my $self = shift;
+    my $back = shift || 0;
+
     my $base = catfile $self->basepath, 'content', 'blog';
     for my $l1 (sort {$b cmp $a} glob "$base/*") {
         my($y,$m) = (abs2rel $l1, $base) =~ m/^(\d{4})-(\d{2})$/
@@ -84,6 +86,8 @@ sub latest_entry {
         for my $l2 (sort {$b cmp $a} glob "$l1/*") {
             my($d,$fn) = (abs2rel $l2, $l1) =~ m/^(\d{2})-(.*)$/
                 or die "Junk in $l1: $l2";
+
+            next if $back--;
 
             return App::PFT::Content::Entry->new(
                 tree => $self,
