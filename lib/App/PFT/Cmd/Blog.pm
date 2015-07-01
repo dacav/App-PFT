@@ -54,7 +54,6 @@ sub main {
         'year|y=i'      => \$datespec{year},
         'month|m=s'     => \$datespec{month},
         'day|d=i'       => \$datespec{day},
-        'hide=s'        => \$opts{hide},
         'author|a=s'    => \$opts{author},
         'resume|r!'     => sub { $opts{back} = 0 },
         'back=i'        => \$opts{back},

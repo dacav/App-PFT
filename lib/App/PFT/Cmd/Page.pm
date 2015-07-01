@@ -51,7 +51,6 @@ sub main {
     );
     my %datespec;
     GetOptions(
-        'hide=s'        => \$opts{hide},
         'author|a=s'    => \$opts{author},
         'help|h!'       => sub {
             pod2usage

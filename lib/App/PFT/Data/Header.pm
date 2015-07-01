@@ -35,12 +35,6 @@ has title => (
     is => 'ro',
 );
 
-has hide => (
-    isa => 'Maybe[Str]',
-    is => 'ro',
-    predicate => 'is_hidden',
-);
-
 has template => (
     isa => 'Str',
     is => 'ro',
@@ -64,7 +58,6 @@ sub dump() {
     my($self) = @_;
     YAML::Tiny::Dump {
         Title => $self->title(),
-        Hide => $self->hide(),
         Author => $self->author(),
         Encoding => $self->encoding(),
         Template => $self->template(),
@@ -106,9 +99,6 @@ around BUILDARGS => sub {
 
         my $enc = $params{encoding} = $hdr->{Encoding} || 'utf-8';
         $params{title} = decode($enc, $hdr->{Title});
-        if (my $hide = $hdr->{Hide}) {
-            $params{hide} = decode($enc, $hide);
-        }
         $params{author} = decode($enc, $hdr->{Author}) || 'ANONYMOUS';
     }
 
