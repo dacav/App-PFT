@@ -102,17 +102,17 @@ around BUILDARGS => sub {
             }
             eval { YAML::Tiny::Load($text) };
         };
-        confess $@ if $@;
+        croak $@ if $@;
 
-        my $enc = $params{encoding} = $hdr->{Encoding};
+        my $enc = $params{encoding} = $hdr->{Encoding} || 'utf-8';
         $params{title} = decode($enc, $hdr->{Title});
         if (my $hide = $hdr->{Hide}) {
             $params{hide} = decode($enc, $hide);
         }
-        $params{author} = decode($enc, $hdr->{Author});
+        $params{author} = decode($enc, $hdr->{Author}) || 'ANONYMOUS';
     }
 
-    confess 'Missing title' unless $params{title};
+    croak 'Missing title' unless $params{title};
     $class->$orig(%params);
 };
 
