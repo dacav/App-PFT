@@ -52,10 +52,7 @@ has months => (
     is => 'ro',
     isa => 'ArrayRef[App::PFT::Content::MonthPage]',
     lazy => 1,
-    default => sub {
-        my @months = shift->tree->link_months;
-        \@months;
-    }
+    default => sub { scalar shift->tree->link_months },
 );
 
 use Data::Dumper;
