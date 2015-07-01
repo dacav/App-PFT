@@ -211,7 +211,7 @@ sub process {
     my $fn = catfile($self->build_path, $content->from_root) . '.html';
     make_path dirname($fn), { verbose => 1 };
     $be->process(
-        $content->header->template . '.html',
+        $content->template . '.html',
         $vars,
         (IO::File->new($fn, 'w') or die "Unable to open $fn: $!")
     ) or croak

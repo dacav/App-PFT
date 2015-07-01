@@ -102,7 +102,7 @@ sub lookup {
     $self->SUPER::lookup(@_);
 }
 
-sub template_name() { 'entry' }
+sub template() { 'entry' }
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

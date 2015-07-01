@@ -35,11 +35,6 @@ has title => (
     is => 'ro',
 );
 
-has template => (
-    isa => 'Str',
-    is => 'ro',
-);
-
 has author => (
     isa => 'Maybe[Str]',
     is => 'ro',
@@ -54,13 +49,20 @@ has encoding => (
     default => sub { $INPUT_ENC },
 );
 
+has tags => (
+    isa => 'ArrayRef[Str]',
+    is => 'ro',
+    lazy => 1,
+    default => sub {[]},
+);
+
 sub dump() {
     my($self) = @_;
     YAML::Tiny::Dump {
-        Title => $self->title(),
-        Author => $self->author(),
-        Encoding => $self->encoding(),
-        Template => $self->template(),
+        Title => $self->title,
+        Author => $self->author,
+        Encoding => $self->encoding,
+        Tags => $self->tags,
     }
 }
 
@@ -100,6 +102,12 @@ around BUILDARGS => sub {
         my $enc = $params{encoding} = $hdr->{Encoding} || 'utf-8';
         $params{title} = decode($enc, $hdr->{Title});
         $params{author} = decode($enc, $hdr->{Author}) || 'ANONYMOUS';
+
+        my $tags = $hdr->{Tags};
+        $params{tags} = ref $tags eq 'ARRAY' ? $tags
+                      : defined $tags ? [$tags]
+                      : []
+                      ;
     }
 
     croak 'Missing title' unless $params{title};

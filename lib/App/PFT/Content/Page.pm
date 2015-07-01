@@ -47,7 +47,7 @@ sub hname {
     'Page "' . $self->fname . '"';
 }
 
-sub template_name() { 'page' }
+sub template() { 'page' }
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

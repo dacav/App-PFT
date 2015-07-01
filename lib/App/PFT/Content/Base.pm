@@ -49,6 +49,8 @@ sub lookup {
     )
 }
 
+sub template() { 'gen' }
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
