@@ -31,8 +31,9 @@ use Carp;
 
 use App::PFT::Content::Entry;
 use App::PFT::Content::Page;
-use App::PFT::Content::MonthPage;
 use App::PFT::Content::Blob;
+use App::PFT::Content::MonthPage;
+use App::PFT::Content::TagPage;
 
 use App::PFT::Data::Date;
 use App::PFT::Data::Header;
@@ -221,6 +222,24 @@ has pages => (
 );
 
 sub list_pages { values %{shift->pages} }
+
+sub link_tags {
+    my $self = shift;
+    my %tags;
+
+    for my $content ($self->list_entries, $self->list_pages) {
+        for my $tname (@{$content->header->tags}) {
+            my $t = $tags{$tname};
+            unless (defined $t) {
+                $t = App::PFT::Content::TagPage->new(tagname => $tname);
+                $tags{$tname} = $t;
+            }
+            $t->add_content($content);
+        }
+    }
+
+    values %tags;
+}
 
 sub link_months {
     my $self = shift;

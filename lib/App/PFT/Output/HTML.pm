@@ -239,9 +239,16 @@ sub process {
 
 sub build {
     my $self = shift;
-
-    $self->schedule->($_) foreach ($self->entries, $self->pages, @{$self->months});
     my $next = $self->next;
+    my $sched = $self->schedule;
+
+    &$sched($_) foreach (
+        $self->entries,
+        $self->pages,
+        @{$self->months},
+        $self->tree->link_tags,
+    );
+
     while (my $e = &$next()) {
         eval {
             $self->process($e);
