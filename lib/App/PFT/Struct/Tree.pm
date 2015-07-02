@@ -231,7 +231,10 @@ sub link_tags {
         for my $tname (@{$content->header->tags}) {
             my $t = $tags{$tname};
             unless (defined $t) {
-                $t = App::PFT::Content::TagPage->new(tagname => $tname);
+                $t = App::PFT::Content::TagPage->new(
+                    tree => $self,
+                    tagname => $tname,
+                );
                 $tags{$tname} = $t;
             }
             $t->add_content($content);
