@@ -178,6 +178,11 @@ __DATA__
             font-size : 1em;
         }
 
+        div#sitemap h2 {
+            font-size : 1em;
+            font-style : italic;
+        }
+
         h1#sitetitle {
             margin-bottom : 1em;
             border-bottom : 1px solid cornflowerblue;
@@ -194,6 +199,7 @@ __DATA__
         div#pagetitle h3 {
             font-size : 1em;
             display : inline;
+            font-style : italic;
         }
 
         div#content {
@@ -240,21 +246,10 @@ __DATA__
 <h1 id="sitetitle">[% site.title %]</h1>
 
 <div id="sitemap" class="side">
-  [% IF links.backlog %]
-  <h1>Last 5 entries:</h1>
-  <ul>
-    [% FOREACH e = links.backlog; IF loop.count > 5 BREAK END %]
-      <li>
-        <a href="[% e.href %]">
-          [% e.slug %]
-        </a>
-      </li>
-    [% END %]
-  </ul>
-  [% END %]
+  <h1>Site Map:</h1>
 
   [% IF links.pages %]
-  <h1>Pages:</h1>
+  <h2>Pages:</h2>
   <ul>
     [% FOREACH p = links.pages %]
       <li><a href="[% p.href %]">[% p.slug %]</a></li>
@@ -263,7 +258,7 @@ __DATA__
   [% END %]
 
   [% IF links.backlog %]
-  <h1>Last 5 entries:</h1>
+  <h2>Last 5 entries:</h2>
   <ul>
     [% FOREACH e = links.backlog; IF loop.count > 5 BREAK END %]
       <li>
@@ -276,7 +271,7 @@ __DATA__
   [% END %]
 
   [% IF links.months %]
-  <h1>Last 5 months:</h1>
+  <h2>Last 5 months:</h2>
   <ul>
     [% FOREACH m = links.months; IF loop.count > 5 BREAK END %]
       <li>
@@ -287,7 +282,7 @@ __DATA__
   [% END %]
 
   [% IF links.tags %]
-  <h1>All the tags</h1>
+  <h2>All the tags</h2>
   <ul>
     [% FOREACH t = links.tags %]
       <li>
