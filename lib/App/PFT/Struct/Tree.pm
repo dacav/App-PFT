@@ -127,6 +127,7 @@ sub entry {
     unless ($opts{'-noinit'}) {
         $textinit->($basedir, $path, $hdr);
         $self->entries->{$path} = $out if $self->entries_loaded;
+        # FIXME: Do we need to rewire it in linking?
     }
     $out;
 }

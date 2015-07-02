@@ -55,8 +55,6 @@ has months => (
     default => sub { scalar shift->tree->link_months },
 );
 
-use Data::Dumper;
-
 has links => (
     is => 'ro',
     isa => 'HashRef',
