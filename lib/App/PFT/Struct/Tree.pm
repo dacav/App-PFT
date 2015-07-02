@@ -141,15 +141,16 @@ has entries => (
         my %out;
         my $base = catfile $self->basepath, 'content', 'blog';
 
-        for my $l1 (glob "$base/*") {
+        my $prev;
+        for my $l1 (sort { $a cmp $b } glob "$base/*") {
             my($y,$m) = (abs2rel $l1, $base) =~ m/^(\d{4})-(\d{2})$/
                 or die "Junk in $base: $l1";
 
-            for my $l2 (glob "$l1/*") {
+            for my $l2 (sort { $a cmp $b } glob "$l1/*") {
                 my($d,$fn) = (abs2rel $l2, $l1) =~ m/^(\d{2})-(.*)$/
                     or die "Junk in $l1: $l2";
 
-                $out{$l2} = App::PFT::Content::Entry->new(
+                my $e = App::PFT::Content::Entry->new(
                     tree => $self,
                     path => $l2,
                     fname => $fn,
@@ -159,6 +160,12 @@ has entries => (
                         day => $d,
                     )
                 );
+
+                if (defined $prev) {
+                    $e->prev($prev);
+                    $prev->next($e);
+                }
+                $out{$l2} = $prev = $e;
             }
         }
 
@@ -224,7 +231,7 @@ sub link_months {
         @es
     ;
 
-    my($prev_e, $prev_m, @out);
+    my($prev_m, @out);
     for my $k (sort keys %months) {
         my $mp = App::PFT::Content::MonthPage->new(
             tree => $self,
@@ -232,13 +239,8 @@ sub link_months {
             month => 0 + substr($k, 4, 2),
         );
         for my $e (@{$months{$k}}) {
-            if (defined $prev_e) {
-                $e->prev($prev_e);
-                $prev_e->next($e);
-            }
             $mp->add_entries($e);
             $e->month($mp);
-            $prev_e = $e;
         }
         if ($prev_m) {
             $mp->prev($prev_m);
