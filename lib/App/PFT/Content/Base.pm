@@ -25,13 +25,30 @@ use Carp;
 use namespace::autoclean;
 use Moose;
 
+# Path to reach the content from the site. Identifies the content from the
+# filesystem perspective. Returns a list of steps in the filesystem,
+# something you would join('/', ...) on. Conventionally terminated by
+# 'undef'.
 sub from_root() { undef }
+
+# Universally identify the content. Incidentally the filesystem already
+# does it, so if we just join from_root over '/' we get an unique
+# identifier for the content, site-wise.
+has uid => (
+    isa => 'Str',
+    is => 'ro',
+    lazy => 1,
+    default => sub { join '/', shift->from_root },
+);
+
 sub has_prev() { 0 }
 sub has_next() { 0 }
 sub has_month() { 0 }
 sub has_links() { 0 }
 sub text() {''}
-sub date() { undef };
+sub date() { undef }
+
+# Human name: identifies the content, can be understood by a human
 sub hname() { confess "Undefined human name for ", shift }
 
 has tree => (
