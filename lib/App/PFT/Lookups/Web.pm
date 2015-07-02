@@ -25,8 +25,25 @@ use Carp;
 use Exporter qw/import/;
 our @EXPORT_OK = qw/weblookup/;
 
+sub search_duckduckgo {
+    my $hints = shift;
+    my $bang = shift @$hints;
+
+    my $url = 'https://duckduckgo.com/lite/?q=';
+    $url .= '%21' . $bang if $bang;
+    unshift @$hints, $url;
+    join "%20", @$hints;
+}
+
 sub weblookup {
-    return 'http://example.org'
+    my $hints = shift;
+    my $service = shift @$hints;
+
+    if ($service eq 'ddg') {
+        return search_duckduckgo $hints;
+    }
+
+    croak "Web-lookup: Unknown service $service ($service @$hints)";
 }
 
 1;
