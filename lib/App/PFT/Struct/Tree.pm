@@ -36,6 +36,7 @@ use App::PFT::Content::Blob;
 
 use App::PFT::Data::Date;
 use App::PFT::Data::Header;
+use App::PFT::Lookups::Web qw/weblookup/;
 
 use App::PFT::Util;
 
@@ -267,6 +268,10 @@ sub lookup {
             title => $params{hint}->[0],
             # TODO: support -verify for Content::Text
         );
+    }
+
+    if ($params{kind} eq 'web') {
+        return weblookup($params{hint});
     }
 
     croak

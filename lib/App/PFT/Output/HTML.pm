@@ -127,14 +127,22 @@ around BUILDARGS => sub {
         sub {
             my $cur_content = shift;
             my $got_content = $cur_content->lookup(@_);
-            my $out = join('/', $base_url, $got_content->from_root);
 
-            my $type = shift;
-            if ($type eq 'page' || $type eq 'blog') {
-                $out .= '.html';
+            if (ref $got_content) {
+                # Got an internal link, resolve it w.r.t $base_url.
+
+                my $out = join('/', $base_url, $got_content->from_root);
+
+                my $type = shift;
+                if ($type eq 'page' || $type eq 'blog') {
+                    # If this is a generated page, it's an HTML.
+                    $out .= '.html';
+                }
+                return $out;
             }
 
-            $out;
+            # Else this is an URL
+            $got_content;
         }
     };
 
@@ -161,7 +169,7 @@ sub resolve {
     my $curr_content = shift;
     my $str = shift;
 
-    $str =~ s/<(a\s.*?href="):(page|blog|tag):(.*?)"/
+    $str =~ s/<(a\s.*?href="):(page|blog|tag|web):(.*?)"/
         '<' . $1 . $lookup->($curr_content, $2, split m|\/|, $3) . '"'
     /mge;
 
