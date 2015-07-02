@@ -230,19 +230,20 @@ sub link_tags {
 
     for my $content ($self->list_entries, $self->list_pages) {
         for my $tname (@{$content->header->tags}) {
-            my $t = $tags{$tname};
+            my $lctname = lc $tname;
+            my $t = $tags{$lctname};
             unless (defined $t) {
                 $t = App::PFT::Content::TagPage->new(
                     tree => $self,
-                    tagname => $tname,
+                    tagname => ucfirst($tname),
                 );
-                $tags{$tname} = $t;
+                $tags{$lctname} = $t;
             }
             $t->add_content($content);
         }
     }
 
-    values %tags;
+    wantarray ? values %tags : \%tags;
 }
 
 sub link_months {
