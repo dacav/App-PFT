@@ -235,6 +235,19 @@ __DATA__
 <h1 id="sitetitle">[% site.title %]</h1>
 
 <div id="sitemap" class="side">
+  [% IF links.backlog %]
+  <h1>Last 5 entries:</h1>
+  <ul>
+    [% FOREACH e = links.backlog; IF loop.count > 5 BREAK END %]
+      <li>
+        <a href="[% e.href %]">
+          [% e.slug %]
+        </a>
+      </li>
+    [% END %]
+  </ul>
+  [% END %]
+
   [% IF links.pages %]
   <h1>Pages:</h1>
   <ul>
@@ -263,6 +276,17 @@ __DATA__
     [% FOREACH m = links.months; IF loop.count > 5 BREAK END %]
       <li>
         <a href="[% m.href %]">[% m.slug %]</a>
+      </li>
+    [% END %]
+  </ul>
+  [% END %]
+
+  [% IF links.tags %]
+  <h1>All the tags</h1>
+  <ul>
+    [% FOREACH t = links.tags %]
+      <li>
+        <a href="[% t.href %]">[% t.slug %]</a>
       </li>
     [% END %]
   </ul>

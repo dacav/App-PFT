@@ -58,13 +58,20 @@ has months => (
     default => sub { scalar shift->tree->link_months },
 );
 
+has tags => (
+    is => 'ro',
+    isa => 'HashRef[App::PFT::Content::TagPage]',
+    lazy => 1,
+    default => sub { scalar shift->tree->link_tags },
+);
+
 has links => (
     is => 'ro',
     isa => 'HashRef',
     lazy => 1,
     default => sub {
         my $self = shift;
-        my(@pages, @entries, @months);
+        my(@pages, @entries, @months, @tags);
 
         for my $p ($self->pages) {
             push @pages, $self->mkhref($p);
@@ -79,10 +86,15 @@ has links => (
             push @months, $self->mkhref($m);
         }
 
+        for my $t (values %{$self->tags}) {
+            push @tags, $self->mkhref($t);
+        }
+
         {
             pages => \@pages,
             backlog => \@entries,
             months => [reverse @months],
+            tags => \@tags,
         }
     },
 );

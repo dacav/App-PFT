@@ -69,12 +69,12 @@ has header => (
     default => sub {
         my $self = shift;
         App::PFT::Data::Header->new(
-            title => $self->hname
+            title => $self->tagname
         );
     }
 );
 
-sub title() { shift->hname }
+sub title() { shift->tagname }
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
