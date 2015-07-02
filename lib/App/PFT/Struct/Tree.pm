@@ -31,8 +31,9 @@ use Carp;
 
 use App::PFT::Content::Entry;
 use App::PFT::Content::Page;
-use App::PFT::Content::MonthPage;
 use App::PFT::Content::Blob;
+use App::PFT::Content::MonthPage;
+use App::PFT::Content::TagPage;
 
 use App::PFT::Data::Date;
 use App::PFT::Data::Header;
@@ -128,6 +129,7 @@ sub entry {
     unless ($opts{'-noinit'}) {
         $textinit->($basedir, $path, $hdr);
         $self->entries->{$path} = $out if $self->entries_loaded;
+        # FIXME: Do we need to rewire it in linking?
     }
     $out;
 }
@@ -142,15 +144,16 @@ has entries => (
         my %out;
         my $base = catfile $self->basepath, 'content', 'blog';
 
-        for my $l1 (glob "$base/*") {
+        my $prev;
+        for my $l1 (sort { $a cmp $b } glob "$base/*") {
             my($y,$m) = (abs2rel $l1, $base) =~ m/^(\d{4})-(\d{2})$/
                 or die "Junk in $base: $l1";
 
-            for my $l2 (glob "$l1/*") {
+            for my $l2 (sort { $a cmp $b } glob "$l1/*") {
                 my($d,$fn) = (abs2rel $l2, $l1) =~ m/^(\d{2})-(.*)$/
                     or die "Junk in $l1: $l2";
 
-                $out{$l2} = App::PFT::Content::Entry->new(
+                my $e = App::PFT::Content::Entry->new(
                     tree => $self,
                     path => $l2,
                     fname => $fn,
@@ -160,6 +163,12 @@ has entries => (
                         day => $d,
                     )
                 );
+
+                if (defined $prev) {
+                    $e->prev($prev);
+                    $prev->next($e);
+                }
+                $out{$l2} = $prev = $e;
             }
         }
 
@@ -215,6 +224,27 @@ has pages => (
 
 sub list_pages { values %{shift->pages} }
 
+sub link_tags {
+    my $self = shift;
+    my %tags;
+
+    for my $content ($self->list_entries, $self->list_pages) {
+        for my $tname (@{$content->header->tags}) {
+            my $t = $tags{$tname};
+            unless (defined $t) {
+                $t = App::PFT::Content::TagPage->new(
+                    tree => $self,
+                    tagname => $tname,
+                );
+                $tags{$tname} = $t;
+            }
+            $t->add_content($content);
+        }
+    }
+
+    values %tags;
+}
+
 sub link_months {
     my $self = shift;
     my @es = sort {$a->cmp cmp $b->cmp} $self->list_entries;
@@ -225,7 +255,7 @@ sub link_months {
         @es
     ;
 
-    my($prev_e, $prev_m, @out);
+    my($prev_m, @out);
     for my $k (sort keys %months) {
         my $mp = App::PFT::Content::MonthPage->new(
             tree => $self,
@@ -233,13 +263,8 @@ sub link_months {
             month => 0 + substr($k, 4, 2),
         );
         for my $e (@{$months{$k}}) {
-            if (defined $prev_e) {
-                $e->prev($prev_e);
-                $prev_e->next($e);
-            }
             $mp->add_entries($e);
             $e->month($mp);
-            $prev_e = $e;
         }
         if ($prev_m) {
             $mp->prev($prev_m);

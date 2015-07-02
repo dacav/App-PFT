@@ -48,14 +48,15 @@ sub build_path { shift->tree->dir_build }
 sub pages { shift->tree->list_pages }
 sub entries { shift->tree->list_entries }
 
+has schedule => (is => 'ro', isa => 'CodeRef');
+has next => (is => 'ro', isa => 'CodeRef');
+
 has months => (
     is => 'ro',
     isa => 'ArrayRef[App::PFT::Content::MonthPage]',
     lazy => 1,
     default => sub { scalar shift->tree->link_months },
 );
-
-use Data::Dumper;
 
 has links => (
     is => 'ro',
@@ -146,6 +147,24 @@ around BUILDARGS => sub {
         }
     };
 
+    my(@todo, %done);
+
+    $params{schedule} = sub {
+        my $content = shift;
+        push @todo, $content unless (exists $done{$content->uid});
+    };
+
+    $params{next} = sub {
+        return undef unless @todo;
+
+        my $content = pop @todo;
+        my $uid = $content->uid;
+        die if exists $done{$uid};
+        $done{$uid} = $content;
+
+        $content;
+    };
+
     $class->$orig(%params);
 };
 
@@ -228,9 +247,17 @@ sub process {
 
 sub build {
     my $self = shift;
+    my $next = $self->next;
+    my $sched = $self->schedule;
 
-    # Order matters: link_months builds the structure.
-    for my $e (@{$self->months}, $self->entries, $self->pages) {
+    &$sched($_) foreach (
+        $self->entries,
+        $self->pages,
+        @{$self->months},
+        $self->tree->link_tags,
+    );
+
+    while (my $e = &$next()) {
         eval {
             $self->process($e);
         };
