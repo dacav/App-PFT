@@ -191,6 +191,11 @@ __DATA__
             font-size : 1em;
         }
 
+        div#pagetitle h3 {
+            font-size : 1em;
+            display : inline;
+        }
+
         div#content {
             font-family : serif;
             width : 65%;
@@ -321,6 +326,10 @@ __DATA__
   <h1>[% content.title %]</h1>
   [% IF content.date %]
   <h2>[% content.date.y %] / [% content.date.m %] / [% content.date.d %]</h2>
+  [% END %]
+  [% IF content.tags %]
+  <h3>Tags:</h3>
+  [%   FOREACH t = content.tags %] <a href="[% t.href %]">[% t.slug %]</a> [% END %]
   [% END %]
 </div>
 

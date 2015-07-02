@@ -226,6 +226,12 @@ sub process {
         links => \%links,
     };
 
+    my @tags;
+    for my $t (@{$content->header->tags}) {
+        push @tags, $self->mkhref($self->tags->{lc $t});
+    }
+    $vars->{content}{tags} = \@tags if @tags;
+
     @links{keys %{$self->links}} = values %{$self->links};
     $links{prev} = $self->mkhref($content->prev) if $content->has_prev;
     $links{next} = $self->mkhref($content->next) if $content->has_next;
