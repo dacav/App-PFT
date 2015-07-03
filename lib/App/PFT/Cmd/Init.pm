@@ -138,7 +138,6 @@ __DATA__
             margin : 0;
             padding : 0;
             font-family : sans-serif;
-            line-height : 1.5em;
         }
 
         body {
@@ -146,6 +145,8 @@ __DATA__
             padding : 5em 5em 0;
             min-width : 40em;
             max-width : 50em;
+            font-size : 10pt;
+            line-height : 1.3em;
         }
 
         h1,h2,h3,h4,h5,h6 {
@@ -170,8 +171,8 @@ __DATA__
         }
 
         div#sitemap {
-            margin-top : 2em;
-            width : 25%;
+            margin-top : 3em;
+            width : 30%;
         }
 
         div#sitemap h1 {
@@ -186,6 +187,8 @@ __DATA__
         h1#sitetitle {
             margin-bottom : 1em;
             border-bottom : 1px solid cornflowerblue;
+            text-align : right;
+            clear : both;
         }
 
         div#pagetitle {
@@ -200,6 +203,14 @@ __DATA__
             font-size : 1em;
             display : inline;
             font-style : italic;
+        }
+
+        div#navigation ul {
+            list-style-type : none;
+        }
+
+        div#navigation li h3 {
+            display : inline;
         }
 
         div#content {
@@ -292,40 +303,44 @@ __DATA__
   </ul>
   [% END %]
 
-  [% IF (links.root || links.prev || links.next) %]
-  <h1>Navigation:</h1>
-  <ul>
-    [% IF links.root %]
-    <li id="root">
-      Up: <a href="[% links.root.href %]">[% links.root.slug %]</a>
-    </li>
-    [% END %]
-
-    [% IF links.prev %]
-    <li id="prev">
-      Prev: <a href="[% links.prev.href %]">[% links.prev.slug %]</a>
-    </li>
-    [% END %]
-
-    [% IF links.next %]
-    <li id="next">
-      Next: <a href="[% links.next.href %]">[% links.next.slug %]</a>
-    </li>
-    [% END %]
-  </ul>
-  [% END %]
-
 </div>
 
 <div id="pagetitle">
   <h1>[% content.title %]</h1>
   [% IF content.date %]
-  <h2>[% content.date.y %] / [% content.date.m %] / [% content.date.d %]</h2>
+  <h2>
+      <a href="[% links.root.href %]">[% content.date.y %] / [% content.date.m %]</a> / [% content.date.d %]
+  </h2>
   [% END %]
-  [% IF content.tags %]
-  <h3>Tags:</h3>
-  [%   FOREACH t = content.tags %] <a href="[% t.href %]">[% t.slug %]</a> [% END %]
-  [% END %]
+</div>
+
+<div id="navigation">
+  <ul>
+    [% IF links.prev %]
+    <li>
+      <h3>Prev:</h3>
+      <a href="[% links.prev.href %]">[% links.prev.slug %]</a>
+    </li>
+    [% END %]
+
+    [% IF links.next %]
+    <li>
+      <h3>Next:</h3>
+      <a href="[% links.next.href %]">[% links.next.slug %]</a>
+    </li>
+    [% END %]
+
+    [% IF content.tags %]
+    <li>
+      <h3>Tags:</h3>
+      <ul>
+        [% FOREACH t = content.tags %]
+          <li><a href="[% t.href %]">[% t.slug %]</a></li>
+        [% END %]
+      </uL>
+    </li>
+    [% END %]
+  </ul>
 </div>
 
 <div id="content">
