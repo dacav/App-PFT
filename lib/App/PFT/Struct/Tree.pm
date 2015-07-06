@@ -291,7 +291,7 @@ sub lookup {
 
     if ($params{kind} eq 'page') {
         return $self->page(
-            title => $params{hint}->[0],
+            title => join(' ', @{$params{hint}}),
             # TODO: support -verify for Content::Text
         );
     }
