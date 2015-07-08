@@ -93,8 +93,8 @@ mangling the title:
 
     $title =~ s/\W/-/g;    # all the non-word characters replaced by '-'
     $title =~ s/--+/-/g;   # multiple '-' are packed together
-    $title =~ s/-*$//;     # trailing '-' are dropped)
-    $basename = lc $title; # everything is lower-cased)
+    $title =~ s/-*$//;     # trailing '-' are dropped
+    $basename = lc $title; # everything is lower-cased
 
 =head1 CONTENT FILE FORMAT
 
