@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 #
 # Copyright 2014 - Giovanni Simoni
-# 
+#
 # This file is part of PFT.
 #
 # PFT is free software: you can redistribute it and/or modify it under the
@@ -67,10 +67,10 @@ entry or a page is edited. Content files are always positioned under the
 C<I<ROOT>/content> directory, where I<ROOT> indicates the filesystem
 location where the C<pft init> command was run for initialization.
 
-Content files are made of plain text. A first section is a YAML header
+Content files are made of plain text. A first section is a I<YAML> header
 representing the configuration for the content. The header is followed by
 a line with three dashes (C<--->) which marks the beginning of the actual
-content document.  The document will be parsed as MultiMarkdown when
+content document.  The document will be parsed as I<MultiMarkdown> when
 compiled.
 
 =head2 Special references handling
@@ -125,7 +125,7 @@ provided name can be:
 
 The actual file name of the content in C<ROOT/content/pages>;
 
-=item * 
+=item *
 
 Any title which results in the correct file name after mangling (see the
 B<Title Mangling> section). Mind about spaces, which must be replaced by
@@ -179,21 +179,21 @@ section is a reference of supported services.
 
 C<:web:ddg/I<bang>/I<param>/I<param>/...>
 
-Search query on the Duck Duck Go search engine. The first parameter is
-used for Duck Duck Go's Bang syntax, and can be empty in order not to use 
-any Bang.
+Search query on the I<Duck Duck Go> search engine. The first parameter is
+used for I<Duck Duck Go>'s Bang syntax, and can be empty in order not to
+use any Bang.
 
 Example: search C<linux howto> on Duck Duck Go:
 
     :web:ddg//linux/howto
 
-Exmaple: search C<linux howto> with the C<!yt> bang (redirects search
-on YouTube):
+Example: search C<linux howto> with the C<!yt> bang (redirects search
+on I<YouTube>):
 
     :web:ddg/yt/linux/howto
 
-Exmaple: search C<linux howto> with the C<!so> bang (redirects search
-on StackOverflow):
+Example: search C<linux howto> with the C<!so> bang (redirects search
+on I<StackOverflow>):
 
     :web:ddg/so/linux/howto
 
@@ -273,6 +273,6 @@ if (my $root = findroot type=>'file', name=>$CONF_FILENAME) {
     cfg_dump '.';
 }
 
-my $call = $COMMANDS{$command} or die "Unknown command $command"; 
+my $call = $COMMANDS{$command} or die "Unknown command $command";
 
 $call->();
