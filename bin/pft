@@ -52,20 +52,55 @@ For options of a specific command I<cmd> use C<pft I<cmd> --help>
 
 =head1 FILESYSTEM LAYOUT
 
+A new site can be initialized by running the C<pft init> command inside a
+directory. In this document such directory will be conveniently called
+I<ROOT>.
+
+The initialization command produces the following filesystem structure:
+
+    ROOT
+    ├── content
+    │   ├── attachments
+    │   ├── blog
+    │   ├── pages
+    │   └── pics
+    ├── inject
+    ├── pft.yaml
+    └── templates
+        ├── entry.html
+        ├── gen.html
+        └── page.html
+
+
 =head2 Title Mangling
 
-    my $title = "The User's Original Title";
-    $title =~ s/\W/-/g;
-    $title =~ s/--+/-/g;
-    $title =~ s/-*$//;
-    return lc $title;
+The C<pft blog> and C<pft page> commands can be used to generate new blog
+entries and pages respectively. Besides options, both require a title to
+be specified in order to enable editing. The title is obtained by joining
+the non-option parameters into a space separated string.
+
+For example, the command
+
+    pft page [...options...] The "User's" Original Title
+
+Will result into the following title:
+
+    $title = "The User's Original Title";
+
+The original title is retained in the header of the generated content
+file, while the file where the content will be stored is named by
+mangling the title:
+
+    $title =~ s/\W/-/g;    # all the non-word characters replaced by '-'
+    $title =~ s/--+/-/g;   # multiple '-' are packed together
+    $title =~ s/-*$//;     # trailing '-' are dropped)
+    $basename = lc $title; # everything is lower-cased)
 
 =head1 CONTENT FILE FORMAT
 
 The skeleton of a content file is usually created by B<pft> when a blog
 entry or a page is edited. Content files are always positioned under the
-C<I<ROOT>/content> directory, where I<ROOT> indicates the filesystem
-location where the C<pft init> command was run for initialization.
+C<I<ROOT>/content> directory.
 
 Content files are made of plain text. A first section is a I<YAML> header
 representing the configuration for the content. The header is followed by
