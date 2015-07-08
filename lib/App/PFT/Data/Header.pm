@@ -71,8 +71,7 @@ sub flat_title() {
     $out =~ s/\W/-/g;
     $out =~ s/--+/-/g;
     $out =~ s/-*$//;
-    $out =~ y/[A-Z]/[a-z]/;
-    $out;
+    lc $out;
 }
 
 around BUILDARGS => sub {
