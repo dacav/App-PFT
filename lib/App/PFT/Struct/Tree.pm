@@ -285,6 +285,7 @@ sub lookup {
         return App::PFT::Content::Blob->new(
             tree => $self,
             path => catfile($self->dir_pics, @{$params{hint}}),
+            group => 'pics',
             -verify => 1,
         );
     }
@@ -305,6 +306,15 @@ sub lookup {
         );
     }
 
+    if ($params{kind} eq 'attach') {
+        return App::PFT::Content::Blob->new(
+            tree => $self,
+            group => 'attachments',
+            path => catfile($self->dir_attach, @{$params{hint}}),
+            -verify => 1,
+        );
+    }
+
     if ($params{kind} eq 'web') {
         return weblookup($params{hint});
     }
@@ -322,6 +332,7 @@ sub dir_build() { catdir $_[0]->basepath, 'build' }
 sub dir_inject() { catdir $_[0]->basepath, 'inject' }
 
 sub dir_pics() { catdir $_[0]->basepath, 'content', 'pics' }
+sub dir_attach() { catdir $_[0]->basepath, 'content', 'attachments' }
 
 #has pictures => ( is => 'ro', isa => 'ArrayRef[App::PFT::Content::Picture]' );
 #has blobs => ( is => 'ro', isa => 'ArrayRef[App::PFT::Content::Picture]' );

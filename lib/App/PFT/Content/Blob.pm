@@ -38,12 +38,17 @@ has path => (
     isa => 'Str',
 );
 
+has group => (
+    is => 'ro',
+    isa => 'Str',
+);
+
 sub hname { shift->fname }
 
 sub from_root() {
     my $self = shift;
     my @out = (
-        'pics',
+        $self->group,
         $self->fname,
     );
     if (my $up = $self->SUPER::from_root) {

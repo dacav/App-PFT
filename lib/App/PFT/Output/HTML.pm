@@ -134,9 +134,14 @@ around BUILDARGS => sub {
     make_path $build_path;
 
     $params{lookup} = do {
-        my $from_pics = $tree->dir_pics;
-        my $to_pics = catdir($build_path, 'pics');
-        App::PFT::Util::ln $from_pics, $to_pics;
+        App::PFT::Util::ln
+            $tree->dir_pics,
+            catdir($build_path, 'pics')
+        ;
+        App::PFT::Util::ln
+            $tree->dir_attach,
+            catdir($build_path, 'attachments')
+        ;
         sub {
             my $cur_content = shift;
             my $got_content = $cur_content->lookup(@_);
@@ -200,7 +205,7 @@ sub resolve {
     my $curr_content = shift;
     my $str = shift;
 
-    $str =~ s/<(a\s.*?href="):(page|blog|tag|web):(.*?)"/
+    $str =~ s/<(a\s.*?href="):(page|blog|tag|attach|web):(.*?)"/
         '<' . $1 . $lookup->($curr_content, $2, split m|\/|, $3) . '"'
     /mge;
 
