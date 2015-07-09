@@ -48,6 +48,7 @@ use App::PFT::Struct::Conf qw/$ROOT $AUTHOR/;
 sub main {
     my %opts = (
         author => $AUTHOR,
+        tags => [],
     );
     my %datespec;
     GetOptions(
