@@ -297,6 +297,14 @@ sub lookup {
         );
     }
 
+    if ($params{kind} eq 'tag') {
+        my $tname = ucfirst join ' ', @{$params{hint}};
+        return App::PFT::Content::TagPage->new(
+            tree => $self,
+            tagname => $tname,
+        );
+    }
+
     if ($params{kind} eq 'web') {
         return weblookup($params{hint});
     }

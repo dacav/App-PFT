@@ -147,7 +147,7 @@ around BUILDARGS => sub {
                 my $out = join('/', $base_url, $got_content->from_root);
 
                 my $type = shift;
-                if ($type eq 'page' || $type eq 'blog') {
+                if ($type eq 'page' || $type eq 'blog' || $type eq 'tag') {
                     # If this is a generated page, it's an HTML.
                     $out .= '.html';
                 }
