@@ -246,7 +246,11 @@ sub process {
     $links{root} = $self->mkhref($content->month) if $content->has_month;
 
     if ($content->has_links) {
-        my @hrefs = map { $self->mkhref($_) } @{$content->links};
+        my @hrefs =
+            map { $self->mkhref($_) }
+            sort { $a->cmp cmp $b->cmp }
+            @{$content->links}
+        ;
         $links{related} = \@hrefs;
     }
 
