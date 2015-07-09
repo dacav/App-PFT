@@ -27,6 +27,9 @@ our @EXPORT_OK = qw/weblookup/;
 
 sub search_duckduckgo {
     my $hints = shift;
+    # hints[0] -> optional bang
+    # hints[1..] -> query parts
+
     my $bang = shift @$hints;
 
     my $url = 'https://duckduckgo.com/lite/?q=';
