@@ -54,7 +54,7 @@ sub from_root() {
     my $self = shift;
     my @out = (
         'tags',
-        $self->tagname
+        $self->header->flat_title,
     );
     if (my $up = $self->SUPER::from_root) {
         push @out, $up
