@@ -55,6 +55,7 @@ sub main {
         'month|m=s'     => \$datespec{month},
         'day|d=i'       => \$datespec{day},
         'author|a=s'    => \$opts{author},
+        'tag|t=s@'      => \$opts{tags},
         'resume|r!'     => sub { $opts{back} = 0 },
         'back=i'        => \$opts{back},
         'help|h!'       => sub {

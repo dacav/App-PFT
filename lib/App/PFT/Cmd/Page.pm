@@ -52,6 +52,7 @@ sub main {
     my %datespec;
     GetOptions(
         'author|a=s'    => \$opts{author},
+        'tag|t=s@'      => \$opts{tags},
         'help|h!'       => sub {
             pod2usage
                 -exitval => 1,
