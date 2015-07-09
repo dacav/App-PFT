@@ -235,6 +235,20 @@ on I<StackOverflow>):
 
     :web:ddg/so/linux/howto
 
+=item Manpages
+
+C<:web:man/I<name>
+
+C<:web:man/I<name>/I<section>
+
+Point to an online manpage. Manual section can be optionally supplied.
+
+Examples:
+
+    :web:man/bash
+
+    :web:man/signal/7
+
 =over
 
 =back
