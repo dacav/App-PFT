@@ -67,10 +67,8 @@ The initialization command produces the following filesystem structure:
     ├── inject
     ├── pft.yaml
     └── templates
-        ├── entry.html
-        ├── gen.html
-        └── page.html
 
+=head2 Configuration in pft.yaml
 
 =head2 Title Mangling
 
@@ -95,6 +93,11 @@ mangling the title:
     $title =~ s/--+/-/g;   # multiple '-' are packed together
     $title =~ s/-*$//;     # trailing '-' are dropped
     $basename = lc $title; # everything is lower-cased
+
+=head2 Editing files
+
+TODO: mention how to remove a file automatically
+
 
 =head1 CONTENT FILE FORMAT
 
