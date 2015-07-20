@@ -30,8 +30,6 @@ use Encode;
 
 use App::PFT::Data::Header;
 
-extends 'App::PFT::Content::Base';
-
 has path => (is => 'ro', isa => 'Str');
 has fname => (is => 'ro', isa => 'Str');
 
@@ -45,7 +43,9 @@ sub edit() {
     }
 }
 
-sub title() { shift->header->title }
+sub title() {
+    shift->header->title
+}
 
 sub exists { -e shift->path }
 
@@ -71,7 +71,9 @@ has lines => (
     },
 );
 
-sub text { join "\n", @{shift->lines} }
+sub text {
+    join "\n", @{shift->lines}
+}
 
 has header => (
     is => 'rw',
@@ -89,6 +91,21 @@ has header => (
         $hdr
     }
 );
+
+sub lookup {
+    my $self = shift;
+    $self->tree->lookup(
+        relative_to => $self,
+        kind => shift,
+        hint => \@_,
+    )
+}
+
+sub date() { undef }
+sub has_links() { 0 }
+sub has_month() { 0 }
+sub has_prev() { 0 }
+sub has_next() { 0 }
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

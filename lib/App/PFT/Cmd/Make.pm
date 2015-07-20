@@ -87,7 +87,7 @@ sub main {
     );
 
     my @pages = $tree->list_pages;
-    my @entries = sort { $b->cmp cmp $a->cmp } $tree->list_entries;
+    my @entries = sort $tree->list_entries;
     my $months = $tree->link_months;
 
     App::PFT::Output::HTML->new(

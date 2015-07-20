@@ -25,15 +25,15 @@ use Scalar::Util qw/weaken/;
 use namespace::autoclean;
 use Moose;
 
-extends 'App::PFT::Content::Base';
+has year => (
+    is=>'ro',
+    isa => 'Int',
+);
 
-sub hname {
-    my $self = shift;
-    sprintf('Month %04d-%02d', $self->year, $self->month);
-}
-
-has year => ( is=>'ro', isa => 'Int' );
-has month => ( is=>'ro', isa => 'Int' );
+has month => (
+    is=>'ro',
+    isa => 'Int',
+);
 
 has links => (
     is => 'rw',
@@ -68,14 +68,10 @@ has next => (
 
 sub from_root() {
     my $self = shift;
-    my @out = (
+    (
         'blog',
         sprintf('%04d-%02d', $self->year, $self->month),
     );
-    if (my $up = $self->SUPER::from_root) {
-        push @out, $up
-    }
-    @out
 }
 
 has header => (
@@ -90,7 +86,17 @@ has header => (
     }
 );
 
+sub tostr {
+    my $self = shift;
+    sprintf 'MonthPage(%04d/%02d)', $self->year, $self->month
+}
+
 sub title() { shift->header->title }
+sub has_month() { 0 }
+sub date() { undef }
+sub text { '' }
+
+with 'App::PFT::Content::Base';
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
