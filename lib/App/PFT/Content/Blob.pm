@@ -26,8 +26,6 @@ use Carp;
 use namespace::autoclean;
 use Moose;
 
-extends 'App::PFT::Content::Base';
-
 has fname => (
     is => 'ro',
     isa => 'Str',
@@ -43,19 +41,24 @@ has group => (
     isa => 'Str',
 );
 
-sub hname { shift->fname }
+sub tostr { 'Blob(' . shift->fname . ')' }
+
+sub title() { shift->fname }
 
 sub from_root() {
     my $self = shift;
-    my @out = (
+    (
         $self->group,
         $self->fname,
-    );
-    if (my $up = $self->SUPER::from_root) {
-        push @out, $up
-    }
-    @out
+    )
 }
+
+sub date() { undef }
+sub has_links() { 0 }
+sub has_month() { 0 }
+sub has_prev() { 0 }
+sub has_next() { 0 }
+sub text() { '' }
 
 around BUILDARGS => sub {
     my($orig, $class, %params) = @_;
@@ -68,6 +71,8 @@ around BUILDARGS => sub {
     
     $class->$orig(%params);
 };
+
+with 'App::PFT::Content::Base';
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

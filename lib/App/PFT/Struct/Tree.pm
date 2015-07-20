@@ -248,7 +248,7 @@ sub link_tags {
 
 sub link_months {
     my $self = shift;
-    my @es = sort {$a->cmp cmp $b->cmp} $self->list_entries;
+    my @es = sort $self->list_entries;
     return [] unless @es;
 
     my %months = App::PFT::Util::groupby

@@ -25,10 +25,8 @@ use Scalar::Util qw/weaken/;
 use namespace::autoclean;
 use Moose;
 
-extends 'App::PFT::Content::Base';
-
-sub hname {
-    'Tag: ' . shift->tagname;
+sub tostr {
+    'Tag(' . shift->tagname . ')';
 }
 
 has tagname => ( is=>'ro', isa => 'Str' );
@@ -52,14 +50,10 @@ sub add_content {
 
 sub from_root() {
     my $self = shift;
-    my @out = (
+    (
         'tags',
         $self->header->flat_title,
-    );
-    if (my $up = $self->SUPER::from_root) {
-        push @out, $up
-    }
-    @out
+    )
 }
 
 has header => (
@@ -75,6 +69,13 @@ has header => (
 );
 
 sub title() { shift->tagname }
+sub has_month() { 0 }
+sub has_prev() { 0 }
+sub has_next() { 0 }
+sub date() { undef }
+sub text() { '' }
+
+with 'App::PFT::Content::Base';
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

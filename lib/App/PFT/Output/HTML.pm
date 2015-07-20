@@ -78,7 +78,7 @@ has links => (
         }
 
         # Reverse chronological order
-        for my $e (sort { $b->cmp cmp $a->cmp } $self->entries) {
+        for my $e (sort $self->entries) {
             push @entries, $self->mkhref($e);
         }
 
@@ -253,8 +253,7 @@ sub process {
     if ($content->has_links) {
         my @hrefs =
             map { $self->mkhref($_) }
-            sort { $a->cmp cmp $b->cmp }
-            @{$content->links}
+            sort @{$content->links}
         ;
         $links{related} = \@hrefs;
     }
@@ -289,9 +288,9 @@ sub build {
             $self->process($e);
         };
         if ($@) {
-            croak 'While compiling ', $e->hname, ": \n\t", $@;
+            croak "While compiling $e: \n\t", $@;
         } else {
-            say STDERR 'Compiled ', $e->hname;
+            say STDERR "Compiled $e";
         }
     }
 }
