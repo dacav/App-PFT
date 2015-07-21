@@ -109,7 +109,6 @@ around BUILDARGS => sub {
                       ;
     }
 
-    croak 'Missing title' unless $params{title};
     $class->$orig(%params);
 };
 

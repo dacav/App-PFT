@@ -43,7 +43,11 @@ use App::PFT::Util;
 
 use feature qw/state/;
 
-has basepath => (is => 'ro', isa => 'Str');
+has basepath => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
 
 sub BUILD {
     my $bp = $_[0]->basepath;
