@@ -46,7 +46,7 @@ has author => (
 has encoding => (
     isa => 'Maybe[Str]',
     is => 'ro',
-    default => $INPUT_ENC,
+    default => sub { $INPUT_ENC },
 );
 
 has tags => (
