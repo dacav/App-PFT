@@ -30,8 +30,17 @@ use Encode;
 
 use App::PFT::Data::Header;
 
-has path => (is => 'ro', isa => 'Str');
-has fname => (is => 'ro', isa => 'Str');
+has path => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
+
+has fname => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
 
 sub edit() {
     my $path = shift->path;

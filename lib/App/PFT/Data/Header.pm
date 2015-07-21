@@ -33,6 +33,7 @@ use App::PFT::Struct::Conf qw/$AUTHOR $INPUT_ENC/;
 has title => (
     isa => 'Str',
     is => 'ro',
+    required => 1,
 );
 
 has author => (
@@ -45,8 +46,7 @@ has author => (
 has encoding => (
     isa => 'Maybe[Str]',
     is => 'ro',
-    lazy => 1,
-    default => sub { $INPUT_ENC },
+    default => $INPUT_ENC,
 );
 
 has tags => (
@@ -98,7 +98,7 @@ around BUILDARGS => sub {
         };
         croak $@ if $@;
 
-        my $enc = $params{encoding} = $hdr->{Encoding} || 'utf-8';
+        my $enc = $params{encoding} = $hdr->{Encoding} || $INPUT_ENC;
         $params{title} = decode($enc, $hdr->{Title});
         $params{author} = decode($enc, $hdr->{Author}) || 'ANONYMOUS';
 
