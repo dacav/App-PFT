@@ -75,6 +75,7 @@ has tree => (
     isa => 'App::PFT::Struct::Tree',
     is => 'ro',
     weak_ref => 1,
+    required => 1,
 );
 
 no Moose;

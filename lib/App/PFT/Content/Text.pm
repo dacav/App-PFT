@@ -30,8 +30,17 @@ use Encode;
 
 use App::PFT::Data::Header;
 
-has path => (is => 'ro', isa => 'Str');
-has fname => (is => 'ro', isa => 'Str');
+has path => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
+
+has fname => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
 
 sub edit() {
     my $path = shift->path;
@@ -52,7 +61,7 @@ sub exists { -e shift->path }
 sub file {
     my $self = shift;
     IO::File->new($self->path, @_) # Has autoclose upon undef.
-        or die 'Cannot open "' . $self->path . ": $!";
+        or confess 'Cannot open "' . $self->path . ": $!";
 }
 
 has lines => (

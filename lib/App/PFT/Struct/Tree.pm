@@ -50,6 +50,7 @@ sub BUILD {
     make_path
         $bp,
         catdir($bp, 'content', 'pages'),
+        catdir($bp, 'content', 'tags'),
         catdir($bp, 'content', 'blog'),
         catdir($bp, 'content', 'pics'),
         catdir($bp, 'content', 'attachments'),
@@ -227,6 +228,7 @@ sub list_pages { values %{shift->pages} }
 sub link_tags {
     my $self = shift;
     my %tags;
+    my $base = catdir $self->basepath, 'content', 'tags';
 
     for my $content ($self->list_entries, $self->list_pages) {
         for my $tname (@{$content->header->tags}) {
@@ -236,6 +238,8 @@ sub link_tags {
                 $t = App::PFT::Content::TagPage->new(
                     tree => $self,
                     tagname => ucfirst($tname),
+                    path => catfile($base, $lctname),
+                    fname => $lctname,
                 );
                 $tags{$lctname} = $t;
             }
@@ -244,6 +248,28 @@ sub link_tags {
     }
 
     wantarray ? values %tags : \%tags;
+}
+
+sub tag {
+    my($self, %opts) = @_;
+
+    my $hdr = $get_header->(\%opts);
+
+    my $fname = $hdr->flat_title;
+    my $basedir = catdir($self->basepath, 'content', 'tags');
+    my $path = catfile $basedir, $fname;
+
+    my $out = App::PFT::Content::Page->new(
+        tree => $self,
+        tagname => ucfirst($hdr->title),
+        path => $path,
+        fname => $fname,
+    );
+
+    unless ($opts{'-noinit'}) {
+        $textinit->($basedir, $path, $hdr);
+    }
+    $out;
 }
 
 sub link_months {
@@ -300,9 +326,13 @@ sub lookup {
 
     if ($params{kind} eq 'tag') {
         my $tname = ucfirst join ' ', @{$params{hint}};
+        my $base = catdir $self->basepath, 'content', 'tags';
+        my $lctname = lc $tname;
         return App::PFT::Content::TagPage->new(
             tree => $self,
             tagname => $tname,
+            path => catfile($base, $lctname),
+            fname => $lctname,
         );
     }
 
