@@ -85,7 +85,7 @@ sub text {
     $self->exists ? join "\n", @{$self->lines} : '';
 }
 
-sub title() { shift->tagname }
+sub title() { shift->header->title }
 sub has_month() { 0 }
 sub has_prev() { 0 }
 sub has_next() { 0 }
