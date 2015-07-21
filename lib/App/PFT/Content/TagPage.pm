@@ -25,11 +25,16 @@ use Scalar::Util qw/weaken/;
 use namespace::autoclean;
 use Moose;
 
+extends 'App::PFT::Content::Text';
+
 sub tostr {
     'Tag(' . shift->tagname . ')';
 }
 
-has tagname => ( is=>'ro', isa => 'Str' );
+has tagname => (
+    is=>'ro',
+    isa => 'Str',
+);
 
 has links => (
     is => 'rw',
@@ -60,20 +65,31 @@ has header => (
     is => 'ro',
     isa => 'App::PFT::Data::Header',
     lazy => 1,
+    predicate => 'header_is_loaded',
     default => sub {
         my $self = shift;
-        App::PFT::Data::Header->new(
-            title => $self->tagname
-        );
+        if ($self->exists) {
+            App::PFT::Data::Header->new(
+                -load => $self->file,
+            )
+        } else {
+            App::PFT::Data::Header->new(
+                title => $self->tagname,
+            )
+        }
     }
 );
+
+sub text {
+    my $self = shift;
+    $self->exists ? join "\n", @{$self->lines} : '';
+}
 
 sub title() { shift->tagname }
 sub has_month() { 0 }
 sub has_prev() { 0 }
 sub has_next() { 0 }
 sub date() { undef }
-sub text() { '' }
 
 with 'App::PFT::Content::Base';
 

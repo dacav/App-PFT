@@ -61,7 +61,7 @@ sub exists { -e shift->path }
 sub file {
     my $self = shift;
     IO::File->new($self->path, @_) # Has autoclose upon undef.
-        or die 'Cannot open "' . $self->path . ": $!";
+        or confess 'Cannot open "' . $self->path . ": $!";
 }
 
 has lines => (
