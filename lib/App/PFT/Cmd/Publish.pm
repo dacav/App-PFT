@@ -38,7 +38,7 @@ use Pod::Find qw/pod_where/;
 
 use File::Spec::Functions qw/catfile/;
 
-use App::PFT::Struct::Conf qw/$ROOT $SITE_LOGIN $SITE_PATH/;
+use App::PFT::Struct::Conf qw/$ROOT $REMOTE_LOGIN $REMOTE_PATH/;
 use App::PFT::Struct::Tree;
 
 use Carp;
@@ -61,7 +61,7 @@ sub main {
         basepath => $ROOT
     );
     my $src = catfile($tree->dir_build, '');
-    my $dst = "$SITE_LOGIN:$SITE_PATH";
+    my $dst = "$REMOTE_LOGIN:$REMOTE_PATH";
 
     # Checks here maybe...
 

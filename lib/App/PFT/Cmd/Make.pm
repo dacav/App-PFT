@@ -44,7 +44,7 @@ use App::PFT::Struct::Conf qw/
     $ROOT
     $SITE_TITLE
     $SITE_URL
-    $SITE_HOME
+    $HOME_PAGE
     $OUTPUT_ENC
 /;
 use App::PFT::Struct::Tree;
@@ -92,7 +92,7 @@ sub main {
 
     App::PFT::Output::HTML->new(
         site_title => $SITE_TITLE,
-        site_home => $SITE_HOME,
+        site_home => $HOME_PAGE,
         # site_footer => $ENV{SITE_FOOTER},
         base_url => $preview ? $tree->dir_build : $SITE_URL,
         outputenc => $OUTPUT_ENC || 'utf-8',

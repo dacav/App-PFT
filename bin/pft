@@ -63,7 +63,7 @@ BEGIN { $0 = basename $0 }
 use Pod::Usage;
 use File::Spec::Functions qw/catfile/;
 
-use App::PFT::Struct::Conf qw/$CONF_FILENAME cfg_default cfg_load cfg_dump/;
+use App::PFT::Struct::Conf qw/$CONF_FILENAME cfg_default cfg_load/;
 use App::PFT::Util qw/findroot/;
 
 use App::PFT::Cmd::Init;
@@ -116,10 +116,7 @@ if (my $root = findroot type=>'file', name=>$CONF_FILENAME) {
     }
     cfg_load $root;
     chdir $root;
-} elsif ($command eq 'init') {
-    cfg_default;
-    cfg_dump '.';
-} elsif ($command ne 'help' && !&help_asked) {
+} elsif ($command ne 'init' && $command ne 'help' && !&help_asked) {
     say STDERR "Not a $0 site. Try running: $0 init";
     exit 1;
 }
