@@ -19,11 +19,59 @@ package App::PFT::Cmd::Init;
 
 =head1 NAME
 
-pft init
+pft init - Initialize a PFT Site
 
 =head1 SYNOPSYS
 
-pft init 
+pft init [<options>]
+
+=head1 DESCRIPTION
+
+Initialize a PFT Site.
+
+The command generates the C<pft.yaml> configuration file, creates the
+filesystem structure for a PFT site and a site Home Page.
+
+A test configuration is provided by default, and can be later modified by
+editing the be modified by editing the C<pft.yaml> configuration file.
+This command accepts options which will override default ones.
+
+=head1 OPTIONS
+
+=over
+
+=item --author
+
+Specify a default author for pages and blog entries.
+
+=item --site-title
+
+Specify a title for the site.
+
+=item --site-url
+
+Specify a base URL for the site. This will be used as prefix for all
+internal URLs. You probably want to specify something like
+C<http://example.org/path/to/site/>.
+
+=item --home-page
+
+Define a Home Page for the site. The page will be generated automatically
+unless C<--no-home> is specified.
+
+=item --remote-login
+
+=item --remote-path
+
+=item --input-enc
+
+=item --output-enc
+
+=item --no-home
+
+Skip Home Page generation.
+
+=back
 
 =cut
 
@@ -86,6 +134,11 @@ sub main {
     }
 
     cfg_default;
+
+    my %opts = (
+        home => 1,
+    );
+
     GetOptions(
         'author=s' => \$App::PFT::Struct::Conf::AUTHOR,
         'site-title=s' => \$App::PFT::Struct::Conf::SITE_TITLE,
@@ -95,6 +148,8 @@ sub main {
         'remote-path=s' => \$App::PFT::Struct::Conf::REMOTE_PATH,
         'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
         'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
+
+        'home!' => \$opts{home},
     );
 
     cfg_dump '.';
@@ -126,12 +181,17 @@ sub main {
     }
 
     unless ($tree->page(title => $HOME_PAGE, -noinit => 1)->exists) {
-        say STDERR "Creating default site home: $HOME_PAGE";
-        my $hf = $tree->page(
-            title => $HOME_PAGE,
-            author => "$0 Configurator",
-        )->file('a');
-        print $hf $HOME_TEXT;
+        if ($opts{home}) {
+            say STDERR "Creating default site home: $HOME_PAGE";
+            my $hf = $tree->page(
+                title => $HOME_PAGE,
+                author => "$0 Configurator",
+            )->file('a');
+            print $hf $HOME_TEXT;
+        } else {
+            say STDERR 'Skipping creation of page "', $HOME_PAGE,
+                       '" as requested';
+        }
     }
 }
 
