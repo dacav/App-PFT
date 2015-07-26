@@ -23,7 +23,35 @@ use warnings;
 use Carp;
 
 use namespace::autoclean;
-use Moose;
+use Moose::Role;
+
+requires qw/
+    title
+    date
+    tostr
+    has_prev
+    has_next
+    has_month
+    has_links
+    text
+/;
+
+use overload
+    '""' => "tostr",
+    cmp => sub {
+        my @selfroot = shift()->from_root;
+        my @othroot = shift()->from_root;
+        my $N = @selfroot > @othroot ? @othroot : @selfroot;
+        my $neg = shift() ? 1 : -1;
+        for (my $i = 0; $i < $N; $i ++) {
+            my $cmp = $selfroot[$i] cmp $othroot[$i];
+            return $cmp * $neg if $cmp;
+        }
+        @selfroot > @othroot ?  $neg :
+        @selfroot < @othroot ? -$neg :
+                               0     ;
+    },
+;
 
 # Path to reach the content from the site. Identifies the content from the
 # filesystem perspective. Returns a list of steps in the filesystem,
@@ -41,34 +69,15 @@ has uid => (
     default => sub { join '/', shift->from_root },
 );
 
-sub has_prev() { 0 }
-sub has_next() { 0 }
-sub has_month() { 0 }
-sub has_links() { 0 }
-sub text() {''}
-sub date() { undef }
-
-# Human name: identifies the content, can be understood by a human
-sub hname() { confess "Undefined human name for ", shift }
+sub template() { 'gen' }
 
 has tree => (
     isa => 'App::PFT::Struct::Tree',
     is => 'ro',
     weak_ref => 1,
+    required => 1,
 );
 
-sub lookup {
-    my $self = shift;
-    $self->tree->lookup(
-        relative_to => $self,
-        kind => shift,
-        hint => \@_,
-    )
-}
-
-sub template() { 'gen' }
-
 no Moose;
-__PACKAGE__->meta->make_immutable;
 
 1;

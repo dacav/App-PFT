@@ -23,14 +23,33 @@ use warnings;
 use namespace::autoclean;
 use Moose;
 
-has year => (is => 'ro', isa => 'Int');
-has month => (is => 'ro', isa => 'Int');
-has day => (is => 'ro', isa => 'Int');
+use overload
+    '""' => sub { 'Date(' . shift->repr . ')' },
+;
+
+has year => (
+    is => 'ro',
+    isa => 'Int',
+);
+
+has month => (
+    is => 'ro',
+    isa => 'Int',
+);
+
+has day => (
+    is => 'ro',
+    isa => 'Int',
+);
 
 sub repr {
-    my($self, $sep) = @_;
-    $sep = '-' unless defined $sep;
-    return join $sep, $self->year, $self->month, $self->day;
+    my $self = shift;
+    join
+        do { my $sep = shift; defined $sep ? $sep : '-' },
+        ($self->year > 0 ? $self->year : '*'),
+        ($self->month > 0 ? $self->month : '*'),
+        ($self->day > 0 ? $self->day : '*')
+    ;
 }
 
 sub to_hash {

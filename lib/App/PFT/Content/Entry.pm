@@ -55,28 +55,19 @@ has next => (
     predicate => 'has_next',
 );
 
-sub hname {
+sub tostr {
     my $self = shift;
-    'Entry "' . $self->fname . '" (' . $self->date->repr . ')';
-}
-
-sub cmp {
-    my($self) = @_;
-    $self->date->repr('') . $self->fname;
+    'Entry(' . $self->fname . ', ' . $self->date->repr . ')';
 }
 
 sub from_root() {
     my $self = shift;
     my $date = $self->date;
-    my @out = (
+    (
         'blog',
         sprintf('%04d-%02d', $date->year, $date->month),
         sprintf('%02d-%s', $date->day, $self->fname),
-    );
-    if (my $up = $self->SUPER::from_root) {
-        push @out, $up
-    }
-    @out
+    )
 }
 
 sub lookup {
@@ -103,6 +94,9 @@ sub lookup {
 }
 
 sub template() { 'entry' }
+sub has_links() { 0 }
+
+with 'App::PFT::Content::Base';
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

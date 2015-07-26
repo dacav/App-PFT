@@ -27,6 +27,9 @@ our @EXPORT_OK = qw/weblookup/;
 
 sub search_duckduckgo {
     my $hints = shift;
+    # hints[0] -> optional bang
+    # hints[1..] -> query parts
+
     my $bang = shift @$hints;
 
     my $url = 'https://duckduckgo.com/lite/?q=';
@@ -35,12 +38,26 @@ sub search_duckduckgo {
     join "%20", @$hints;
 }
 
+sub search_man {
+    my $hints = shift;
+    # hints[0] -> manual page name
+    # hints[1] -> optional section
+
+    my $url = 'http://man.cx/' . $hints->[0];
+    $url .= "($hints->[1])" if $hints->[1];
+    $url;
+}
+
 sub weblookup {
     my $hints = shift;
     my $service = shift @$hints;
 
     if ($service eq 'ddg') {
         return search_duckduckgo $hints;
+    }
+
+    if ($service eq 'man') {
+        return search_man $hints;
     }
 
     croak "Web-lookup: Unknown service $service ($service @$hints)";

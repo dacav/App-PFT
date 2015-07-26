@@ -25,29 +25,21 @@ use Moose;
 
 extends 'App::PFT::Content::Text';
 
-sub cmp {
-    #YYYYMMDD
-    '--------' . shift->fname;
-}
-
 sub from_root() {
     my $self = shift;
-    my @out = (
+    (
         'pages',
         $self->fname,
-    );
-    if (my $up = $self->SUPER::from_root) {
-        push @out, $up
-    }
-    @out
+    )
 }
 
-sub hname {
-    my $self = shift;
-    'Page "' . $self->fname . '"';
+sub tostr {
+    'Page(' . shift->fname . ')';
 }
 
 sub template() { 'page' }
+
+with 'App::PFT::Content::Base';
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

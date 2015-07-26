@@ -15,15 +15,15 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Cmd::Blog;
+package App::PFT::Cmd::Tag;
 
 =head1 NAME
 
-pft blog
+pft tag
 
 =head1 SYNOPSYS
 
-pft blog ...
+pft tag ...
 
 =cut
 
@@ -52,13 +52,8 @@ sub main {
     );
     my %datespec;
     GetOptions(
-        'year|y=i'      => \$datespec{year},
-        'month|m=s'     => \$datespec{month},
-        'day|d=i'       => \$datespec{day},
         'author|a=s'    => \$opts{author},
         'tag|t=s@'      => \$opts{tags},
-        'resume|r!'     => sub { $opts{back} = 0 },
-        'back=i'        => \$opts{back},
         'help|h!'       => sub {
             pod2usage
                 -exitval => 1,
@@ -68,33 +63,18 @@ sub main {
         },
     );
 
-    my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
-    my $entry;
-
-    if (defined $opts{back}) {
-        $entry = eval {
-            $tree->latest_entry($opts{back});
-        };
-        if ($@) {
-            die 'Cannot go back by ', $opts{back}, ': ', $@;
-        }
-    } else {
-        unless (@ARGV) {
-            say STDERR "Usage: $0 blog [options] <title>";
-            exit 1;
-        }
-
-        $entry = $tree->entry(
-            title => join(' ', @ARGV),
-            date => App::PFT::Data::Date->new(
-                %datespec,
-                -fill => 'now',
-            ),
-            %opts
-        );
+    unless (@ARGV) {
+        say STDERR "Usage: $0 tag [options] <title>";
+        exit 1;
     }
 
-    $entry->edit;
+    my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+    my $page = $tree->tag(
+        title => join(' ', @ARGV),
+        %opts
+    );
+
+    $page->edit;
 }
 
 1;

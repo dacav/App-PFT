@@ -25,13 +25,16 @@ use Scalar::Util qw/weaken/;
 use namespace::autoclean;
 use Moose;
 
-extends 'App::PFT::Content::Base';
+extends 'App::PFT::Content::Text';
 
-sub hname {
-    'Tag: ' . shift->tagname;
+sub tostr {
+    'Tag(' . shift->tagname . ')';
 }
 
-has tagname => ( is=>'ro', isa => 'Str' );
+has tagname => (
+    is=>'ro',
+    isa => 'Str',
+);
 
 has links => (
     is => 'rw',
@@ -52,29 +55,43 @@ sub add_content {
 
 sub from_root() {
     my $self = shift;
-    my @out = (
+    (
         'tags',
-        $self->tagname
-    );
-    if (my $up = $self->SUPER::from_root) {
-        push @out, $up
-    }
-    @out
+        $self->header->flat_title,
+    )
 }
 
 has header => (
     is => 'ro',
     isa => 'App::PFT::Data::Header',
     lazy => 1,
+    predicate => 'header_is_loaded',
     default => sub {
         my $self = shift;
-        App::PFT::Data::Header->new(
-            title => $self->tagname
-        );
+        if ($self->exists) {
+            App::PFT::Data::Header->new(
+                -load => $self->file,
+            )
+        } else {
+            App::PFT::Data::Header->new(
+                title => $self->tagname,
+            )
+        }
     }
 );
 
-sub title() { shift->tagname }
+sub text {
+    my $self = shift;
+    $self->exists ? join "\n", @{$self->lines} : '';
+}
+
+sub title() { shift->header->title }
+sub has_month() { 0 }
+sub has_prev() { 0 }
+sub has_next() { 0 }
+sub date() { undef }
+
+with 'App::PFT::Content::Base';
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

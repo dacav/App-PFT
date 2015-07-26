@@ -43,13 +43,18 @@ use App::PFT::Util;
 
 use feature qw/state/;
 
-has basepath => (is => 'ro', isa => 'Str');
+has basepath => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
 
 sub BUILD {
     my $bp = $_[0]->basepath;
     make_path
         $bp,
         catdir($bp, 'content', 'pages'),
+        catdir($bp, 'content', 'tags'),
         catdir($bp, 'content', 'blog'),
         catdir($bp, 'content', 'pics'),
         catdir($bp, 'content', 'attachments'),
@@ -227,6 +232,7 @@ sub list_pages { values %{shift->pages} }
 sub link_tags {
     my $self = shift;
     my %tags;
+    my $base = catdir $self->basepath, 'content', 'tags';
 
     for my $content ($self->list_entries, $self->list_pages) {
         for my $tname (@{$content->header->tags}) {
@@ -236,6 +242,8 @@ sub link_tags {
                 $t = App::PFT::Content::TagPage->new(
                     tree => $self,
                     tagname => ucfirst($tname),
+                    path => catfile($base, $lctname),
+                    fname => $lctname,
                 );
                 $tags{$lctname} = $t;
             }
@@ -246,9 +254,31 @@ sub link_tags {
     wantarray ? values %tags : \%tags;
 }
 
+sub tag {
+    my($self, %opts) = @_;
+
+    my $hdr = $get_header->(\%opts);
+
+    my $fname = $hdr->flat_title;
+    my $basedir = catdir($self->basepath, 'content', 'tags');
+    my $path = catfile $basedir, $fname;
+
+    my $out = App::PFT::Content::Page->new(
+        tree => $self,
+        tagname => ucfirst($hdr->title),
+        path => $path,
+        fname => $fname,
+    );
+
+    unless ($opts{'-noinit'}) {
+        $textinit->($basedir, $path, $hdr);
+    }
+    $out;
+}
+
 sub link_months {
     my $self = shift;
-    my @es = sort {$a->cmp cmp $b->cmp} $self->list_entries;
+    my @es = sort $self->list_entries;
     return [] unless @es;
 
     my %months = App::PFT::Util::groupby
@@ -285,14 +315,37 @@ sub lookup {
         return App::PFT::Content::Blob->new(
             tree => $self,
             path => catfile($self->dir_pics, @{$params{hint}}),
+            group => 'pics',
             -verify => 1,
         );
     }
 
     if ($params{kind} eq 'page') {
         return $self->page(
-            title => $params{hint}->[0],
+            tree => $self,
+            title => join(' ', @{$params{hint}}),
             # TODO: support -verify for Content::Text
+        );
+    }
+
+    if ($params{kind} eq 'tag') {
+        my $tname = ucfirst join ' ', @{$params{hint}};
+        my $base = catdir $self->basepath, 'content', 'tags';
+        my $lctname = lc $tname;
+        return App::PFT::Content::TagPage->new(
+            tree => $self,
+            tagname => $tname,
+            path => catfile($base, $lctname),
+            fname => $lctname,
+        );
+    }
+
+    if ($params{kind} eq 'attach') {
+        return App::PFT::Content::Blob->new(
+            tree => $self,
+            group => 'attachments',
+            path => catfile($self->dir_attach, @{$params{hint}}),
+            -verify => 1,
         );
     }
 
@@ -313,6 +366,7 @@ sub dir_build() { catdir $_[0]->basepath, 'build' }
 sub dir_inject() { catdir $_[0]->basepath, 'inject' }
 
 sub dir_pics() { catdir $_[0]->basepath, 'content', 'pics' }
+sub dir_attach() { catdir $_[0]->basepath, 'content', 'attachments' }
 
 #has pictures => ( is => 'ro', isa => 'ArrayRef[App::PFT::Content::Picture]' );
 #has blobs => ( is => 'ro', isa => 'ArrayRef[App::PFT::Content::Picture]' );

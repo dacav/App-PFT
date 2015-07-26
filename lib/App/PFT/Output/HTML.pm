@@ -78,7 +78,7 @@ has links => (
         }
 
         # Reverse chronological order
-        for my $e (sort { $b->cmp cmp $a->cmp } $self->entries) {
+        for my $e (sort $self->entries) {
             push @entries, $self->mkhref($e);
         }
 
@@ -134,9 +134,14 @@ around BUILDARGS => sub {
     make_path $build_path;
 
     $params{lookup} = do {
-        my $from_pics = $tree->dir_pics;
-        my $to_pics = catdir($build_path, 'pics');
-        App::PFT::Util::ln $from_pics, $to_pics;
+        App::PFT::Util::ln
+            $tree->dir_pics,
+            catdir($build_path, 'pics')
+        ;
+        App::PFT::Util::ln
+            $tree->dir_attach,
+            catdir($build_path, 'attachments')
+        ;
         sub {
             my $cur_content = shift;
             my $got_content = $cur_content->lookup(@_);
@@ -147,7 +152,7 @@ around BUILDARGS => sub {
                 my $out = join('/', $base_url, $got_content->from_root);
 
                 my $type = shift;
-                if ($type eq 'page' || $type eq 'blog') {
+                if ($type eq 'page' || $type eq 'blog' || $type eq 'tag') {
                     # If this is a generated page, it's an HTML.
                     $out .= '.html';
                 }
@@ -200,7 +205,7 @@ sub resolve {
     my $curr_content = shift;
     my $str = shift;
 
-    $str =~ s/<(a\s.*?href="):(page|blog|tag|web):(.*?)"/
+    $str =~ s/<(a\s.*?href="):(page|blog|tag|attach|web):(.*?)"/
         '<' . $1 . $lookup->($curr_content, $2, split m|\/|, $3) . '"'
     /mge;
 
@@ -246,7 +251,10 @@ sub process {
     $links{root} = $self->mkhref($content->month) if $content->has_month;
 
     if ($content->has_links) {
-        my @hrefs = map { $self->mkhref($_) } @{$content->links};
+        my @hrefs =
+            map { $self->mkhref($_) }
+            sort @{$content->links}
+        ;
         $links{related} = \@hrefs;
     }
 
@@ -280,9 +288,9 @@ sub build {
             $self->process($e);
         };
         if ($@) {
-            croak 'While compiling ', $e->hname, ": \n\t", $@;
+            croak "While compiling $e: \n\t", $@;
         } else {
-            say STDERR 'Compiled ', $e->hname;
+            say STDERR "Compiled $e";
         }
     }
 }

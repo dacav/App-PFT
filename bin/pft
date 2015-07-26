@@ -71,6 +71,7 @@ use App::PFT::Cmd::Page;
 use App::PFT::Cmd::Make;
 use App::PFT::Cmd::Publish;
 use App::PFT::Cmd::Clean;
+use App::PFT::Cmd::Tag;
 
 use feature qw/say/;
 
@@ -82,6 +83,7 @@ my %COMMANDS = (
     make => \&App::PFT::Cmd::Make::main,
     pub => \&App::PFT::Cmd::Publish::main,
     clean => \&App::PFT::Cmd::Clean::main,
+    tag => \&App::PFT::Cmd::Tag::main,
 );
 
 unless(@ARGV) {
