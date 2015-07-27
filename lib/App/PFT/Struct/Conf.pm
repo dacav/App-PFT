@@ -34,8 +34,7 @@ our @EXPORT_OK = qw/
     $SITE_TITLE
     $SITE_URL
     $HOME_PAGE
-    $REMOTE_LOGIN
-    $REMOTE_PATH
+    %REMOTE
     $INPUT_ENC
     $OUTPUT_ENC
     cfg_load
@@ -52,8 +51,7 @@ our $AUTHOR;
 our $SITE_TITLE;
 our $SITE_URL;
 our $HOME_PAGE;
-our $REMOTE_LOGIN;
-our $REMOTE_PATH;
+our %REMOTE;
 our $INPUT_ENC;
 our $OUTPUT_ENC;
 
@@ -62,8 +60,12 @@ sub cfg_default {
     $SITE_TITLE = "My $0 website";
     $SITE_URL = 'http://example.org/';
     $HOME_PAGE = 'Welcome';
-    $REMOTE_LOGIN = 'user@example.org';
-    $REMOTE_PATH = '/home/user/public-html/whatever';
+    %REMOTE = (
+        Method => 'rsync+ssh',
+        Host => 'example.org',
+        User => 'user',
+        Path => '/home/user/public-html/whatever',
+    );
     $INPUT_ENC = $OUTPUT_ENC = 'utf-8';
 }
 
@@ -73,8 +75,7 @@ sub cfg_dump {
         SiteTitle => $SITE_TITLE,
         SiteURL => $SITE_URL,
         HomePage => $HOME_PAGE,
-        RemoteLogin => $REMOTE_LOGIN,
-        RemotePath => $REMOTE_PATH,
+        Remote => \%REMOTE,
         InputEnc => $INPUT_ENC,
         OutputEnc => $OUTPUT_ENC,
     };
@@ -85,7 +86,11 @@ sub check_assign {
 
     my @out;
     for my $name (@_) {
-        my $val = $cfg->{$name};
+        my $val = $cfg;
+        foreach (split /\./, $name) {
+            $val = $val->{$_};
+            last unless $val
+        }
         croak "Configuration $name is missing" unless $val;
         push @out, $val;
     }
@@ -102,8 +107,10 @@ sub cfg_load {
         $SITE_TITLE,
         $SITE_URL,
         $HOME_PAGE,
-        $REMOTE_LOGIN,
-        $REMOTE_PATH,
+        $REMOTE{Method},
+        $REMOTE{Host},
+        $REMOTE{User},
+        $REMOTE{Path},
         $INPUT_ENC,
         $OUTPUT_ENC,
     ) = check_assign $cfg,
@@ -111,8 +118,10 @@ sub cfg_load {
         'SiteTitle',
         'SiteURL',
         'HomePage',
-        'RemoteLogin',
-        'RemotePath',
+        'Remote.Method',
+        'Remote.Host',
+        'Remote.User',
+        'Remote.Path',
         'InputEnc',
         'OutputEnc',
     ;
