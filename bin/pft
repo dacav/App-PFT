@@ -32,19 +32,21 @@ Here follows a list of available commands:
 
 =over
 
-=item *
-B<init>: Initialize a B<pft> site in the current directory;
+=item * B<init>: Initialize a B<pft> site in the current directory;
 
-=item *
-B<blog>: Create a new blog entry;
+=item * B<blog>: Create a new blog entry;
 
-=item *
-B<page>: Create a new page;
+=item * B<page>: Create a new page;
 
-=item *
-B<build>: Build the website;
+=item * B<make>: Build the website;
 
-...
+=item * B<pub>: Publish on the Web;
+
+=item * B<clean>: Clear built tree;
+
+=item * B<tag>: Edit tag page;
+
+=item * B<help>: Show usage manual.
 
 =back
 
@@ -61,10 +63,9 @@ BEGIN { $0 = basename $0 }
 use Pod::Usage;
 use File::Spec::Functions qw/catfile/;
 
-use App::PFT::Struct::Conf qw/$CONF_FILENAME cfg_default cfg_load cfg_dump/;
+use App::PFT::Struct::Conf qw/$CONF_FILENAME cfg_default cfg_load/;
 use App::PFT::Util qw/findroot/;
 
-use App::PFT::Cmd::Help;
 use App::PFT::Cmd::Init;
 use App::PFT::Cmd::Blog;
 use App::PFT::Cmd::Page;
@@ -72,11 +73,11 @@ use App::PFT::Cmd::Make;
 use App::PFT::Cmd::Publish;
 use App::PFT::Cmd::Clean;
 use App::PFT::Cmd::Tag;
+use App::PFT::Cmd::Help;
 
 use feature qw/say/;
 
 my %COMMANDS = (
-    help => \&App::PFT::Cmd::Help::main,
     init => \&App::PFT::Cmd::Init::main,
     blog => \&App::PFT::Cmd::Blog::main,
     page => \&App::PFT::Cmd::Page::main,
@@ -84,6 +85,7 @@ my %COMMANDS = (
     pub => \&App::PFT::Cmd::Publish::main,
     clean => \&App::PFT::Cmd::Clean::main,
     tag => \&App::PFT::Cmd::Tag::main,
+    help => \&App::PFT::Cmd::Help::main,
 );
 
 unless(@ARGV) {
@@ -114,10 +116,7 @@ if (my $root = findroot type=>'file', name=>$CONF_FILENAME) {
     }
     cfg_load $root;
     chdir $root;
-} elsif ($command eq 'init') {
-    cfg_default;
-    cfg_dump '.';
-} elsif ($command ne 'help' && !&help_asked) {
+} elsif ($command ne 'init' && $command ne 'help' && !&help_asked) {
     say STDERR "Not a $0 site. Try running: $0 init";
     exit 1;
 }
