@@ -38,30 +38,19 @@ use Pod::Find qw/pod_where/;
 
 use File::Spec::Functions qw/catfile/;
 
-use App::PFT::Struct::Conf qw/$ROOT $REMOTE_LOGIN $REMOTE_PATH/;
+use App::PFT::Struct::Conf qw/$ROOT %REMOTE/;
 use App::PFT::Struct::Tree;
 
 use Carp;
 
 use Getopt::Long;
-Getopt::Long::Configure ("bundling");
+Getopt::Long::Configure 'bundling';
 
-sub main {
-    GetOptions(
-        'help|h' => sub {
-            pod2usage
-                -exitval => 1,
-                -verbose => 2,
-                -input => pod_where({-inc => 1}, __PACKAGE__)
-            ;
-        }
-    ) or exit 1;
+sub rsync_ssh {
+    my $tree = shift;
 
-    my $tree = App::PFT::Struct::Tree->new(
-        basepath => $ROOT
-    );
     my $src = catfile($tree->dir_build, '');
-    my $dst = "$REMOTE_LOGIN:$REMOTE_PATH";
+    my $dst = "$REMOTE{User}\@$REMOTE{Host}:$REMOTE{Path}";
 
     # Checks here maybe...
 
@@ -77,6 +66,26 @@ sub main {
         '--progress',
         $src, $dst,
     );
+}
+
+sub main {
+    GetOptions(
+        'help|h' => sub {
+            pod2usage
+                -exitval => 1,
+                -verbose => 2,
+                -input => pod_where({-inc => 1}, __PACKAGE__)
+            ;
+        }
+    ) or exit 1;
+
+    my $method = {
+        'rsync+ssh' => \&rsync_ssh,
+    }->{$REMOTE{Method}};
+    die 'Unknown method ', $REMOTE{Method} unless $method;
+
+    my $tree = App::PFT::Struct::Tree->new( basepath => $ROOT);
+    $method->($tree);
 }
 
 1;
