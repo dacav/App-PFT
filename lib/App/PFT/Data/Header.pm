@@ -37,7 +37,7 @@ has title => (
 );
 
 has author => (
-    isa => 'Maybe[Str]',
+    isa => 'Str',
     is => 'ro',
     lazy => 1,
     default => sub { $AUTHOR },
@@ -99,8 +99,8 @@ around BUILDARGS => sub {
         croak $@ if $@;
 
         my $enc = $params{encoding} = $hdr->{Encoding} || $INPUT_ENC;
-        $params{title} = decode($enc, $hdr->{Title});
-        $params{author} = decode($enc, $hdr->{Author}) || 'ANONYMOUS';
+        $params{title} = decode($enc, $hdr->{Title}) || croak 'Title is strictly required';
+        $params{author} = decode($enc, $hdr->{Author});
 
         my $tags = $hdr->{Tags};
         $params{tags} = ref $tags eq 'ARRAY' ? $tags
