@@ -43,12 +43,19 @@ has fname => (
 );
 
 sub edit() {
-    my $path = shift->path;
+    my $self = shift;
+    my $path = $self->path;
+    croak 'Undefined env variable $EDITOR' unless defined $ENV{EDITOR};
     system($ENV{EDITOR}, $path);
 
     if (-z $path) {
         print STDERR 'Removing file', $path, "\n";
         unlink $path;
+    } else {
+        eval {
+            App::PFT::Data::Header->new(-load => $self->file);
+        };
+        say STDERR "WARNING: Bad file format in $path: $@" if $@;
     }
 }
 
