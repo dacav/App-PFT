@@ -112,6 +112,7 @@ sub cfg_load {
         $REMOTE{Host},
         $REMOTE{User},
         $REMOTE{Path},
+        $REMOTE{Port},
         $INPUT_ENC,
         $OUTPUT_ENC,
     ) = check_assign $cfg,
@@ -123,6 +124,7 @@ sub cfg_load {
         'Remote.Host?',
         'Remote.User?',
         'Remote.Path?',
+        'Remote.Port?',
         'InputEnc',
         'OutputEnc',
     ;

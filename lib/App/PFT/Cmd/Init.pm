@@ -144,8 +144,10 @@ sub main {
         'site-title=s' => \$App::PFT::Struct::Conf::SITE_TITLE,
         'site-url=s' => \$App::PFT::Struct::Conf::SITE_URL,
         'home-page=s' => \$App::PFT::Struct::Conf::HOME_PAGE,
-        'remote-login=s' => \$App::PFT::Struct::Conf::REMOTE_LOGIN,
-        'remote-path=s' => \$App::PFT::Struct::Conf::REMOTE_PATH,
+        'remote-host=s' => \$App::PFT::Struct::Conf::REMOTE{Host},
+        'remote-user=s' => \$App::PFT::Struct::Conf::REMOTE{User},
+        'remote-path=s' => \$App::PFT::Struct::Conf::REMOTE{Path},
+        'remote-port=i' => \$App::PFT::Struct::Conf::REMOTE{Port},
         'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
         'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
 

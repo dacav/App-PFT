@@ -60,12 +60,14 @@ sub rsync_ssh {
 
     my $src = catfile($tree->dir_build, '');
     my $dst = "$REMOTE{User}\@$REMOTE{Host}:$REMOTE{Path}";
+    my $port = $REMOTE{Port} || 22;
 
-    # Checks here maybe...
+    local $, = "\n\t";
+    say STDERR 'Sending with RSync', "from $src", "to $dst";
 
-    say STDERR 'Sending with RSync, from ', $src, ' to ', $dst;
 
     system('rsync',
+        '-e', "ssh -p $port",
         '--recursive',
         '--verbose',
         '--copy-links',
