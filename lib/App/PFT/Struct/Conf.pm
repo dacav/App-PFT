@@ -87,11 +87,12 @@ sub check_assign {
     my @out;
     for my $name (@_) {
         my $val = $cfg;
-        foreach (split /\./, $name) {
+        my $optional = $name =~ /\?$/;
+        foreach (split /\./, $optional ? substr($name, 0, -1) : $name) {
             $val = $val->{$_};
             last unless $val
         }
-        croak "Configuration $name is missing" unless $val;
+        croak "Configuration $name is missing" unless defined($val) || $optional;
         push @out, $val;
     }
 
