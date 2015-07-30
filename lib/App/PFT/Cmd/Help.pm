@@ -31,19 +31,21 @@ Here follows a list of available commands:
 
 =over
 
-=item *
-B<init>: Initialize a B<pft> site in the current directory;
+=item * B<init>: Initialize a B<pft> site in the current directory;
 
-=item *
-B<blog>: Create a new blog entry;
+=item * B<blog>: Create a new blog entry;
 
-=item *
-B<page>: Create a new page;
+=item * B<page>: Create a new page;
 
-=item *
-B<build>: Build the website;
+=item * B<make>: Build the website;
 
-...
+=item * B<pub>: Publish on the Web;
+
+=item * B<clean>: Clear built tree;
+
+=item * B<tag>: Edit tag page;
+
+=item * B<help>: Show usage manual.
 
 =back
 
