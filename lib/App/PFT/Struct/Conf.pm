@@ -87,11 +87,12 @@ sub check_assign {
     my @out;
     for my $name (@_) {
         my $val = $cfg;
-        foreach (split /\./, $name) {
+        my $optional = $name =~ /\?$/;
+        foreach (split /\./, $optional ? substr($name, 0, -1) : $name) {
             $val = $val->{$_};
             last unless $val
         }
-        croak "Configuration $name is missing" unless $val;
+        croak "Configuration $name is missing" unless defined($val) || $optional;
         push @out, $val;
     }
 
@@ -111,6 +112,7 @@ sub cfg_load {
         $REMOTE{Host},
         $REMOTE{User},
         $REMOTE{Path},
+        $REMOTE{Port},
         $INPUT_ENC,
         $OUTPUT_ENC,
     ) = check_assign $cfg,
@@ -119,9 +121,10 @@ sub cfg_load {
         'SiteURL',
         'HomePage',
         'Remote.Method',
-        'Remote.Host',
-        'Remote.User',
-        'Remote.Path',
+        'Remote.Host?',
+        'Remote.User?',
+        'Remote.Path?',
+        'Remote.Port?',
         'InputEnc',
         'OutputEnc',
     ;
