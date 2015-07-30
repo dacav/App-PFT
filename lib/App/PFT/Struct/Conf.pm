@@ -120,9 +120,9 @@ sub cfg_load {
         'SiteURL',
         'HomePage',
         'Remote.Method',
-        'Remote.Host',
-        'Remote.User',
-        'Remote.Path',
+        'Remote.Host?',
+        'Remote.User?',
+        'Remote.Path?',
         'InputEnc',
         'OutputEnc',
     ;

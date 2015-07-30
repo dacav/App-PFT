@@ -46,8 +46,17 @@ use Carp;
 use Getopt::Long;
 Getopt::Long::Configure 'bundling';
 
+sub check {
+    foreach (@_) {
+        croak "Cannot use $REMOTE{Method}: missing Remote.$_ in pft.yaml"
+            unless defined $REMOTE{$_}
+    }
+}
+
 sub rsync_ssh {
     my $tree = shift;
+
+    check qw/User Host Path/;
 
     my $src = catfile($tree->dir_build, '');
     my $dst = "$REMOTE{User}\@$REMOTE{Host}:$REMOTE{Path}";
