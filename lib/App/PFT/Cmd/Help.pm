@@ -64,7 +64,8 @@ The initialization command produces the following filesystem structure:
     │   ├── attachments
     │   ├── blog
     │   ├── pages
-    │   └── pics
+    │   ├── pics
+    │   └── tags
     ├── inject
     ├── pft.yaml
     └── templates
@@ -95,22 +96,32 @@ mangling the title:
     $title =~ s/-*$//;     # trailing '-' are dropped
     $basename = lc $title; # everything is lower-cased
 
-=head2 Editing files
-
-TODO: mention how to remove a file automatically
-
-
-=head1 CONTENT FILE FORMAT
+=head1 CONTENT, EDITING AND FORMAT
 
 The skeleton of a content file is usually created by B<pft> when a blog
-entry or a page is edited. Content files are always positioned under the
-C<I<ROOT>/content> directory.
+entry, a page or a tag is edited for the first time. Content files are
+always positioned under the C<I<ROOT>/content> directory.
 
 Content files are made of plain text. A first section is a I<YAML> header
 representing the configuration for the content. The header is followed by
 a line with three dashes (C<--->) which marks the beginning of the actual
 content document.  The document will be parsed as I<MultiMarkdown> when
 compiled.
+
+=head2 Editing files
+
+The C<pft blog>, C<pft page> and C<pft tag> commands will act as helpers
+for editing content.
+
+They will access a new file in the correct filesystem position, which
+depends on the kind of content. If the target file does not exists, all
+three commands will start by generating a skeleton. In all cases an editor
+will be opened on the file.  The C<$EDITOR> environment variable is
+I<required> and will be honored.
+
+After the editor is closed a warning will be issued if the header is
+invalid. If the file is empty (as in zero bytes) it will be removed from
+the filesystem.
 
 =head2 Special references handling
 
