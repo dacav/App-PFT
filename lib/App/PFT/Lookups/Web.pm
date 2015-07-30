@@ -33,9 +33,8 @@ sub search_duckduckgo {
     my $bang = shift @$hints;
 
     my $url = 'https://duckduckgo.com/lite/?q=';
-    $url .= '%21' . $bang if $bang;
-    unshift @$hints, $url;
-    join "%20", @$hints;
+    $url .= "%21$bang%20" if $bang;
+    $url . join '%20', @$hints;
 }
 
 sub search_man {
