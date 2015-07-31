@@ -425,7 +425,12 @@ __DATA__
     [% IF links.related %]
     <ul>
       [% FOREACH l = links.related %]
-        <li>[% l.date.y %] / [% l.date.m %] / [% l.date.d %]:
+        <li>
+        [% IF l.date %]
+          [% l.date.y %] / [% l.date.m %] / [% l.date.d %]:
+        [% ELSE %]
+          Page:
+        [% END %]
         <a href="[% l.href %]">[% l.slug %]</a></li>
       [% END %]
     </ul>
