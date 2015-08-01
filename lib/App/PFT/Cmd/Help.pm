@@ -76,6 +76,10 @@ SITE> section of this document.
 
 =head2 Configuration in pft.yaml
 
+The configuration file is created automatically by the C<pft init> command
+(run C<pft init --help> for further information).  The file is formatted
+as a YAML document
+
 =head2 Title Mangling
 
 The C<pft blog> and C<pft page> commands can be used to generate new blog
@@ -317,6 +321,15 @@ Examples:
 =back
 
 =head1 COMPILATION OF A SITE
+
+A site is built into HTML by using the C<pft make> command. This will
+compile all the content files found in C<I<ROOT>/content>>, and build them
+inside the C<I<ROOT>/build> directory. Additional pages are also created,
+like I<tag pages> and I<month pages>, which will index regular contents.
+
+=head2 Templates
+
+=head2 Injection
 
 =cut
 
