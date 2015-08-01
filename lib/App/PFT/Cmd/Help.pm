@@ -17,6 +17,7 @@
 #
 package App::PFT::Cmd::Help;
 
+=encoding utf-8
 =head1 NAME
 
 pft - Static blog and website manager
@@ -61,16 +62,23 @@ The initialization command produces the following filesystem structure:
 
     ROOT
     ├── content
-    │   ├── attachments
-    │   ├── blog
-    │   ├── pages
-    │   ├── pics
-    │   └── tags
-    ├── inject
-    ├── pft.yaml
-    └── templates
+    │   ├── attachments     - Location for attachments
+    │   ├── blog            - Root location for blog entries source files
+    │   ├── pages           - Location for pages source files
+    │   ├── pics            - Location for pictures lookup
+    │   └── tags            - Location for tag pages source files
+    ├── inject              - Content to bulk inject the online site root
+    ├── pft.yaml            - Configuration file
+    └── templates           - Location for templates
+
+The purposes of the directories is explained in the B<COMPILATION OF A
+SITE> section of this document.
 
 =head2 Configuration in pft.yaml
+
+The configuration file is created automatically by the C<pft init> command
+(run C<pft init --help> for further information).  The file is formatted
+as a YAML document
 
 =head2 Title Mangling
 
@@ -95,6 +103,27 @@ mangling the title:
     $title =~ s/--+/-/g;   # multiple '-' are packed together
     $title =~ s/-*$//;     # trailing '-' are dropped
     $basename = lc $title; # everything is lower-cased
+
+The following I<titles> will therefore be reduced to the same mangled file
+name:
+
+=over
+
+=item * C<Here is me eating pork chop>
+
+=item * C<Here is ME eating -- pork/chop>
+
+=item * C<Here-is-me-eating-pork-chop>
+
+=back
+
+And for all of them the resulting filename will be:
+
+=over
+
+=item * C<here-is-me-eating-pork-chop>
+
+=back
 
 =head1 CONTENT, EDITING AND FORMAT
 
@@ -122,6 +151,30 @@ I<required> and will be honored.
 After the editor is closed a warning will be issued if the header is
 invalid. If the file is empty (as in zero bytes) it will be removed from
 the filesystem.
+
+A header is invalid if it's not a valid YAML document or if it does not
+contain at least the C<Title> field.
+
+For specific information about pages, blog entries and tags editing, see
+
+    pft page -h
+    pft blog -h
+    pft tag -h
+
+=head2 Tagging
+
+As in other blogging platforms, content can be assigned with multiple tags.
+When compiling the site into HTML, B<pft> create, for each existing tag,
+a I<tag page>. The page will contain an optional description of the tag,
+and link to all tagged contents.
+
+A description for the tag named I<foo> can be prepared by invoking the
+C<pft tag> command as follows:
+
+    pft tag foo
+
+This will create the C<I<ROOT>/content/tags/foo> content file and open it
+file with C<$EDITOR>.
 
 =head2 Special references handling
 
@@ -178,8 +231,8 @@ The actual file name of the content in C<ROOT/content/pages>;
 =item *
 
 Any title which results in the correct file name after mangling (see the
-B<Title Mangling> section). Mind about spaces, which must be replaced by
-C</> symbols.
+B<Title Mangling> section of this document). Mind about spaces, which must
+be replaced by C</> symbols.
 
 For example, the following forms are equivalently pointing to the same
 page, previously created with the C<pft page 'Foo, Bar '+' Baz'> command:
@@ -249,9 +302,9 @@ on I<StackOverflow>):
 
 =item Manpages
 
-C<:web:man/I<name>
+C<:web:man/I<name>>
 
-C<:web:man/I<name>/I<section>
+C<:web:man/I<name>/I<section>>
 
 Point to an online manpage. Manual section can be optionally supplied.
 
@@ -266,6 +319,17 @@ Examples:
 =back
 
 =back
+
+=head1 COMPILATION OF A SITE
+
+A site is built into HTML by using the C<pft make> command. This will
+compile all the content files found in C<I<ROOT>/content>>, and build them
+inside the C<I<ROOT>/build> directory. Additional pages are also created,
+like I<tag pages> and I<month pages>, which will index regular contents.
+
+=head2 Templates
+
+=head2 Injection
 
 =cut
 
