@@ -71,8 +71,8 @@ The initialization command produces the following filesystem structure:
     ├── pft.yaml            - Configuration file
     └── templates           - Location for templates
 
-The purposes of the directories is explained in the B<COMPILATION OF A
-SITE> section of this document.
+The purposes of the directories is explained in the B<BUILDING A SITE>
+section of this document.
 
 =head2 Configuration in pft.yaml
 
@@ -320,7 +320,7 @@ Examples:
 
 =back
 
-=head1 COMPILATION OF A SITE
+=head1 BUILDING A SITE
 
 A site is built into HTML by using the C<pft make> command. This will
 compile all the content files found in C<I<ROOT>/content>>, and build them
@@ -329,7 +329,44 @@ like I<tag pages> and I<month pages>, which will index regular contents.
 
 =head2 Templates
 
+B<pft> uses the I<Template::Alloy> engine to inject the content inside
+HTML files.
+
+The compilation process requires three template files to be inside the
+C<I<ROOT>/templates> directory:
+
+=over 1
+
+=item * C<entry.html> is used as template for blog entries;
+
+=item * C<page.html> is used as template for content pages;
+
+=item * C<gen.html> is used as template for all generated pages;
+
+=back
+
+Upon initialization with C<pft init>, the C<I<ROOT>/templates> directory
+is populated with template called C<default.html>, which is good enough
+for all three kind of pages. It is symlinked to C<entry.html>,
+C<page.html> and C<gen.html>.
+
+Customizations of the theme and inclusion of third party scripts can be
+achievd by modifying the C<default.html> file, or by replacing the desired
+template.
+
+The original configuration can be restored by removing the files to be
+reset and running C<pft init> again.
+
 =head2 Injection
+
+In some configurations, a website needs some additional data to be put
+online. A good example could be the C<.htaccess> file for the Apache
+webserver.
+
+Any file or directory which is need, online together with the site, can be
+copied or symlinked in the C<I<ROOT>/inject> directory.  The C<pft make>
+command will take care of symlinking it into the C<I<ROOT>/build>
+directory upon compilation.
 
 =cut
 
