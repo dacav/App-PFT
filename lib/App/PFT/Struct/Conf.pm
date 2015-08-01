@@ -37,6 +37,7 @@ our @EXPORT_OK = qw/
     %REMOTE
     $INPUT_ENC
     $OUTPUT_ENC
+    cfg_is_loaded
     cfg_load
     cfg_dump
     cfg_default
@@ -98,6 +99,8 @@ sub check_assign {
 
     @out;
 }
+
+sub cfg_is_loaded { defined $ROOT }
 
 sub cfg_load {
     $ROOT = shift;

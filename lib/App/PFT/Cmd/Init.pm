@@ -82,7 +82,7 @@ use IO::File;
 use File::Spec::Functions qw/catfile/;
 
 use App::PFT::Struct::Tree;
-use App::PFT::Struct::Conf qw/cfg_default cfg_dump $HOME_PAGE/;
+use App::PFT::Struct::Conf qw/cfg_is_loaded cfg_default cfg_dump $ROOT $HOME_PAGE/;
 use App::PFT::Util;
 
 use Exporter qw/import/;
@@ -131,7 +131,7 @@ sub main {
             -input => pod_where({-inc => 1}, __PACKAGE__)
     }
 
-    cfg_default;
+    cfg_default unless cfg_is_loaded;
 
     my %opts = (
         home => 1,
@@ -152,27 +152,29 @@ sub main {
         'home!' => \$opts{home},
     );
 
-    cfg_dump '.';
+    if (cfg_is_loaded) {
+        say STDERR 'Configuration file caressed in ', $ROOT;
+        cfg_dump $ROOT;
+    } else {
+        say STDERR 'Creating configuration';
+        cfg_dump '.';
+    }
 
     my $tree = App::PFT::Struct::Tree->new(basepath => '.');
-
-    my $default = 'default.html';
+    my $default = catfile($tree->dir_templates, 'default.html');
     unless (-e $default) {
-        say STDERR "Creating template $default";
-        my $default_templ = IO::File->new(
-            catfile($tree->dir_templates, $default),
-            'w'
-        );
-        say $default_templ <App::PFT::Cmd::Init::DATA>;
+        say STDERR 'Creating template ', $default;
+        my $fd = IO::File->new($default, 'w');
+        say $fd <App::PFT::Cmd::Init::DATA>;
         close App::PFT::Cmd::Init::DATA;
     }
 
-    my $page = catfile($tree->dir_templates, 'page.html');
-    App::PFT::Util::ln $default, $page, 1 unless -e $page;
-    my $entry = catfile($tree->dir_templates, 'entry.html');
-    App::PFT::Util::ln $default, $entry, 1 unless -e $entry;
-    my $gen = catfile($tree->dir_templates, 'gen.html');
-    App::PFT::Util::ln $default, $gen, 1 unless -e $gen;
+    foreach (qw/page.html entry.html gen.html/) {
+        my $fn = catfile($tree->dir_templates, $_);
+        unless (-e $fn) {
+            App::PFT::Util::ln 'default.html', $fn, 1
+        }
+    }
 
     my $readme = catfile($tree->dir_templates, 'README');
     unless (-e $readme) {

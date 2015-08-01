@@ -111,9 +111,6 @@ sub help_asked {
 }
 
 if (my $root = findroot type=>'file', name=>$CONF_FILENAME) {
-    if ($command eq 'init') {
-        say STDERR "Already initialized in $root";
-    }
     cfg_load $root;
     chdir $root;
 } elsif ($command ne 'init' && $command ne 'help' && !&help_asked) {
