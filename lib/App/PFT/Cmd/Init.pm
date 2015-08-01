@@ -142,12 +142,13 @@ sub main {
         'site-title=s' => \$App::PFT::Struct::Conf::SITE_TITLE,
         'site-url=s' => \$App::PFT::Struct::Conf::SITE_URL,
         'home-page=s' => \$App::PFT::Struct::Conf::HOME_PAGE,
+        'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
+        'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
+        'remote-method=s' => \$App::PFT::Struct::Conf::REMOTE{Method},
         'remote-host=s' => \$App::PFT::Struct::Conf::REMOTE{Host},
         'remote-user=s' => \$App::PFT::Struct::Conf::REMOTE{User},
         'remote-path=s' => \$App::PFT::Struct::Conf::REMOTE{Path},
         'remote-port=i' => \$App::PFT::Struct::Conf::REMOTE{Port},
-        'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
-        'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
 
         'home!' => \$opts{home},
     );
