@@ -31,12 +31,14 @@ use strict;
 use warnings;
 
 use Exporter qw/import/;
-use feature qw/say/;
+use feature qw/say state/;
 
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
 
 use File::Spec::Functions qw/catfile/;
+use File::Path qw/make_path remove_tree/;
+use File::Copy::Recursive;
 
 use App::PFT::Struct::Conf qw/$ROOT %REMOTE/;
 use App::PFT::Struct::Tree;
@@ -79,6 +81,30 @@ sub rsync_ssh {
     );
 }
 
+sub todir {
+    state $relative = do {
+        my $sup = File::Spec::Functions::updir;
+        qr/^$sup/;
+    };
+    my $tree = shift;
+
+    check qw/Path/;
+
+    my $dst = $REMOTE{Path} =~ /$relative/
+        ? catfile($tree->basepath, $REMOTE{Path})
+        : $REMOTE{Path}
+        ;
+
+    remove_tree $dst;
+    make_path $dst, { verbose => 1 };
+
+    local $File::Copy::Recursive::CopyLink = 0;
+    File::Copy::Recursive::rcopy_glob(
+        catfile($tree->dir_build, '*'),
+        $dst,
+    );
+}
+
 sub main {
     GetOptions(
         'help|h' => sub {
@@ -92,6 +118,7 @@ sub main {
 
     my $method = {
         'rsync+ssh' => \&rsync_ssh,
+        'todir' => \&todir,
     }->{$REMOTE{Method}};
     die 'Unknown method ', $REMOTE{Method} unless $method;
 
