@@ -15,61 +15,65 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Content::Blob;
+package App::PFT::Content::Month;
 
 use strict;
 use warnings;
 
-use File::Basename qw/basename/;
-use Carp;
-
-use namespace::autoclean;
 use Moose;
+use namespace::autoclean;
 
-has group => (
+use App::PFT::Data::Date;
+
+has date => (
     is => 'ro',
-    isa => 'Str',
+    isa => 'App::PFT::Data::Date',
+    required => 1,
 );
 
-sub tostr {
-    'Blob(' . shift->fname . ')'
-}
+has title => (
+    is => 'ro',
+    isa => 'Str',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        sprintf('%04d-%02d', $self->year, $self->month)
+    },
+);
 
-sub title {
-    shift->fname
-}
-
-sub date {
-    undef
-}
-
-sub from_root {
+sub from_root() {
     my $self = shift;
     (
-        $self->group,
-        $self->fname,
-    )
+        'blog',
+        sprintf('%04d-%02d', $self->year, $self->month),
+    );
+}
+
+sub tostr {
+    my $self = shift;
+    sprintf 'Month(%04d/%02d)', $self->year, $self->month
 }
 
 sub template {
-    shift->group;
+    'gen'
 }
 
 around BUILDARGS => sub {
-    my($orig, $class, %params) = @_;
+    my ($orig,$class,%params) = @_;
 
-    my $fn = $params{path};
-    if ($params{'-verify'}) {
-        croak "File $fn does not exist" unless -e $fn;
+    unless (exists $params{date}) {
+        $params{date} = App::PFT::Data::Date->new(
+            year => delete $params{year},
+            month => delete $params{month},
+        );
     }
-    $params{fname} = basename $fn;
-    
-    $class->$orig(%params);
+
+    return $class->$orig(%params);
 };
 
 with qw/
     App::PFT::Content::Base
-    App::PFT::Content::File
+    App::PFT::Content::Linked
 /;
 
 no Moose;

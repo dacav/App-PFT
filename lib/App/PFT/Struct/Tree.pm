@@ -49,6 +49,8 @@ has basepath => (
     required => 1,
 );
 
+our $Verbose = 1;
+
 sub BUILD {
     my $bp = $_[0]->basepath;
     make_path
@@ -60,7 +62,7 @@ sub BUILD {
         catdir($bp, 'content', 'attachments'),
         catdir($bp, 'inject'),
         catdir($bp, 'templates'),
-        { verbose => 1 }
+        { verbose => $Verbose }
 }
 
 my $textinit = sub {

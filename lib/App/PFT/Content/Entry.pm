@@ -25,34 +25,12 @@ use Carp;
 use namespace::autoclean;
 use Moose;
 
-extends 'App::PFT::Content::Text';
+extends qw/App::PFT::Content::Text/;
 
-has date => (is => 'ro', isa => 'App::PFT::Data::Date');
-has month => (
-    is => 'rw',
-    isa => 'Maybe[App::PFT::Content::MonthPage]',
-    weak_ref => 1,
-);
-
-has prev => (
-    is => 'rw',
-    isa => 'Maybe[App::PFT::Content::Entry]',
-    weak_ref => 1,
-    predicate => 'has_prev',
-);
-
-has month => (
-    is => 'rw',
-    isa => 'Maybe[App::PFT::Content::MonthPage]',
-    weak_ref => 1,
-    predicate => 'has_month',
-);
-
-has next => (
-    is => 'rw',
-    isa => 'Maybe[App::PFT::Content::Entry]',
-    weak_ref => 1,
-    predicate => 'has_next',
+has date => (
+    is => 'ro',
+    isa => 'App::PFT::Data::Date',
+    required => 1,
 );
 
 sub tostr {
@@ -60,7 +38,7 @@ sub tostr {
     'Entry(' . $self->fname . ', ' . $self->date->repr . ')';
 }
 
-sub from_root() {
+sub from_root {
     my $self = shift;
     my $date = $self->date;
     (
@@ -93,10 +71,15 @@ sub lookup {
     $self->SUPER::lookup(@_);
 }
 
-sub template() { 'entry' }
-sub has_links() { 0 }
+sub template {
+    'entry'
+}
 
-with 'App::PFT::Content::Base';
+with qw/
+    App::PFT::Content::Base
+    App::PFT::Content::File
+    App::PFT::Content::Linked
+/;
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
