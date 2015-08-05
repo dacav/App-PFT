@@ -130,7 +130,6 @@ sub page {
 
     $textinit->($basedir, $path, $hdr) unless ($opts{'-noinit'});
     $self->pages->{$slug} = $out;
-    $out;
 }
 
 sub entry {
@@ -162,7 +161,50 @@ sub entry {
     }
 
     $self->entries->{$key} = $out;
-    $out;
+}
+
+sub month {
+    my $self = shift;
+    my %opts = @_;
+
+    my $date = do {
+        if (my $d = $opts{date}) {
+            die unless $d->isa('App::PFT::Data::Date');
+            $d;
+        } else {
+            App::PFT::Data::Date->new(
+                year => $opts{year},
+                month => $opts{month},
+            )
+        }
+    };
+
+    my $key = sprintf '%04d-%02d', $date->year, $date->month;
+    my $have = $self->months->{$key};
+
+    if ($have && $have->isa('App::PFT::Content::MonthPage')) {
+        return $have;
+    }
+
+    my $out = do {
+        my $path = catdir $self->basepath, 'content', 'blog', $key, 'month';
+
+        if (-e $path || $opts{'-create'}) {
+            App::PFT::Content::MonthPage->new(
+                tree => $self,
+                path => $path,
+                date => $date,
+            );
+        } else {
+            $have || App::PFT::Content::Month->new(
+                tree => $self,
+                title => $key,
+                date => $date,
+            );
+        }
+    };
+
+    $self->months->{$key} = $out;
 }
 
 # ------- previous -----------

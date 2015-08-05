@@ -51,11 +51,19 @@ sub from_root() {
 
 sub tostr {
     my $self = shift;
-    sprintf 'Month(%04d/%02d)', $self->year, $self->month
+    sprintf 'Month(%04d/%02d)', $self->date->year, $self->date->month
 }
 
 sub template {
     'gen'
+}
+
+sub create {
+    my $self = shift;
+    $self->tree->month(
+        date => $self->date,
+        -create => 1,
+    )
 }
 
 around BUILDARGS => sub {
