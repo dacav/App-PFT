@@ -30,17 +30,25 @@ use overload
 has year => (
     is => 'ro',
     isa => 'Int',
+    predicate => 'has_year',
 );
 
 has month => (
     is => 'ro',
     isa => 'Int',
+    predicate => 'has_month',
 );
 
 has day => (
     is => 'ro',
     isa => 'Int',
+    predicate => 'has_day',
 );
+
+sub is_complete {
+    my $self = shift;
+    $self->has_year && $self->has_month && $self->has_day;
+}
 
 sub repr {
     my $self = shift;
@@ -106,8 +114,9 @@ around BUILDARGS => sub {
         die "Invalid month: $m" unless ($m >= 1 && $m <= 12);
     }
 
-    my $d = $params{day};
-    die "Invalid day: $d" if ($d !~ m/^\d{1,2}$/ || $d < 1 || $d > 31);
+    if (my $d = $params{day}) {
+        die "Invalid day: $d" if ($d !~ m/^\d{1,2}$/ || $d < 1 || $d > 31);
+    }
 
     return $class->$orig(%params);
 };

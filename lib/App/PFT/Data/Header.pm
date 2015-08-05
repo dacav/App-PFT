@@ -29,6 +29,7 @@ use Carp;
 use YAML::Tiny;
 
 use App::PFT::Struct::Conf qw/$AUTHOR $INPUT_ENC/;
+use App::PFT::Util qw/slugify/;
 
 has title => (
     isa => 'Str',
@@ -46,6 +47,7 @@ has author => (
 has encoding => (
     isa => 'Maybe[Str]',
     is => 'ro',
+    lazy => 1,
     default => sub { $INPUT_ENC },
 );
 
@@ -56,7 +58,7 @@ has tags => (
     default => sub {[]},
 );
 
-sub dump() {
+sub dump {
     my($self) = @_;
     YAML::Tiny::Dump {
         Title => $self->title,
@@ -66,12 +68,8 @@ sub dump() {
     }
 }
 
-sub flat_title() {
-    my $out = $_[0]->title;
-    $out =~ s/\W/-/g;
-    $out =~ s/--+/-/g;
-    $out =~ s/-*$//;
-    lc $out;
+sub slug {
+    slugify shift->title;
 }
 
 around BUILDARGS => sub {
@@ -91,7 +89,7 @@ around BUILDARGS => sub {
                     $text .= $_;
                 }
             } else {
-                die "Only supporting GLOB and strings. Got $type" if $type;
+                die "Only supporting GLOB and IO::File. Got $type" if $type;
                 $text = $from;
             }
             eval { YAML::Tiny::Load($text) };
