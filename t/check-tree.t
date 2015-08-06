@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use feature qw/say/;
-use Test::More tests => 18;
+use Test::More tests => 22;
 
 use Scalar::Util qw/refaddr/;
 
@@ -82,8 +82,22 @@ do {
         ok $a2 == $a3, "Same month after create $a2 vs $a3";
         ok $a3 == $a4, "Same month after create $a3 vs $a4";
     };
-;
+};
 
+do {
+    my $t1 = $tree->tag(name => 'foo  bar baz');
+    ok $t1->isa('App::PFT::Content::Tag'), 'Virtual tag';
+    ok $t1->name eq 'Foo Bar Baz', 'Tag name conversion: ' . $t1->name;
+
+    my $t2 = $t1->create;
+
+    do {
+        my $t3 = $tree->tag(name => 'Foo bAr BaZ');
+
+        my($a1, $a2, $a3) = map { refaddr $_ } ($t1, $t2, $t3);
+        ok $a1 != $a2, "Different tag after create $a1 vs $a2";
+        ok $a2 == $a3, "Same tag after create $a2 vs $a3";
+    };
 };
 
 done_testing()

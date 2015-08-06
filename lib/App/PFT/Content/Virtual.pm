@@ -15,57 +15,19 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Content::Tag;
+package App::PFT::Content::Virtual;
 
 use strict;
 use warnings;
 
-use Moose;
+use Carp;
+
+use Moose::Role;
 use namespace::autoclean;
 
-has name => (
-    is => 'ro',
-    isa => 'Str',
-    required => 1,
-);
-
-sub date {
-    undef
-}
-
-sub template {
-    'gen'
-}
-
-sub title {
-    shift->name
-}
-
-sub from_root {
-    (
-        'tag',
-        shift->name,
-    )
-}
-
-sub tostr {
-    sprintf 'Tag(' . shift->name . ')'
-}
-
-sub create {
-    my $self = shift;
-    $self->tree->tag(
-        name => $self->name,
-        -create => 1,
-    )
-}
-
-with qw/
-    App::PFT::Content::Base
-    App::PFT::Content::Virtual
+requires qw/
+    create
 /;
 
 no Moose;
-__PACKAGE__->meta->make_immutable;
-
 1;

@@ -34,6 +34,10 @@ sub tostr {
     sprintf 'TagPage(' . shift->name . ')'
 }
 
+sub title {
+    shift->header->title;
+}
+
 with qw/
     App::PFT::Content::Base
     App::PFT::Content::File

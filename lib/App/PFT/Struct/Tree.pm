@@ -207,6 +207,38 @@ sub month {
     $self->months->{$key} = $out;
 }
 
+sub tag {
+    my $self = shift;
+    my %opts = @_;
+
+    my $name = join ' ', map { ucfirst } split /\s+/, ($opts{name} || die);
+    my $slug = App::PFT::Util::slugify($opts{name});
+    my $have = $self->tags->{$slug};
+
+    if ($have && $have->isa('App::PFT::Content::TagPage')) {
+        return $have;
+    }
+
+    my $out = do {
+        my $path = catdir($self->basepath, 'content', 'tags', $slug);
+
+        if (-e $path || $opts{'-create'}) {
+            App::PFT::Content::TagPage->new(
+                tree => $self,
+                path => $path,
+                name => $name,
+            );
+        } else {
+            $have || App::PFT::Content::Tag->new(
+                tree => $self,
+                name => $name,
+            );
+        }
+    };
+
+    $self->tags->{$slug} = $out;
+}
+
 # ------- previous -----------
 
 #sub latest_entry {
