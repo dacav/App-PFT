@@ -4,15 +4,18 @@ use warnings;
 use strict;
 
 use feature qw/say/;
-use Test::More tests => 22;
+use Test::More tests => 25;
 
 use Scalar::Util qw/refaddr/;
 
 use File::Temp;
 use File::Spec::Functions qw/catdir catfile/;
 
+use IO::File;
+
 use App::PFT::Struct::Tree;
 use App::PFT::Data::Date;
+use App::PFT::Data::Header;
 
 my $dir = File::Temp->newdir();
 
@@ -24,6 +27,9 @@ my $tree = App::PFT::Struct::Tree->new(
 for my $dn ('content', 'inject', 'templates') {
     ok -d catfile($dir, $dn), "Creation of dir $dn";
 }
+
+
+# -------------------- Creation of entries ------------------------------
 
 for my $i (1 .. 4) {
     my $e = $tree->entry(
@@ -40,6 +46,8 @@ for my $i (1 .. 4) {
         'Title entry (' . $e->fname . ')';
 };
 
+# -------------------- Creation of pages --------------------------------
+
 do {
     my $e = $tree->page(
         title => 'Hello 2',
@@ -49,6 +57,8 @@ do {
     ok $e->fname eq 'hello-2',
         'Title page (' . $e->fname . ')';
 };
+
+# -------------------- Creation of months -------------------------------
 
 do {
     my $m1 = $tree->month(
@@ -66,12 +76,29 @@ do {
         ok $a1 == $a2, "Same month $a1 vs $a2";
     };
 
+    my $m2 = $tree->month(
+        month => 'oct',
+        year => 2015,
+        -create => 1,
+        header => App::PFT::Data::Header->new(
+            title => 'Herp derp',
+            author => 'perl',
+            encoding => 'utf-8',
+        )
+    );
+
+    do {
+        ok -e $m2->path, 'File was created';
+        my $hdr = eval {
+            App::PFT::Data::Header->new(
+                -load => IO::File->new($m2->path, 'r')
+            )
+        };
+        ok !$@, 'Header is valid';
+        ok $hdr->slug eq 'herp-derp', '...and soud (' . $hdr->slug . ')';
+    };
+
     do { 
-        my $m2 = $tree->month(
-            month => 'oct',
-            year => 2015,
-            -create => 1,
-        );
         my $m3 = $tree->month(
             month => 'oct',
             year => 2015,
@@ -84,6 +111,8 @@ do {
     };
 };
 
+# -------------------- Creation of tags ---------------------------------
+
 do {
     my $t1 = $tree->tag(name => 'foo  bar baz');
     ok $t1->isa('App::PFT::Content::Tag'), 'Virtual tag';
@@ -92,7 +121,7 @@ do {
     my $t2 = $t1->create;
 
     do {
-        my $t3 = $tree->tag(name => 'Foo bAr BaZ');
+        my $t3 = $tree->tag(name => 'Foo bAr BaZ', author => 'me');
 
         my($a1, $a2, $a3) = map { refaddr $_ } ($t1, $t2, $t3);
         ok $a1 != $a2, "Different tag after create $a1 vs $a2";

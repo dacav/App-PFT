@@ -26,6 +26,7 @@ use Moose;
 use File::Spec::Functions qw/catdir catfile abs2rel/;
 use File::Path qw/make_path/;
 use File::Slurp qw/write_file/;
+use File::Basename;
 
 use IO::File;
 
@@ -69,10 +70,8 @@ sub BUILD {
 
 my $textinit = sub {
     my($basedir, $path, $hdr) = @_;
-    unless (-e $path) {
-        make_path($basedir);
-        write_file($path, $hdr->dump, '---');
-    }
+    make_path($basedir);
+    write_file($path, $hdr->dump, '---');
 };
 
 my $get_header = sub {
@@ -128,7 +127,7 @@ sub page {
         fname => $hdr->slug,
     );
 
-    $textinit->($basedir, $path, $hdr) unless ($opts{'-noinit'});
+    $textinit->($basedir, $path, $hdr) unless ($opts{'-noinit'} || -e $path);
     $self->pages->{$slug} = $out;
 }
 
@@ -156,9 +155,7 @@ sub entry {
         date => $date,
     );
 
-    unless ($opts{'-noinit'}) {
-        $textinit->($basedir, $path, $hdr);
-    }
+    $textinit->($basedir, $path, $hdr) unless ($opts{'-noinit'} || -e $path);
 
     $self->entries->{$key} = $out;
 }
@@ -190,6 +187,17 @@ sub month {
         my $path = catdir $self->basepath, 'content', 'blog', $key, 'month';
 
         if (-e $path || $opts{'-create'}) {
+            unless (-e $path) {
+                my $hdr = $opts{header} || App::PFT::Data::Header->new(
+                    title => $key,
+                );
+                $textinit->(
+                    File::Basename::dirname($path),
+                    $path,
+                    $hdr,
+                );
+            }
+
             App::PFT::Content::MonthPage->new(
                 tree => $self,
                 path => $path,
