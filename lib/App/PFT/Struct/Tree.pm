@@ -121,13 +121,17 @@ sub page {
 
     my $basedir = catdir($self->basepath, 'content', 'pages');
     my $path = catfile $basedir, $slug;
+
+    unless (-e $path) {
+        die 'Page ', $hdr->title, ' does not exist' if $opts{'-verify'};
+        $textinit->($basedir, $path, $hdr) unless $opts{'-noinit'};
+    }
+
     my $out = App::PFT::Content::Page->new(
         tree => $self,
         path => $path,
         fname => $hdr->slug,
     );
-
-    $textinit->($basedir, $path, $hdr) unless ($opts{'-noinit'} || -e $path);
     $self->pages->{$slug} = $out;
 }
 
@@ -148,14 +152,19 @@ sub entry {
 
     my $basedir = catdir($self->basepath, 'content', 'blog', $month_year);
     my $path = catfile $basedir, $fname;
+
+    unless (-e $path) {
+        die 'Entry ', $date, ' ', $hdr->title, ' does not exist'
+            if $opts{'-verify'};
+        $textinit->($basedir, $path, $hdr) unless $opts{'-noinit'};
+    }
+
     my $out = App::PFT::Content::Entry->new(
         tree => $self,
         path => $path,
         fname => $fname,
         date => $date,
     );
-
-    $textinit->($basedir, $path, $hdr) unless ($opts{'-noinit'} || -e $path);
 
     $self->entries->{$key} = $out;
 }

@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use feature qw/say/;
-use Test::More tests => 28;
+use Test::More tests => 30;
 
 use Scalar::Util qw/refaddr/;
 
@@ -46,16 +46,41 @@ for my $i (1 .. 4) {
         'Title entry (' . $e->fname . ')';
 };
 
+do {
+    my $noe = eval {
+        $tree->entry(
+            title => 'garbage',
+            date => App::PFT::Data::Date->new(
+                year => 1,
+                month => 2,
+                day => 3,
+            ),
+            -verify => 1,
+        )
+    };
+    $@ and $@ =~ s/ at .*$//sm;
+    ok !defined $noe && $@, "Fail since $@";
+};
+
 # -------------------- Creation of pages --------------------------------
 
 do {
-    my $e = $tree->page(
+    my $p = $tree->page(
         title => 'Hello 2',
         author => 'perl',
     );
-    ok -e $e->path, "Creation of entry $e";
-    ok $e->fname eq 'hello-2',
-        'Title page (' . $e->fname . ')';
+    ok -e $p->path, "Creation of entry $p";
+    ok $p->fname eq 'hello-2',
+        'Title page (' . $p->fname . ')';
+
+    my $nop = eval {
+        $tree->page(
+            title => 'garbage',
+            -verify => 1,
+        )
+    };
+    $@ and $@ =~ s/ at .*$//sm;
+    ok !defined $nop && $@, "Fail since $@";
 };
 
 # -------------------- Creation of months -------------------------------
