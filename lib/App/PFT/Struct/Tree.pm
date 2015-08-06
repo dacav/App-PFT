@@ -231,6 +231,16 @@ sub tag {
         my $path = catdir($self->basepath, 'content', 'tags', $slug);
 
         if (-e $path || $opts{'-create'}) {
+            unless (-e $path) {
+                my $hdr = $opts{header} || App::PFT::Data::Header->new(
+                    title => $name,
+                );
+                $textinit->(
+                    File::Basename::dirname($path),
+                    $path,
+                    $hdr,
+                );
+            }
             App::PFT::Content::TagPage->new(
                 tree => $self,
                 path => $path,

@@ -63,6 +63,7 @@ sub create {
     $self->tree->month(
         date => $self->date,
         -create => 1,
+        @_,
     )
 }
 

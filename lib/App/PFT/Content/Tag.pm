@@ -57,6 +57,7 @@ sub create {
     $self->tree->tag(
         name => $self->name,
         -create => 1,
+        @_,
     )
 }
 

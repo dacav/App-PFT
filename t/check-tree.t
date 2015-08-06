@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use feature qw/say/;
-use Test::More tests => 25;
+use Test::More tests => 28;
 
 use Scalar::Util qw/refaddr/;
 
@@ -118,7 +118,22 @@ do {
     ok $t1->isa('App::PFT::Content::Tag'), 'Virtual tag';
     ok $t1->name eq 'Foo Bar Baz', 'Tag name conversion: ' . $t1->name;
 
-    my $t2 = $t1->create;
+    my $t2 = $t1->create(header => App::PFT::Data::Header->new(
+        title => 'Hurr durr',
+        author => 'perl',
+        encoding => 'utf-8',
+    ));
+
+    do {
+        ok -e $t2->path, 'File was created';
+        my $hdr = eval {
+            App::PFT::Data::Header->new(
+                -load => IO::File->new($t2->path, 'r')
+            )
+        };
+        ok !$@, 'Header is valid';
+        ok $hdr->slug eq 'hurr-durr', '...and soud (' . $hdr->slug . ')';
+    };
 
     do {
         my $t3 = $tree->tag(name => 'Foo bAr BaZ', author => 'me');
