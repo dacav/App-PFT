@@ -377,59 +377,47 @@ sub tag {
 #
 #    wantarray ? @out : \@out;
 #};
-#
-#sub lookup {
-#    my($self, %params) = @_;
-#
-#    if ($params{kind} eq 'pic') {
-#        return App::PFT::Content::Blob->new(
-#            tree => $self,
-#            path => catfile($self->dir_pics, @{$params{hint}}),
-#            group => 'pics',
-#            -verify => 1,
-#        );
-#    }
-#
-#    if ($params{kind} eq 'page') {
-#        return $self->page(
-#            tree => $self,
-#            title => join(' ', @{$params{hint}}),
-#            # TODO: support -verify for Content::Text
-#        );
-#    }
-#
-#    if ($params{kind} eq 'tag') {
-#        my $tname = ucfirst join ' ', @{$params{hint}};
-#        my $base = catdir $self->basepath, 'content', 'tags';
-#        my $lctname = lc $tname;
-#        return App::PFT::Content::TagPage->new(
-#            tree => $self,
-#            tagname => $tname,
-#            path => catfile($base, $lctname),
-#            fname => $lctname,
-#        );
-#    }
-#
-#    if ($params{kind} eq 'attach') {
-#        return App::PFT::Content::Blob->new(
-#            tree => $self,
-#            group => 'attachments',
-#            path => catfile($self->dir_attach, @{$params{hint}}),
-#            -verify => 1,
-#        );
-#    }
-#
-#    if ($params{kind} eq 'web') {
-#        return weblookup($params{hint});
-#    }
-#
-#    croak
-#        "Failed to search for kind '$params{kind}' ",
-#        "relative to '$params{relative_to}' ",
-#        "@{$params{hint}}" ? "using hint '@{$params{hint}}' " : 'no hint',
-#        "\n",
-#    ;
-#}
+
+sub lookup {
+    my($self, %params) = @_;
+
+    if ($params{kind} eq 'page') {
+        return $self->page(title => join(' ', @{$params{hint}}));
+    }
+
+    if ($params{kind} eq 'tag') {
+        return $self->tag(name => join(' ', @{$params{hint}}));
+    }
+
+    if ($params{kind} eq 'attach') {
+        return App::PFT::Content::Blob->new(
+            tree => $self,
+            group => 'attachments',
+            path => catfile($self->dir_attach, @{$params{hint}}),
+            -verify => 1,
+        );
+    }
+
+    if ($params{kind} eq 'pic') {
+        return App::PFT::Content::Blob->new(
+            tree => $self,
+            path => catfile($self->dir_pics, @{$params{hint}}),
+            group => 'pics',
+            -verify => 1,
+        );
+    }
+
+    if ($params{kind} eq 'web') {
+        return weblookup($params{hint});
+    }
+
+    croak
+        "Failed to search for kind '$params{kind}' ",
+        "relative to '$params{relative_to}' ",
+        "@{$params{hint}}" ? "using hint '@{$params{hint}}' " : 'no hint',
+        "\n",
+    ;
+}
 
 sub dir_templates() { catdir $_[0]->basepath, 'templates' }
 sub dir_build() { catdir $_[0]->basepath, 'build' }
