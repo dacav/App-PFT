@@ -36,16 +36,16 @@ has title => (
     isa => 'Str',
     lazy => 1,
     default => sub {
-        my $self = shift;
-        sprintf('%04d-%02d', $self->year, $self->month)
+        my $date = shift->date;
+        sprintf('%04d-%02d', $date->year, $date->month)
     },
 );
 
 sub from_root() {
-    my $self = shift;
+    my $date = shift->date;
     (
         'blog',
-        sprintf('%04d-%02d', $self->year, $self->month),
+        sprintf('%04d-%02d', $date->year, $date->month),
     );
 }
 
