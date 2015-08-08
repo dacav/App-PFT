@@ -266,6 +266,28 @@ sub tag {
     $self->tags->{$slug} = $out;
 }
 
+sub list_pages {
+    my $self = shift;
+    my $pages = $self->pages;
+
+    my %opts = @_;
+
+    my $base = catdir($self->basepath, 'content', 'pages');
+    my $N = length($base) + 1;
+    for my $path (glob catfile($base, '*')) {
+        my $slug = substr($path, $N);
+        next if $pages->{$slug};
+
+        $pages->{$slug} = App::PFT::Content::Page->new(
+            tree => $self,
+            path => $path,
+            fname => $slug,
+        );
+    }
+
+    wantarray ? values %$pages : [ values %$pages ];
+}
+
 # ------- previous -----------
 
 #sub latest_entry {
