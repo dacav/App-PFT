@@ -360,62 +360,33 @@ sub latest_entry {
     croak "No entries";
 }
 
-#sub link_tags {
-#    my $self = shift;
-#    my %tags;
-#    my $base = catdir $self->basepath, 'content', 'tags';
-#
-#    for my $content ($self->list_entries, $self->list_pages) {
-#        for my $tname (@{$content->header->tags}) {
-#            my $lctname = lc $tname;
-#            my $t = $tags{$lctname};
-#            unless (defined $t) {
-#                $t = App::PFT::Content::TagPage->new(
-#                    tree => $self,
-#                    tagname => ucfirst($tname),
-#                    path => catfile($base, $lctname),
-#                    fname => $lctname,
-#                );
-#                $tags{$lctname} = $t;
-#            }
-#            $t->add_content($content);
-#        }
-#    }
-#
-#    wantarray ? values %tags : \%tags;
-#}
-#
-#sub link_months {
-#    my $self = shift;
-#    my @es = sort $self->list_entries;
-#    return [] unless @es;
-#
-#    my %months = App::PFT::Util::groupby
-#        { sprintf('%04d%02d', $_->date->year, $_->date->month) }
-#        @es
-#    ;
-#
-#    my($prev_m, @out);
-#    for my $k (sort keys %months) {
-#        my $mp = App::PFT::Content::Month->new(
-#            tree => $self,
-#            year  => 0 + substr($k, 0, 4),
-#            month => 0 + substr($k, 4, 2),
-#        );
-#        for my $e (@{$months{$k}}) {
-#            $mp->add_entries($e);
-#            $e->month($mp);
-#        }
-#        if ($prev_m) {
-#            $mp->prev($prev_m);
-#            $prev_m->next($mp);
-#        }
-#        push @out, $mp;
-#        $prev_m = $mp;
-#    }
-#
-#    wantarray ? @out : \@out;
-#};
+sub link {
+    my $self = shift;
+
+    my($prev_entry, $cur_month);
+    for my $c (sort ($self->list_pages, $self->list_entries)) {
+        $_->add_link($c) foreach $c->tags;
+
+        if ($c->isa('App::PFT::Content::Entry')) {
+            my $month = $c->month;
+
+            $c->root($month);
+            $month->add_link($c);
+            if (defined $cur_month && $cur_month cmp $month) {
+                $cur_month->prev($month);
+                $month->next($cur_month);
+            }
+            $cur_month = $month;
+
+            if (defined $prev_entry) {
+                $c->prev($prev_entry);
+                $prev_entry->next($c);
+            }
+            $prev_entry = $c;
+        }
+    }
+
+}
 
 sub lookup {
     my($self, %params) = @_;

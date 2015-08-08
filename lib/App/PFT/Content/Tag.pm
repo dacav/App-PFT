@@ -63,6 +63,7 @@ sub create {
 
 with qw/
     App::PFT::Content::Base
+    App::PFT::Content::Linked
     App::PFT::Content::Virtual
 /;
 
