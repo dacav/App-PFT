@@ -379,28 +379,6 @@ sub list_entries {
 #    wantarray ? values %tags : \%tags;
 #}
 #
-#sub tag {
-#    my($self, %opts) = @_;
-#
-#    my $hdr = $get_header->(\%opts);
-#
-#    my $fname = $hdr->flat_title;
-#    my $basedir = catdir($self->basepath, 'content', 'tags');
-#    my $path = catfile $basedir, $fname;
-#
-#    my $out = App::PFT::Content::Page->new(
-#        tree => $self,
-#        tagname => ucfirst($hdr->title),
-#        path => $path,
-#        fname => $fname,
-#    );
-#
-#    unless ($opts{'-noinit'}) {
-#        $textinit->($basedir, $path, $hdr);
-#    }
-#    $out;
-#}
-#
 #sub link_months {
 #    my $self = shift;
 #    my @es = sort $self->list_entries;
