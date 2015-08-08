@@ -33,6 +33,11 @@ has date => (
     required => 1,
 );
 
+sub month {
+    my $self = shift;
+    $self->tree->month(date => $self->date);
+}
+
 sub tostr {
     my $self = shift;
     'Entry(' . $self->fname . ', ' . $self->date->repr . ')';

@@ -68,9 +68,11 @@ sub create {
 }
 
 around BUILDARGS => sub {
-    my ($orig,$class,%params) = @_;
+    my ($orig, $class, %params) = @_;
 
-    unless (exists $params{date}) {
+    if (my $date = $params{date}) {
+        $params{date} = $date->derive(day => undef) if $date->is_complete
+    } else {
         $params{date} = App::PFT::Data::Date->new(
             year => delete $params{year},
             month => delete $params{month},

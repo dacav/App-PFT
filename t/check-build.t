@@ -46,6 +46,8 @@ for my $i (1 .. 4) {
     ok !defined $undef && same($te, $t),
         "Consistent tag $i: $te and $t";
 
+    ok same($e->month, $tree->month(date => $e->date)), "Consistent date";
+
     push @pages, $tree->page(
         title => "Page $i",
         author => 'perl',

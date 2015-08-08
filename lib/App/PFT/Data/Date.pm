@@ -69,6 +69,17 @@ sub to_hash {
     }
 }
 
+sub derive {
+    my $self = shift;
+    my %change = @_;
+
+    $change{year} = $change{year} || $self->year;
+    $change{month} = $change{month} || $self->month;
+    $change{day} = $change{day} || $self->day;
+
+    App::PFT::Data::Date->new(%change);
+}
+
 my %MONTHS = (
     ja  => 1,
     f   => 2,
