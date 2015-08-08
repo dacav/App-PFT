@@ -54,9 +54,9 @@ sub repr {
     my $self = shift;
     join
         do { my $sep = shift; defined $sep ? $sep : '-' },
-        ($self->has_year ? $self->year : '*'),
-        ($self->has_month ? $self->month : '*'),
-        ($self->has_day ? $self->day : '*')
+        ($self->has_year ? sprintf('%04d', $self->year) : '*'),
+        ($self->has_month ? sprintf('%02d', $self->month) : '*'),
+        ($self->has_day ? sprintf('%02d', $self->day) : '*')
     ;
 }
 
