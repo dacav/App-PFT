@@ -28,15 +28,24 @@ sub same {
 
 my(@entries, @pages);
 for my $i (1 .. 4) {
-    push @entries, $tree->entry(
-        title => "Hello $i",
-        author => 'perl',
+    push @entries, my $e = $tree->entry(
+        header => App::PFT::Data::Header->new(
+            title => "Hello $i",
+            author => 'perl',
+            tags => ["foo_$i"],
+            encoding => 'utf-8',
+        ),
         date => App::PFT::Data::Date->new(
             year => 1,
             month => 2,
             day => $i,
         ),
     );
+    my ($te, $undef) = $e->tags;
+    my $t = $tree->tag(name => "foo_$i");
+    ok !defined $undef && same($te, $t),
+        "Consistent tag $i: $te and $t";
+
     push @pages, $tree->page(
         title => "Page $i",
         author => 'perl',

@@ -95,6 +95,12 @@ has header => (
     }
 );
 
+sub tags {
+    my $self = shift;
+    my $tree = $self->tree;
+    map { $tree->tag(name => $_) } @{$self->header->tags};
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
