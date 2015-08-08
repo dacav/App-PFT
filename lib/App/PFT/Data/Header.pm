@@ -41,14 +41,14 @@ has author => (
     isa => 'Str',
     is => 'ro',
     lazy => 1,
-    default => sub { $AUTHOR },
+    default => sub { $AUTHOR || confess 'Missing $AUTHOR' },
 );
 
 has encoding => (
     isa => 'Maybe[Str]',
     is => 'ro',
     lazy => 1,
-    default => sub { $INPUT_ENC },
+    default => sub { $INPUT_ENC || confess 'Missing $INPUT_ENC' },
 );
 
 has tags => (
