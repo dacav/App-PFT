@@ -270,7 +270,6 @@ sub list_pages {
     my $self = shift;
     my $pages = $self->pages;
 
-    my %opts = @_;
 
     my $base = catdir($self->basepath, 'content', 'pages');
     my $N = length($base) + 1;
