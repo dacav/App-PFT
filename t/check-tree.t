@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use feature qw/say/;
-use Test::More tests => 30;
+use Test::More tests => 35;
 
 use Scalar::Util qw/refaddr/;
 
@@ -28,11 +28,14 @@ for my $dn ('content', 'inject', 'templates') {
     ok -d catfile($dir, $dn), "Creation of dir $dn";
 }
 
+my $undef = eval { $tree->latest_entry };
+$@ and $@ =~ s/ at .*$//sm;
+ok !defined $undef && $@, "Initially, latest: $@";
 
 # -------------------- Creation of entries ------------------------------
 
 for my $i (1 .. 4) {
-    my $e = $tree->entry(
+    my $e1 = $tree->entry(
         title => "Hello $i",
         author => 'perl',
         date => App::PFT::Data::Date->new(
@@ -41,9 +44,13 @@ for my $i (1 .. 4) {
             day => $i,
         ),
     );
-    ok -e $e->path, "Creation of entry $e";
-    ok $e->fname eq sprintf('%02d-hello-%d', $i, $i),
-        'Title entry (' . $e->fname . ')';
+    ok -e $e1->path, "Creation of entry $e1";
+    ok $e1->fname eq sprintf('%02d-hello-%d', $i, $i),
+        'Title entry (' . $e1->fname . ')';
+
+    my $e2 = $tree->latest_entry;
+    my($a1, $a2) = map { refaddr $_ } ($e1, $e2);
+    ok $a1 == $a2, "Same entry in lookup, $a1 vs $a2";
 };
 
 do {

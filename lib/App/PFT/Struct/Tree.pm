@@ -321,39 +321,45 @@ sub list_entries {
     wantarray ? values %$entries : [ values %$entries ];
 }
 
-# ------- previous -----------
+sub latest_entry {
+    my $self = shift;
+    my $back = shift || 0;
 
-#sub latest_entry {
-#    my $self = shift;
-#    my $back = shift || 0;
-#
-#    my $base = catfile $self->basepath, 'content', 'blog';
-#    for my $l1 (sort {$b cmp $a} glob "$base/*") {
-#        my($y,$m) = (abs2rel $l1, $base) =~ m/^(\d{4})-(\d{2})$/
-#            or die "Junk in $base: $l1";
-#
-#        for my $l2 (sort {$b cmp $a} glob "$l1/*") {
-#            my($d,$fn) = (abs2rel $l2, $l1) =~ m/^(\d{2})-(.*)$/
-#                or die "Junk in $l1: $l2";
-#
-#            next if $back--;
-#
-#            return App::PFT::Content::Entry->new(
-#                tree => $self,
-#                path => $l2,
-#                fname => $fn,
-#                date => App::PFT::Data::Date->new(
-#                    year => $y,
-#                    month => $m,
-#                    day => $d,
-#                )
-#            );
-#        }
-#    }
-#
-#    croak "No entries";
-#}
-#
+    my $base = catdir $self->basepath, 'content', 'blog';
+    my $N = length($base) + 1;
+    for my $p_l1 (sort {$b cmp $a} glob catfile($base, entry_pat1)) {
+        my($y, $m) = (
+            substr($p_l1, $N, 4),
+            substr($p_l1, $N + 5),
+        );
+
+        for my $p_l2 (sort {$b cmp $a} glob catfile($p_l1, entry_pat2)) {
+            my($d, $t) = (
+                substr($p_l2, $N + 8, 2),
+                substr($p_l2, $N + 11),
+            );
+
+            next if $back--;
+
+            my $entries = $self->entries;
+            my $k = join '-', $y, $m, $d, $t;
+
+            return $entries->{$k}
+                or $entries->{$k} = App::PFT::Content::Entry->new(
+                tree => $self,
+                path => $p_l2,
+                date => App::PFT::Data::Date->new(
+                    year => $y,
+                    month => $m,
+                    day => $d,
+                )
+            );
+        }
+    }
+
+    croak "No entries";
+}
+
 #sub link_tags {
 #    my $self = shift;
 #    my %tags;
