@@ -286,6 +286,39 @@ sub list_pages {
     wantarray ? values %$pages : [ values %$pages ];
 }
 
+sub list_entries {
+    state $pat1 = '[0-9]' x 4 . '-' . '[0-9]' x 2;
+    state $pat2 = '[0-9]' x 2 . '-' . '*';
+
+    my $self = shift;
+    my $entries = $self->entries;
+
+    my $base = catdir($self->basepath, 'content', 'blog');
+    my $N = length($base) + 1;
+    for my $path (glob catfile($base, $pat1, $pat2)) {
+        my($y, $m, $d, $t) = (
+            substr($path, $N, 4),
+            substr($path, $N + 5, 2),
+            substr($path, $N + 8, 2),
+            substr($path, $N + 11),
+        );
+        my $k = join '-', $y, $m, $d, $t;
+        next if $entries->{$k};
+
+        $entries->{$k} = App::PFT::Content::Entry->new(
+            tree => $self,
+            path => $path,
+            date => App::PFT::Data::Date->new(
+                year => $y,
+                month => $m,
+                day => $d,
+            ),
+        );
+    }
+
+    wantarray ? values %$entries : [ values %$entries ];
+}
+
 # ------- previous -----------
 
 #sub latest_entry {

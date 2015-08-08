@@ -43,7 +43,11 @@ for my $i (1 .. 4) {
     )
 }
 
+is_deeply [sort @pages], [sort $tree->list_pages], 'List pages';
+is_deeply [sort @entries], [sort $tree->list_entries], 'List entries';
+
 $tree = App::PFT::Struct::Tree->new(basepath => $tree->basepath);
-is_deeply [sort @pages], [sort $tree->list_pages], 'List page works';
+is_deeply [sort @pages], [sort $tree->list_pages], 'List pages, resume';
+is_deeply [sort @entries], [sort $tree->list_entries], 'List entries, resume';
 
 done_testing()
