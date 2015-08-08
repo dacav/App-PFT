@@ -30,6 +30,7 @@ requires qw/
     date
     tostr
     template
+    from_root
 /;
 
 use overload
