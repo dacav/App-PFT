@@ -46,6 +46,11 @@ use App::PFT::Util;
 
 use feature qw/state/;
 
+use constant {
+    entry_pat1 => '[0-9]' x 4 . '-' . '[0-9]' x 2,
+    entry_pat2 => '[0-9]' x 2 . '-' . '*',
+};
+
 has basepath => (
     is => 'ro',
     isa => 'Str',
@@ -287,15 +292,12 @@ sub list_pages {
 }
 
 sub list_entries {
-    state $pat1 = '[0-9]' x 4 . '-' . '[0-9]' x 2;
-    state $pat2 = '[0-9]' x 2 . '-' . '*';
-
     my $self = shift;
     my $entries = $self->entries;
 
     my $base = catdir($self->basepath, 'content', 'blog');
     my $N = length($base) + 1;
-    for my $path (glob catfile($base, $pat1, $pat2)) {
+    for my $path (glob catfile($base, entry_pat1, entry_pat2)) {
         my($y, $m, $d, $t) = (
             substr($path, $N, 4),
             substr($path, $N + 5, 2),
