@@ -66,7 +66,7 @@ sub add_link {
 }
 
 sub list_links {
-    values %{shift->links};
+    wantarray ? values %{shift->links} : [ values %{shift->links} ];
 }
 
 no Moose;
