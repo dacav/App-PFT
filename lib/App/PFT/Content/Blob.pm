@@ -26,6 +26,10 @@ use Carp;
 use namespace::autoclean;
 use Moose;
 
+extends qw/
+    App::PFT::Content::File
+/;
+
 has group => (
     is => 'ro',
     isa => 'Str',
@@ -69,7 +73,6 @@ around BUILDARGS => sub {
 
 with qw/
     App::PFT::Content::Base
-    App::PFT::Content::File
 /;
 
 no Moose;

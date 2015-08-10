@@ -22,7 +22,7 @@ use warnings;
 
 use Carp;
 
-use Moose::Role;
+use Moose;
 use namespace::autoclean;
 
 use File::Basename qw/basename/;
@@ -41,6 +41,10 @@ has fname => (
         basename shift->path;
     }
 );
+
+sub exists {
+    -e shift->path
+}
 
 no Moose;
 1;

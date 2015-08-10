@@ -23,6 +23,10 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 
+extends qw/
+    App::PFT::Content::File
+/;
+
 use IO::File;
 use Carp;
 
@@ -49,8 +53,6 @@ sub edit() {
 sub title() {
     shift->header->title
 }
-
-sub exists { -e shift->path }
 
 sub file {
     my $self = shift;
