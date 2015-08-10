@@ -74,6 +74,7 @@ sub main {
         %opts
     );
 
+    $page->open('a');
     $page->edit;
 }
 

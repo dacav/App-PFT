@@ -94,6 +94,7 @@ sub main {
         );
     }
 
+    $entry->open('a');
     $entry->edit;
 }
 
