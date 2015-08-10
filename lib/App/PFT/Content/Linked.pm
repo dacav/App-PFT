@@ -22,35 +22,32 @@ use warnings;
 
 use Carp;
 
-use Moose::Role;
+use Moose;
 use namespace::autoclean;
 
 use Scalar::Util qw/weaken/;
 
 has root => (
     is => 'rw',
-    isa => 'Maybe[App::PFT::Content::Base]',
     weak_ref => 1,
     predicate => 'has_root',
 );
 
 has prev => (
     is => 'rw',
-    isa => 'Maybe[App::PFT::Content::Base]',
     weak_ref => 1,
     predicate => 'has_prev',
 );
 
 has next => (
     is => 'rw',
-    isa => 'Maybe[App::PFT::Content::Base]',
     weak_ref => 1,
     predicate => 'has_next',
 );
 
 has links => (
     is => 'ro',
-    isa => 'HashRef[App::PFT::Content::Base]',
+    isa => 'HashRef',
     default => sub {{}},
 );
 

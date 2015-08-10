@@ -25,7 +25,10 @@ use Carp;
 use namespace::autoclean;
 use Moose;
 
-extends qw/App::PFT::Content::Text/;
+extends qw/
+    App::PFT::Content::Text
+    App::PFT::Content::Linked
+/;
 
 has date => (
     is => 'ro',
@@ -83,7 +86,6 @@ sub template {
 with qw/
     App::PFT::Content::Base
     App::PFT::Content::File
-    App::PFT::Content::Linked
 /;
 
 no Moose;

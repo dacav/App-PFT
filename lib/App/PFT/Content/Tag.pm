@@ -23,6 +23,8 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 
+extends 'App::PFT::Content::Linked';
+
 has name => (
     is => 'ro',
     isa => 'Str',
@@ -63,7 +65,6 @@ sub create {
 
 with qw/
     App::PFT::Content::Base
-    App::PFT::Content::Linked
     App::PFT::Content::Virtual
 /;
 

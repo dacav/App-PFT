@@ -69,14 +69,5 @@ has tree => (
     required => 1,
 );
 
-sub lookup {
-    my $self = shift;
-    $self->tree->lookup(
-        relative_to => $self,
-        kind => shift,
-        hint => \@_,
-    )
-}
-
 no Moose;
 1;

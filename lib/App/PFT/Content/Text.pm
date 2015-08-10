@@ -101,6 +101,15 @@ sub tags {
     map { $tree->tag(name => $_) } @{$self->header->tags};
 }
 
+sub lookup {
+    my $self = shift;
+    $self->tree->lookup(
+        relative_to => $self,
+        kind => shift,
+        hint => \@_,
+    )
+}
+
 no Moose;
 __PACKAGE__->meta->make_immutable;
 

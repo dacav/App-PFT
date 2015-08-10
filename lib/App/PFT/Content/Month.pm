@@ -20,10 +20,14 @@ package App::PFT::Content::Month;
 use strict;
 use warnings;
 
+use App::PFT::Data::Date;
+
 use Moose;
 use namespace::autoclean;
 
-use App::PFT::Data::Date;
+extends qw/
+    App::PFT::Content::Linked
+/;
 
 has date => (
     is => 'ro',
@@ -84,7 +88,6 @@ around BUILDARGS => sub {
 
 with qw/
     App::PFT::Content::Base
-    App::PFT::Content::Linked
     App::PFT::Content::Virtual
 /;
 
