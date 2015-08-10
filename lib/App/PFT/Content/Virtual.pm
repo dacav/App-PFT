@@ -22,12 +22,18 @@ use warnings;
 
 use Carp;
 
+use App::PFT::Struct::Conf qw/$TEMPLATE/;
+
 use Moose::Role;
 use namespace::autoclean;
 
 requires qw/
     create
 /;
+
+sub template {
+    $TEMPLATE
+}
 
 no Moose;
 1;

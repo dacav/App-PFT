@@ -55,10 +55,6 @@ sub from_root {
     )
 }
 
-sub template {
-    shift->group;
-}
-
 with qw/
     App::PFT::Content::Base
 /;

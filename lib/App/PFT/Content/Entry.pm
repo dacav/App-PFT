@@ -79,10 +79,6 @@ sub lookup {
     $self->SUPER::lookup(@_);
 }
 
-sub template {
-    'entry'
-}
-
 with qw/
     App::PFT::Content::Base
 /;

@@ -29,7 +29,6 @@ requires qw/
     title
     date
     tostr
-    template
     from_root
 /;
 

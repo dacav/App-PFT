@@ -42,10 +42,6 @@ sub tostr {
     'Page(' . shift->fname . ')';
 }
 
-sub template {
-    'page'
-}
-
 with qw/
     App::PFT::Content::Base
 /;

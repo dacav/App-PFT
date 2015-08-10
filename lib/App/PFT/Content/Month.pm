@@ -58,10 +58,6 @@ sub tostr {
     sprintf 'Month(%04d/%02d)', $self->date->year, $self->date->month
 }
 
-sub template {
-    'gen'
-}
-
 sub create {
     my $self = shift;
     $self->tree->month(

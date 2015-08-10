@@ -32,6 +32,7 @@ use File::Path qw/remove_tree make_path/;
 use File::Basename qw/dirname/;
 
 use App::PFT::Util;
+use App::PFT::Struct::Conf qw/$TEMPLATE/;
 
 use namespace::autoclean;
 use Moose;
@@ -255,7 +256,7 @@ sub process {
     my $fn = catfile($self->tree->dir_build, $content->from_root) . '.html';
     make_path dirname($fn), { verbose => 1 };
     $be->process(
-        $content->template . '.html',
+        ($content->template || $TEMPLATE) . '.html',
         $vars,
         (IO::File->new($fn, 'w') or die "Unable to open $fn: $!")
     ) or croak
