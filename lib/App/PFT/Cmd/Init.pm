@@ -204,6 +204,22 @@ How to write a template
 
 For documentation about how to write a template, have a look at the manual
 of the Template::Alloy perl library. Here follows a list of available keys:
+
+- site
+  - title
+  - base_url
+  - encoding
+- site
+  - encoding
+- content
+  - title
+  - date { y, m, d }
+  - links
+    - prev { href, slug }
+    - next { href, slug }
+    - root { href, slug }
+    - related (list of { href, slug })
+
 EOF
 
 my $HOME_TEXT = <<"EOF";
