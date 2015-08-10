@@ -20,16 +20,21 @@ package App::PFT::Content::Page;
 use strict;
 use warnings;
 
-use namespace::autoclean;
 use Moose;
+use namespace::autoclean;
 
-extends 'App::PFT::Content::Text';
+extends qw/
+    App::PFT::Content::Text
+/;
 
-sub from_root() {
-    my $self = shift;
+sub date {
+    return undef;
+}
+
+sub from_root {
     (
         'pages',
-        $self->fname,
+        shift->fname,
     )
 }
 
@@ -37,9 +42,14 @@ sub tostr {
     'Page(' . shift->fname . ')';
 }
 
-sub template() { 'page' }
+sub template {
+    'page'
+}
 
-with 'App::PFT::Content::Base';
+with qw/
+    App::PFT::Content::Base
+    App::PFT::Content::File
+/;
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

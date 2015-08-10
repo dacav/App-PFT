@@ -26,6 +26,9 @@ use Moose;
 use File::Spec::Functions qw/catdir catfile abs2rel/;
 use File::Path qw/make_path/;
 use File::Slurp qw/write_file/;
+use File::Basename;
+
+use IO::File;
 
 use Carp;
 
@@ -43,11 +46,18 @@ use App::PFT::Util;
 
 use feature qw/state/;
 
+use constant {
+    entry_pat1 => '[0-9]' x 4 . '-' . '[0-9]' x 2,
+    entry_pat2 => '[0-9]' x 2 . '-' . '*',
+};
+
 has basepath => (
     is => 'ro',
     isa => 'Str',
     required => 1,
 );
+
+our $Verbose = 1;
 
 sub BUILD {
     my $bp = $_[0]->basepath;
@@ -60,45 +70,284 @@ sub BUILD {
         catdir($bp, 'content', 'attachments'),
         catdir($bp, 'inject'),
         catdir($bp, 'templates'),
-        { verbose => 1 }
+        { verbose => $Verbose }
 }
 
 my $textinit = sub {
     my($basedir, $path, $hdr) = @_;
-    unless (-e $path) {
-        make_path($basedir);
-        write_file($path, $hdr->dump, '---');
-    }
+    make_path($basedir);
+    write_file($path, $hdr->dump, '---');
 };
 
 my $get_header = sub {
     my $opts = shift;
     if (my $hdr = $opts->{header}) {
+        die unless $hdr->isa('App::PFT::Data::Header');
         $hdr;
     } else {
         App::PFT::Data::Header->new(%$opts);
     }
 };
 
+has pages => (
+    isa => 'HashRef[App::PFT::Content::Page]',
+    is => 'ro',
+    default => sub{{}}
+);
+
+has entries => (
+    isa => 'HashRef[App::PFT::Content::Entry]',
+    is => 'ro',
+    default => sub{{}}
+);
+
+has months => (
+    isa => 'HashRef[App::PFT::Content::Month]',
+    is => 'ro',
+    default => sub{{}}
+);
+
+has tags => (
+    isa => 'HashRef[App::PFT::Content::Tag]',
+    is => 'ro',
+    default => sub{{}}
+);
+
+sub page {
+    my $self = shift;
+    my %opts = @_;
+
+    my $hdr = $get_header->(\%opts);
+    my $slug = $hdr->slug;
+
+    if (my $have = $self->pages->{$slug}) {
+        return $have;
+    }
+
+    my $basedir = catdir($self->basepath, 'content', 'pages');
+    my $path = catfile $basedir, $slug;
+
+    unless (-e $path) {
+        die 'Page ', $hdr->title, ' does not exist' if $opts{'-verify'};
+        $textinit->($basedir, $path, $hdr) unless $opts{'-noinit'};
+    }
+
+    my $out = App::PFT::Content::Page->new(
+        tree => $self,
+        path => $path,
+        fname => $hdr->slug,
+    );
+    $self->pages->{$slug} = $out;
+}
+
+sub entry {
+    my $self = shift;
+    my %opts = @_;
+
+    my $hdr = $get_header->(\%opts);
+    my $date = $opts{date};
+    die unless $date->isa('App::PFT::Data::Date') && $date->is_complete;
+    my $month_year = sprintf '%04d-%02d', $date->year, $date->month;
+    my $fname = sprintf '%02d-%s', $date->day, $hdr->slug;
+
+    my $key = "$month_year-$fname";
+    if (my $have = $self->entries->{$key}) {
+        return $have;
+    }
+
+    my $basedir = catdir($self->basepath, 'content', 'blog', $month_year);
+    my $path = catfile $basedir, $fname;
+
+    unless (-e $path) {
+        die 'Entry ', $date, ' ', $hdr->title, ' does not exist'
+            if $opts{'-verify'};
+        $textinit->($basedir, $path, $hdr) unless $opts{'-noinit'};
+    }
+
+    my $out = App::PFT::Content::Entry->new(
+        tree => $self,
+        path => $path,
+        fname => $fname,
+        date => $date,
+    );
+
+    $self->entries->{$key} = $out;
+}
+
+sub month {
+    my $self = shift;
+    my %opts = @_;
+
+    my $date = do {
+        if (my $d = $opts{date}) {
+            die unless $d->isa('App::PFT::Data::Date');
+            $d;
+        } else {
+            App::PFT::Data::Date->new(
+                year => $opts{year},
+                month => $opts{month},
+            )
+        }
+    };
+
+    my $key = sprintf '%04d-%02d', $date->year, $date->month;
+    my $have = $self->months->{$key};
+
+    if ($have && $have->isa('App::PFT::Content::MonthPage')) {
+        return $have;
+    }
+
+    my $out = do {
+        my $path = catdir $self->basepath, 'content', 'blog', $key, 'month';
+
+        if (-e $path || $opts{'-create'}) {
+            unless (-e $path) {
+                my $hdr = $opts{header} || App::PFT::Data::Header->new(
+                    title => $key,
+                );
+                $textinit->(
+                    File::Basename::dirname($path),
+                    $path,
+                    $hdr,
+                );
+            }
+
+            App::PFT::Content::MonthPage->new(
+                tree => $self,
+                path => $path,
+                date => $date,
+            );
+        } else {
+            $have || App::PFT::Content::Month->new(
+                tree => $self,
+                title => $key,
+                date => $date,
+            );
+        }
+    };
+
+    $self->months->{$key} = $out;
+}
+
+sub tag {
+    my $self = shift;
+    my %opts = @_;
+
+    my $name = join ' ', map { ucfirst } split /\s+/, ($opts{name} || die);
+    my $slug = App::PFT::Util::slugify($opts{name});
+    my $have = $self->tags->{$slug};
+
+    if ($have && $have->isa('App::PFT::Content::TagPage')) {
+        return $have;
+    }
+
+    my $out = do {
+        my $path = catdir($self->basepath, 'content', 'tags', $slug);
+
+        if (-e $path || $opts{'-create'}) {
+            unless (-e $path) {
+                my $hdr = $opts{header} || App::PFT::Data::Header->new(
+                    title => $name,
+                );
+                $textinit->(
+                    File::Basename::dirname($path),
+                    $path,
+                    $hdr,
+                );
+            }
+            App::PFT::Content::TagPage->new(
+                tree => $self,
+                path => $path,
+                name => $name,
+            );
+        } else {
+            $have || App::PFT::Content::Tag->new(
+                tree => $self,
+                name => $name,
+            );
+        }
+    };
+
+    $self->tags->{$slug} = $out;
+}
+
+sub list_pages {
+    my $self = shift;
+    my $pages = $self->pages;
+
+    my $base = catdir($self->basepath, 'content', 'pages');
+    my $N = length($base) + 1;
+    for my $path (glob catfile($base, '*')) {
+        my $slug = substr($path, $N);
+        next if $pages->{$slug};
+
+        $pages->{$slug} = App::PFT::Content::Page->new(
+            tree => $self,
+            path => $path,
+            fname => $slug,
+        );
+    }
+
+    wantarray ? values %$pages : [ values %$pages ];
+}
+
+sub list_entries {
+    my $self = shift;
+    my $entries = $self->entries;
+
+    my $base = catdir($self->basepath, 'content', 'blog');
+    my $N = length($base) + 1;
+    for my $path (glob catfile($base, entry_pat1, entry_pat2)) {
+        my($y, $m, $d, $t) = (
+            substr($path, $N, 4),
+            substr($path, $N + 5, 2),
+            substr($path, $N + 8, 2),
+            substr($path, $N + 11),
+        );
+        my $k = join '-', $y, $m, $d, $t;
+        next if $entries->{$k};
+
+        $entries->{$k} = App::PFT::Content::Entry->new(
+            tree => $self,
+            path => $path,
+            date => App::PFT::Data::Date->new(
+                year => $y,
+                month => $m,
+                day => $d,
+            ),
+        );
+    }
+
+    wantarray ? values %$entries : [ values %$entries ];
+}
+
 sub latest_entry {
     my $self = shift;
     my $back = shift || 0;
 
-    my $base = catfile $self->basepath, 'content', 'blog';
-    for my $l1 (sort {$b cmp $a} glob "$base/*") {
-        my($y,$m) = (abs2rel $l1, $base) =~ m/^(\d{4})-(\d{2})$/
-            or die "Junk in $base: $l1";
+    my $base = catdir $self->basepath, 'content', 'blog';
+    my $N = length($base) + 1;
+    for my $p_l1 (sort {$b cmp $a} glob catfile($base, entry_pat1)) {
+        my($y, $m) = (
+            substr($p_l1, $N, 4),
+            substr($p_l1, $N + 5),
+        );
 
-        for my $l2 (sort {$b cmp $a} glob "$l1/*") {
-            my($d,$fn) = (abs2rel $l2, $l1) =~ m/^(\d{2})-(.*)$/
-                or die "Junk in $l1: $l2";
+        for my $p_l2 (sort {$b cmp $a} glob catfile($p_l1, entry_pat2)) {
+            my($d, $t) = (
+                substr($p_l2, $N + 8, 2),
+                substr($p_l2, $N + 11),
+            );
 
             next if $back--;
 
-            return App::PFT::Content::Entry->new(
+            my $entries = $self->entries;
+            my $k = join '-', $y, $m, $d, $t;
+
+            return $entries->{$k}
+                or $entries->{$k} = App::PFT::Content::Entry->new(
                 tree => $self,
-                path => $l2,
-                fname => $fn,
+                path => $p_l2,
                 date => App::PFT::Data::Date->new(
                     year => $y,
                     month => $m,
@@ -111,233 +360,43 @@ sub latest_entry {
     croak "No entries";
 }
 
-sub entry {
-    my($self, %opts) = @_;
-
-    my $hdr = $get_header->(\%opts);
-    my $date = $opts{date};
-    my $fname = sprintf '%02d-%s', $date->day, $hdr->flat_title;
-    my $basedir = catdir(
-        $_[0]->basepath,
-        'content',
-        'blog',
-        sprintf('%04d-%02d', $date->year, $date->month),
-    );
-    my $path = catfile $basedir, $fname;
-    my $out = App::PFT::Content::Entry->new(
-        tree => $self,
-        path => $path,
-        fname => $fname,
-        date => $date,
-    );
-
-    unless ($opts{'-noinit'}) {
-        $textinit->($basedir, $path, $hdr);
-        $self->entries->{$path} = $out if $self->entries_loaded;
-        # FIXME: Do we need to rewire it in linking?
-    }
-    $out;
-}
-
-has entries => (
-    is => 'ro',
-    isa => 'HashRef[App::PFT::Content::Entry]',
-    lazy => 1,
-    predicate => 'entries_loaded',
-    default => sub {
-        my $self = shift;
-        my %out;
-        my $base = catfile $self->basepath, 'content', 'blog';
-
-        my $prev;
-        for my $l1 (sort { $a cmp $b } glob "$base/*") {
-            my($y,$m) = (abs2rel $l1, $base) =~ m/^(\d{4})-(\d{2})$/
-                or die "Junk in $base: $l1";
-
-            for my $l2 (sort { $a cmp $b } glob "$l1/*") {
-                my($d,$fn) = (abs2rel $l2, $l1) =~ m/^(\d{2})-(.*)$/
-                    or die "Junk in $l1: $l2";
-
-                my $e = App::PFT::Content::Entry->new(
-                    tree => $self,
-                    path => $l2,
-                    fname => $fn,
-                    date => App::PFT::Data::Date->new(
-                        year => $y,
-                        month => $m,
-                        day => $d,
-                    )
-                );
-
-                if (defined $prev) {
-                    $e->prev($prev);
-                    $prev->next($e);
-                }
-                $out{$l2} = $prev = $e;
-            }
-        }
-
-        return \%out;
-    }
-);
-
-sub list_entries { values %{shift->entries} }
-
-sub page {
-    my($self, %opts) = @_;
-
-    my $hdr = $get_header->(\%opts);
-
-    my $fname = $hdr->flat_title;
-    my $basedir = catdir($_[0]->basepath, 'content', 'pages');
-    my $path = catfile $basedir, $fname;
-
-    my $out = App::PFT::Content::Page->new(
-        tree => $self,
-        path => $path,
-        fname => $fname,
-    );
-
-    unless ($opts{'-noinit'}) {
-        $textinit->($basedir, $path, $hdr);
-        $self->pages->{$path} = $out if $self->pages_loaded;
-    }
-    $out;
-}
-
-has pages => (
-    is => 'ro',
-    isa => 'HashRef[App::PFT::Content::Page]',
-    lazy => 1,
-    predicate => 'pages_loaded',
-    default => sub {
-        my $self = shift;
-        my %out;
-        my $base = catfile $self->basepath, 'content', 'pages';
-
-        for my $path (glob "$base/*") {
-            $out{$path} = App::PFT::Content::Page->new(
-                tree => $self,
-                path => $path,
-                fname => abs2rel($path, $base),
-            );
-        }
-
-        return \%out;
-    }
-);
-
-sub list_pages { values %{shift->pages} }
-
-sub link_tags {
+sub link {
     my $self = shift;
-    my %tags;
-    my $base = catdir $self->basepath, 'content', 'tags';
 
-    for my $content ($self->list_entries, $self->list_pages) {
-        for my $tname (@{$content->header->tags}) {
-            my $lctname = lc $tname;
-            my $t = $tags{$lctname};
-            unless (defined $t) {
-                $t = App::PFT::Content::TagPage->new(
-                    tree => $self,
-                    tagname => ucfirst($tname),
-                    path => catfile($base, $lctname),
-                    fname => $lctname,
-                );
-                $tags{$lctname} = $t;
+    my($prev_entry, $cur_month);
+    for my $c (sort ($self->list_pages, $self->list_entries)) {
+        $_->add_link($c) foreach $c->tags;
+
+        if ($c->isa('App::PFT::Content::Entry')) {
+            my $month = $c->month;
+
+            $c->root($month);
+            $month->add_link($c);
+            if (defined $cur_month && $cur_month cmp $month) {
+                $cur_month->prev($month);
+                $month->next($cur_month);
             }
-            $t->add_content($content);
+            $cur_month = $month;
+
+            if (defined $prev_entry) {
+                $c->prev($prev_entry);
+                $prev_entry->next($c);
+            }
+            $prev_entry = $c;
         }
     }
 
-    wantarray ? values %tags : \%tags;
 }
-
-sub tag {
-    my($self, %opts) = @_;
-
-    my $hdr = $get_header->(\%opts);
-
-    my $fname = $hdr->flat_title;
-    my $basedir = catdir($self->basepath, 'content', 'tags');
-    my $path = catfile $basedir, $fname;
-
-    my $out = App::PFT::Content::Page->new(
-        tree => $self,
-        tagname => ucfirst($hdr->title),
-        path => $path,
-        fname => $fname,
-    );
-
-    unless ($opts{'-noinit'}) {
-        $textinit->($basedir, $path, $hdr);
-    }
-    $out;
-}
-
-sub link_months {
-    my $self = shift;
-    my @es = sort $self->list_entries;
-    return [] unless @es;
-
-    my %months = App::PFT::Util::groupby
-        { sprintf('%04d%02d', $_->date->year, $_->date->month) }
-        @es
-    ;
-
-    my($prev_m, @out);
-    for my $k (sort keys %months) {
-        my $mp = App::PFT::Content::MonthPage->new(
-            tree => $self,
-            year  => 0 + substr($k, 0, 4),
-            month => 0 + substr($k, 4, 2),
-        );
-        for my $e (@{$months{$k}}) {
-            $mp->add_entries($e);
-            $e->month($mp);
-        }
-        if ($prev_m) {
-            $mp->prev($prev_m);
-            $prev_m->next($mp);
-        }
-        push @out, $mp;
-        $prev_m = $mp;
-    }
-
-    wantarray ? @out : \@out;
-};
 
 sub lookup {
     my($self, %params) = @_;
 
-    if ($params{kind} eq 'pic') {
-        return App::PFT::Content::Blob->new(
-            tree => $self,
-            path => catfile($self->dir_pics, @{$params{hint}}),
-            group => 'pics',
-            -verify => 1,
-        );
-    }
-
     if ($params{kind} eq 'page') {
-        return $self->page(
-            tree => $self,
-            title => join(' ', @{$params{hint}}),
-            # TODO: support -verify for Content::Text
-        );
+        return $self->page(title => join(' ', @{$params{hint}}));
     }
 
     if ($params{kind} eq 'tag') {
-        my $tname = ucfirst join ' ', @{$params{hint}};
-        my $base = catdir $self->basepath, 'content', 'tags';
-        my $lctname = lc $tname;
-        return App::PFT::Content::TagPage->new(
-            tree => $self,
-            tagname => $tname,
-            path => catfile($base, $lctname),
-            fname => $lctname,
-        );
+        return $self->tag(name => join(' ', @{$params{hint}}));
     }
 
     if ($params{kind} eq 'attach') {
@@ -345,6 +404,15 @@ sub lookup {
             tree => $self,
             group => 'attachments',
             path => catfile($self->dir_attach, @{$params{hint}}),
+            -verify => 1,
+        );
+    }
+
+    if ($params{kind} eq 'pic') {
+        return App::PFT::Content::Blob->new(
+            tree => $self,
+            path => catfile($self->dir_pics, @{$params{hint}}),
+            group => 'pics',
             -verify => 1,
         );
     }

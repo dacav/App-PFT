@@ -25,42 +25,28 @@ use Carp;
 use namespace::autoclean;
 use Moose;
 
-extends 'App::PFT::Content::Text';
+extends qw/
+    App::PFT::Content::Text
+    App::PFT::Content::Linked
+/;
 
-has date => (is => 'ro', isa => 'App::PFT::Data::Date');
-has month => (
-    is => 'rw',
-    isa => 'Maybe[App::PFT::Content::MonthPage]',
-    weak_ref => 1,
+has date => (
+    is => 'ro',
+    isa => 'App::PFT::Data::Date',
+    required => 1,
 );
 
-has prev => (
-    is => 'rw',
-    isa => 'Maybe[App::PFT::Content::Entry]',
-    weak_ref => 1,
-    predicate => 'has_prev',
-);
-
-has month => (
-    is => 'rw',
-    isa => 'Maybe[App::PFT::Content::MonthPage]',
-    weak_ref => 1,
-    predicate => 'has_month',
-);
-
-has next => (
-    is => 'rw',
-    isa => 'Maybe[App::PFT::Content::Entry]',
-    weak_ref => 1,
-    predicate => 'has_next',
-);
+sub month {
+    my $self = shift;
+    $self->tree->month(date => $self->date);
+}
 
 sub tostr {
     my $self = shift;
     'Entry(' . $self->fname . ', ' . $self->date->repr . ')';
 }
 
-sub from_root() {
+sub from_root {
     my $self = shift;
     my $date = $self->date;
     (
@@ -93,10 +79,14 @@ sub lookup {
     $self->SUPER::lookup(@_);
 }
 
-sub template() { 'entry' }
-sub has_links() { 0 }
+sub template {
+    'entry'
+}
 
-with 'App::PFT::Content::Base';
+with qw/
+    App::PFT::Content::Base
+    App::PFT::Content::File
+/;
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

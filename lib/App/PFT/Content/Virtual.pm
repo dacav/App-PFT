@@ -15,64 +15,19 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Content::Blob;
+package App::PFT::Content::Virtual;
 
 use strict;
 use warnings;
 
-use File::Basename qw/basename/;
 use Carp;
 
+use Moose::Role;
 use namespace::autoclean;
-use Moose;
 
-has group => (
-    is => 'ro',
-    isa => 'Str',
-);
-
-sub tostr {
-    'Blob(' . shift->fname . ')'
-}
-
-sub title {
-    shift->fname
-}
-
-sub date {
-    undef
-}
-
-sub from_root {
-    my $self = shift;
-    (
-        $self->group,
-        $self->fname,
-    )
-}
-
-sub template {
-    shift->group;
-}
-
-around BUILDARGS => sub {
-    my($orig, $class, %params) = @_;
-
-    my $fn = $params{path};
-    if ($params{'-verify'}) {
-        croak "File $fn does not exist" unless -e $fn;
-    }
-    $params{fname} = basename $fn;
-    
-    $class->$orig(%params);
-};
-
-with qw/
-    App::PFT::Content::Base
-    App::PFT::Content::File
+requires qw/
+    create
 /;
 
 no Moose;
-__PACKAGE__->meta->make_immutable;
-
 1;

@@ -22,18 +22,15 @@ use warnings;
 
 use Carp;
 
-use namespace::autoclean;
 use Moose::Role;
+use namespace::autoclean;
 
 requires qw/
     title
     date
     tostr
-    has_prev
-    has_next
-    has_month
-    has_links
-    text
+    template
+    from_root
 /;
 
 use overload
@@ -53,12 +50,6 @@ use overload
     },
 ;
 
-# Path to reach the content from the site. Identifies the content from the
-# filesystem perspective. Returns a list of steps in the filesystem,
-# something you would join('/', ...) on. Conventionally terminated by
-# 'undef'.
-sub from_root() { undef }
-
 # Universally identify the content. Incidentally the filesystem already
 # does it, so if we just join from_root over '/' we get an unique
 # identifier for the content, site-wise.
@@ -66,10 +57,10 @@ has uid => (
     isa => 'Str',
     is => 'ro',
     lazy => 1,
-    default => sub { join '/', shift->from_root },
+    default => sub {
+        join '/', shift->from_root
+    },
 );
-
-sub template() { 'gen' }
 
 has tree => (
     isa => 'App::PFT::Struct::Tree',
@@ -79,5 +70,4 @@ has tree => (
 );
 
 no Moose;
-
 1;

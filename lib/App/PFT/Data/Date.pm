@@ -30,25 +30,33 @@ use overload
 has year => (
     is => 'ro',
     isa => 'Int',
+    predicate => 'has_year',
 );
 
 has month => (
     is => 'ro',
     isa => 'Int',
+    predicate => 'has_month',
 );
 
 has day => (
     is => 'ro',
     isa => 'Int',
+    predicate => 'has_day',
 );
+
+sub is_complete {
+    my $self = shift;
+    $self->has_year && $self->has_month && $self->has_day;
+}
 
 sub repr {
     my $self = shift;
     join
         do { my $sep = shift; defined $sep ? $sep : '-' },
-        ($self->year > 0 ? $self->year : '*'),
-        ($self->month > 0 ? $self->month : '*'),
-        ($self->day > 0 ? $self->day : '*')
+        ($self->has_year ? sprintf('%04d', $self->year) : '*'),
+        ($self->has_month ? sprintf('%02d', $self->month) : '*'),
+        ($self->has_day ? sprintf('%02d', $self->day) : '*')
     ;
 }
 
@@ -59,6 +67,17 @@ sub to_hash {
         m => $self->month,
         d => $self->day,
     }
+}
+
+sub derive {
+    my $self = shift;
+    my %change = @_;
+
+    $change{year} = $change{year} || $self->year;
+    $change{month} = $change{month} || $self->month;
+    $change{day} = $change{day} || $self->day;
+
+    App::PFT::Data::Date->new(%change);
 }
 
 my %MONTHS = (
@@ -106,8 +125,9 @@ around BUILDARGS => sub {
         die "Invalid month: $m" unless ($m >= 1 && $m <= 12);
     }
 
-    my $d = $params{day};
-    die "Invalid day: $d" if ($d !~ m/^\d{1,2}$/ || $d < 1 || $d > 31);
+    if (my $d = $params{day}) {
+        die "Invalid day: $d" if ($d !~ m/^\d{1,2}$/ || $d < 1 || $d > 31);
+    }
 
     return $class->$orig(%params);
 };

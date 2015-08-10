@@ -22,79 +22,28 @@ use warnings;
 
 use Scalar::Util qw/weaken/;
 
-use namespace::autoclean;
 use Moose;
+use namespace::autoclean;
 
-extends 'App::PFT::Content::Text';
+extends qw/
+    App::PFT::Content::Tag
+    App::PFT::Content::Text
+/;
 
 sub tostr {
-    'Tag(' . shift->tagname . ')';
+    sprintf 'TagPage(' . shift->name . ')'
 }
 
-has tagname => (
-    is=>'ro',
-    isa => 'Str',
-);
-
-has links => (
-    is => 'rw',
-    isa => 'ArrayRef[App::PFT::Content::Entry]',
-    lazy => 1,
-    default => sub{[]},
-    predicate => 'has_links',
-);
-
-sub add_content {
-    my $self = shift;
-    my $links = $self->links;
-    for my $e (@_) {
-        push @$links, $e;
-        weaken $links->[$#$links];
-    }
+sub title {
+    shift->header->title;
 }
 
-sub from_root() {
-    my $self = shift;
-    (
-        'tags',
-        $self->header->flat_title,
-    )
-}
-
-has header => (
-    is => 'ro',
-    isa => 'App::PFT::Data::Header',
-    lazy => 1,
-    predicate => 'header_is_loaded',
-    default => sub {
-        my $self = shift;
-        if ($self->exists) {
-            App::PFT::Data::Header->new(
-                -load => $self->file,
-            )
-        } else {
-            App::PFT::Data::Header->new(
-                title => $self->tagname,
-            )
-        }
-    }
-);
-
-sub text {
-    my $self = shift;
-    $self->exists ? join "\n", @{$self->lines} : '';
-}
-
-sub title() { shift->header->title }
-sub has_month() { 0 }
-sub has_prev() { 0 }
-sub has_next() { 0 }
-sub date() { undef }
-
-with 'App::PFT::Content::Base';
+with qw/
+    App::PFT::Content::Base
+    App::PFT::Content::File
+/;
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
 
 1;
-

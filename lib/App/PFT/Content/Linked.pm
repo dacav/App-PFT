@@ -15,64 +15,56 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Content::Blob;
+package App::PFT::Content::Linked;
 
 use strict;
 use warnings;
 
-use File::Basename qw/basename/;
 use Carp;
 
-use namespace::autoclean;
 use Moose;
+use namespace::autoclean;
 
-has group => (
-    is => 'ro',
-    isa => 'Str',
+use Scalar::Util qw/weaken/;
+
+has root => (
+    is => 'rw',
+    weak_ref => 1,
+    predicate => 'has_root',
 );
 
-sub tostr {
-    'Blob(' . shift->fname . ')'
+has prev => (
+    is => 'rw',
+    weak_ref => 1,
+    predicate => 'has_prev',
+);
+
+has next => (
+    is => 'rw',
+    weak_ref => 1,
+    predicate => 'has_next',
+);
+
+has links => (
+    is => 'ro',
+    isa => 'HashRef',
+    default => sub {{}},
+);
+
+sub has_links {
+    scalar keys %{shift->links};
 }
 
-sub title {
-    shift->fname
+sub add_link {
+    my $links = shift->links;
+    my $content = shift;
+    $links->{$content->uid} = $content;
+    weaken $links->{$content->uid};
 }
 
-sub date {
-    undef
+sub list_links {
+    wantarray ? values %{shift->links} : [ values %{shift->links} ];
 }
-
-sub from_root {
-    my $self = shift;
-    (
-        $self->group,
-        $self->fname,
-    )
-}
-
-sub template {
-    shift->group;
-}
-
-around BUILDARGS => sub {
-    my($orig, $class, %params) = @_;
-
-    my $fn = $params{path};
-    if ($params{'-verify'}) {
-        croak "File $fn does not exist" unless -e $fn;
-    }
-    $params{fname} = basename $fn;
-    
-    $class->$orig(%params);
-};
-
-with qw/
-    App::PFT::Content::Base
-    App::PFT::Content::File
-/;
 
 no Moose;
-__PACKAGE__->meta->make_immutable;
-
 1;

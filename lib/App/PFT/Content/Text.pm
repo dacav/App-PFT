@@ -20,27 +20,14 @@ package App::PFT::Content::Text;
 use strict;
 use warnings;
 
-use namespace::autoclean;
 use Moose;
+use namespace::autoclean;
 
 use IO::File;
 use Carp;
 
 use Encode;
-
 use App::PFT::Data::Header;
-
-has path => (
-    is => 'ro',
-    isa => 'Str',
-    required => 1,
-);
-
-has fname => (
-    is => 'ro',
-    isa => 'Str',
-    required => 1,
-);
 
 sub edit() {
     my $self = shift;
@@ -108,6 +95,12 @@ has header => (
     }
 );
 
+sub tags {
+    my $self = shift;
+    my $tree = $self->tree;
+    map { $tree->tag(name => $_) } @{$self->header->tags};
+}
+
 sub lookup {
     my $self = shift;
     $self->tree->lookup(
@@ -116,12 +109,6 @@ sub lookup {
         hint => \@_,
     )
 }
-
-sub date() { undef }
-sub has_links() { 0 }
-sub has_month() { 0 }
-sub has_prev() { 0 }
-sub has_next() { 0 }
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

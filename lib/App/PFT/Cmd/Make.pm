@@ -86,10 +86,6 @@ sub main {
         basepath => $ROOT
     );
 
-    my @pages = $tree->list_pages;
-    my @entries = sort $tree->list_entries;
-    my $months = $tree->link_months;
-
     App::PFT::Output::HTML->new(
         site_title => $SITE_TITLE,
         site_home => $HOME_PAGE,

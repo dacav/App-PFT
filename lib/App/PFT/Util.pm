@@ -21,7 +21,12 @@ use strict;
 use warnings;
 
 use Exporter qw/import/;
-our @EXPORT_OK = qw/groupby ln findroot/;
+our @EXPORT_OK = qw/
+    groupby
+    ln
+    findroot
+    slugify
+/;
 
 use Carp;
 
@@ -78,6 +83,14 @@ sub findroot {
     }
 
     undef
+}
+
+sub slugify {
+    my $out = join(' ', @_);
+    $out =~ s/\W/-/g;
+    $out =~ s/--+/-/g;
+    $out =~ s/-*$//;
+    lc $out;
 }
 
 1;
