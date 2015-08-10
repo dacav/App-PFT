@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use feature qw/say/;
-use Test::More; tests => 30;
+use Test::More tests => 30;
 
 use Scalar::Util qw/refaddr/;
 
@@ -41,6 +41,7 @@ for my $i (1 .. 4) {
             day => $i,
         ),
     );
+    $e->open('w');
     my ($te, $undef) = $e->tags;
     my $t = $tree->tag(name => "foo_$i");
     ok !defined $undef && same($te, $t),
@@ -48,11 +49,12 @@ for my $i (1 .. 4) {
 
     ok same($e->month, $tree->month(date => $e->date)), "Consistent date";
 
-    push @pages, $tree->page(
+    push @pages, my $p = $tree->page(
         title => "Page $i",
         author => 'perl',
         encoding => 'utf-8',
-    )
+    );
+    $p->open('w');
 }
 
 is_deeply [sort @pages], [sort $tree->list_pages], 'List pages';

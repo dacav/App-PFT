@@ -264,13 +264,11 @@ sub main {
         print $rf $HELP;
     }
 
-    unless ($tree->page(title => $HOME_PAGE, -noinit => 1)->exists) {
+    my $home = $tree->page(title => $HOME_PAGE);
+    unless ($home->exists) {
         if ($opts{home}) {
             say STDERR "Creating default site home: $HOME_PAGE";
-            my $hf = $tree->page(
-                title => $HOME_PAGE,
-                author => "$0 Configurator",
-            )->file('a');
+            my $hf = $home->open('w');
             print $hf $HOME_TEXT;
         } else {
             say STDERR 'Skipping creation of page "', $HOME_PAGE,

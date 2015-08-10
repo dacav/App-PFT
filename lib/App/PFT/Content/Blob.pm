@@ -26,6 +26,10 @@ use Carp;
 use namespace::autoclean;
 use Moose;
 
+extends qw/
+    App::PFT::Content::File
+/;
+
 has group => (
     is => 'ro',
     isa => 'Str',
@@ -55,21 +59,8 @@ sub template {
     shift->group;
 }
 
-around BUILDARGS => sub {
-    my($orig, $class, %params) = @_;
-
-    my $fn = $params{path};
-    if ($params{'-verify'}) {
-        croak "File $fn does not exist" unless -e $fn;
-    }
-    $params{fname} = basename $fn;
-    
-    $class->$orig(%params);
-};
-
 with qw/
     App::PFT::Content::Base
-    App::PFT::Content::File
 /;
 
 no Moose;

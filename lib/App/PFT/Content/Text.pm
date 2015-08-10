@@ -23,6 +23,11 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 
+extends qw/
+    App::PFT::Content::File
+/;
+
+use File::Path qw/make_path/;
 use IO::File;
 use Carp;
 
@@ -40,7 +45,7 @@ sub edit() {
         unlink $path;
     } else {
         eval {
-            App::PFT::Data::Header->new(-load => $self->file);
+            App::PFT::Data::Header->new(-load => $self->open('r'));
         };
         say STDERR "WARNING: Bad file format in $path: $@" if $@;
     }
@@ -50,24 +55,14 @@ sub title() {
     shift->header->title
 }
 
-sub exists { -e shift->path }
-
-sub file {
-    my $self = shift;
-    IO::File->new($self->path, @_) # Has autoclose upon undef.
-        or confess 'Cannot open "' . $self->path . ": $!";
-}
-
 has lines => (
     is => 'ro',
     isa => 'ArrayRef[Str]',
     lazy => 1,
     default => sub {
         my $self = shift;
-        my $fd = $self->file;
-        my $hdr = App::PFT::Data::Header->new(
-            -load => $fd
-        );
+        my $fd = $self->open('r');
+        my $hdr = App::PFT::Data::Header->new(-load => $fd);
         $self->header($hdr) unless $self->header_is_loaded;
         my @out = map { chomp; decode($hdr->encoding, $_) } <$fd>;
         \@out;
@@ -87,13 +82,28 @@ has header => (
         my $self = shift;
         my $hdr = eval {
             App::PFT::Data::Header->new(
-                -load => $self->file,
+                -load => $self->open('r'),
             );
         };
-        croak 'Bad file format in ', $self->path, ': ', $@ if $@;
+        confess 'Bad file format in ', $self->path, ': ', $@ if $@;
         $hdr
     }
 );
+
+sub open {
+    my $self = shift;
+    my $mode = shift;
+    my $f = $self->SUPER::open($mode);
+    if (index($mode, 'w') >= 0 or
+            index($mode, 'a') >= 0 && -z $self->path) {
+        confess "Cannot write-open unless header defined"
+            unless $self->header_is_loaded;
+
+        $self->header->dump($f);
+        print $f '---';
+    }
+    $f;
+}
 
 sub tags {
     my $self = shift;

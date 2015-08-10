@@ -37,7 +37,6 @@ sub tostr {
 
 with qw/
     App::PFT::Content::Base
-    App::PFT::Content::File
 /;
 
 no Moose;

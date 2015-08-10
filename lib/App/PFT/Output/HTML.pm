@@ -291,7 +291,7 @@ sub build {
 
 sub DEMOLISH {
     my $self = shift;
-    my $h = $self->tree->page(title => $self->site_home, -noinit => 1);
+    my $h = $self->tree->page(title => $self->site_home);
     if ($h->exists) {
         my $fn = catfile($self->tree->dir_build, 'index.html');
         my $f = IO::File->new($fn, 'w') or die "Unable to open $fn: $!";

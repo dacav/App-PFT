@@ -59,8 +59,14 @@ has tags => (
 );
 
 sub dump {
-    my($self) = @_;
-    YAML::Tiny::Dump {
+    my($self, $to) = @_;
+
+    my $type = ref $to;
+    if ($type ne 'GLOB' && $type ne 'IO::File') {
+        confess "Only supporting GLOB and IO::File. Got ",
+            $type ? $type : 'Scalar'
+    }
+    print $to YAML::Tiny::Dump {
         Title => $self->title,
         Author => $self->author,
         Encoding => $self->encoding,
@@ -89,7 +95,7 @@ around BUILDARGS => sub {
                     $text .= $_;
                 }
             } else {
-                die "Only supporting GLOB and IO::File. Got $type" if $type;
+                confess "Only supporting GLOB and IO::File. Got $type" if $type;
                 $text = $from;
             }
             eval { YAML::Tiny::Load($text) };

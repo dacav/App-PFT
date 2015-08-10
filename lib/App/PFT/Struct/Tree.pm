@@ -73,12 +73,6 @@ sub BUILD {
         { verbose => $Verbose }
 }
 
-my $textinit = sub {
-    my($basedir, $path, $hdr) = @_;
-    make_path($basedir);
-    write_file($path, $hdr->dump, '---');
-};
-
 my $get_header = sub {
     my $opts = shift;
     if (my $hdr = $opts->{header}) {
@@ -127,16 +121,13 @@ sub page {
     my $basedir = catdir($self->basepath, 'content', 'pages');
     my $path = catfile $basedir, $slug;
 
-    unless (-e $path) {
-        die 'Page ', $hdr->title, ' does not exist' if $opts{'-verify'};
-        $textinit->($basedir, $path, $hdr) unless $opts{'-noinit'};
-    }
-
     my $out = App::PFT::Content::Page->new(
         tree => $self,
         path => $path,
-        fname => $hdr->slug,
+        fname => $slug,
+        header => $hdr,
     );
+
     $self->pages->{$slug} = $out;
 }
 
@@ -158,17 +149,12 @@ sub entry {
     my $basedir = catdir($self->basepath, 'content', 'blog', $month_year);
     my $path = catfile $basedir, $fname;
 
-    unless (-e $path) {
-        die 'Entry ', $date, ' ', $hdr->title, ' does not exist'
-            if $opts{'-verify'};
-        $textinit->($basedir, $path, $hdr) unless $opts{'-noinit'};
-    }
-
     my $out = App::PFT::Content::Entry->new(
         tree => $self,
         path => $path,
         fname => $fname,
         date => $date,
+        header => $hdr,
     );
 
     $self->entries->{$key} = $out;
@@ -201,22 +187,17 @@ sub month {
         my $path = catdir $self->basepath, 'content', 'blog', $key, 'month';
 
         if (-e $path || $opts{'-create'}) {
-            unless (-e $path) {
-                my $hdr = $opts{header} || App::PFT::Data::Header->new(
-                    title => $key,
-                );
-                $textinit->(
-                    File::Basename::dirname($path),
-                    $path,
-                    $hdr,
-                );
-            }
-
-            App::PFT::Content::MonthPage->new(
+            my $hdr = $opts{header} || App::PFT::Data::Header->new(
+                title => $key,
+            );
+            my $out = App::PFT::Content::MonthPage->new(
                 tree => $self,
                 path => $path,
                 date => $date,
+                header => $hdr,
             );
+            $out->open('w');
+            $out;
         } else {
             $have || App::PFT::Content::Month->new(
                 tree => $self,
@@ -245,21 +226,17 @@ sub tag {
         my $path = catdir($self->basepath, 'content', 'tags', $slug);
 
         if (-e $path || $opts{'-create'}) {
-            unless (-e $path) {
-                my $hdr = $opts{header} || App::PFT::Data::Header->new(
-                    title => $name,
-                );
-                $textinit->(
-                    File::Basename::dirname($path),
-                    $path,
-                    $hdr,
-                );
-            }
-            App::PFT::Content::TagPage->new(
+            my $hdr = $opts{header} || App::PFT::Data::Header->new(
+                title => $name,
+            );
+            my $out = App::PFT::Content::TagPage->new(
                 tree => $self,
                 path => $path,
                 name => $name,
+                header => $hdr,
             );
+            $out->open('w');
+            $out;
         } else {
             $have || App::PFT::Content::Tag->new(
                 tree => $self,
@@ -344,16 +321,19 @@ sub latest_entry {
             my $entries = $self->entries;
             my $k = join '-', $y, $m, $d, $t;
 
-            return $entries->{$k}
-                or $entries->{$k} = App::PFT::Content::Entry->new(
-                tree => $self,
-                path => $p_l2,
-                date => App::PFT::Data::Date->new(
-                    year => $y,
-                    month => $m,
-                    day => $d,
-                )
-            );
+            if (my $out = $entries->{$k}) {
+                return $out;
+            } else {
+                return $entries->{$k} = App::PFT::Content::Entry->new(
+                    tree => $self,
+                    path => $p_l2,
+                    date => App::PFT::Data::Date->new(
+                        year => $y,
+                        month => $m,
+                        day => $d,
+                    )
+                );
+            }
         }
     }
 
