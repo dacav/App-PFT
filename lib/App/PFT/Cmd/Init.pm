@@ -191,22 +191,19 @@ templates.
 Content and templates
 ---------------------
 
-Each content can specify a custom template though the `Template`
-configuration in the header. Unless specified, the content will default to
-the global configuration `Template`, which is mandatory.
+Each content can optionally specify a custom template though the
+`Template` configuration in the header. The default one is given by the
+global configuration key `Template`, in `$0.yaml`.
 
-Unless differently configured, the default template is `default.html`. It
-has been created automatically with an arguably decent default.  It can be
-restored by running `$0 init`.
+Unless differently specified in `$0.yaml`, the default template is
+`default.html`. An arguably decent default gets created automatically and
+restored by `$0 init`.
 
 How to write a template
 -----------------------
 
 For documentation about how to write a template, have a look at the manual
 of the Template::Alloy perl library. Here follows a list of available keys:
-
-
-
 EOF
 
 my $HOME_TEXT = <<"EOF";
