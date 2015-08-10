@@ -48,21 +48,14 @@ sub build_path { shift->tree->dir_build }
 sub pages { shift->tree->list_pages }
 sub entries { shift->tree->list_entries }
 
-has schedule => (is => 'ro', isa => 'CodeRef');
-has next => (is => 'ro', isa => 'CodeRef');
-
-has months => (
+has schedule => (
     is => 'ro',
-    isa => 'ArrayRef[App::PFT::Content::MonthPage]',
-    lazy => 1,
-    default => sub { scalar shift->tree->link_months },
+    isa => 'CodeRef',
 );
 
-has tags => (
+has next => (
     is => 'ro',
-    isa => 'HashRef[App::PFT::Content::TagPage]',
-    lazy => 1,
-    default => sub { scalar shift->tree->link_tags },
+    isa => 'CodeRef'
 );
 
 has links => (
@@ -71,29 +64,21 @@ has links => (
     lazy => 1,
     default => sub {
         my $self = shift;
-        my(@pages, @entries, @months, @tags);
+        my $tree = $self->tree;;
+        my $mkhref = sub { $self->mkhref($_) };
 
-        for my $p ($self->pages) {
-            push @pages, $self->mkhref($p);
-        }
+        # Assumption here is that $tree->link was already called. Tags and
+        # Months are already loaded as side effect.
 
-        # Reverse chronological order
-        for my $e (sort $self->entries) {
-            push @entries, $self->mkhref($e);
-        }
-
-        for my $m (@{$self->months}) {
-            push @months, $self->mkhref($m);
-        }
-
-        for my $t (values %{$self->tags}) {
-            push @tags, $self->mkhref($t);
-        }
+        my @pages = map &$mkhref, sort $tree->list_pages;
+        my @entries = map &$mkhref, sort $tree->list_entries;
+        my @months = map &$mkhref, sort { $b cmp $a } values %{$tree->months};
+        my @tags = map &$mkhref, sort values %{$tree->tags};
 
         {
             pages => \@pages,
             backlog => \@entries,
-            months => [reverse @months],
+            months => \@months,
             tags => \@tags,
         }
     },
@@ -164,21 +149,23 @@ around BUILDARGS => sub {
         }
     };
 
-    my(@todo, %done);
+    my(@todo, %seen);
 
     $params{schedule} = sub {
         my $content = shift;
-        push @todo, $content unless (exists $done{$content->uid});
+        unless (exists $seen{$content->uid}) {
+            undef $seen{$content->uid};
+            push @todo, $content;
+        }
     };
 
     $params{next} = sub {
-        return undef unless @todo;
-
         my $content = pop @todo;
-        my $uid = $content->uid;
-        die if exists $done{$uid};
-        $done{$uid} = $content;
-
+        if ($content) {
+            my $uid = $content->uid;
+            die if $seen{$uid};
+            $seen{$uid}++;
+        }
         $content;
     };
 
@@ -197,6 +184,7 @@ sub mkhref {
         $out->{date} = $date->to_hash;
     }
 
+    $self->schedule->($content);
     $out;
 }
 
@@ -229,36 +217,42 @@ sub process {
         },
         content => {
             title => encode($self->outputenc, $content->title),
-            text => encode($self->outputenc, $content->text),
-            html => encode(
-                $self->outputenc,
-                $self->resolve($content, markdown $content->text),
-            ),
             date => $content->date ? $content->date->to_hash : undef,
         },
         links => \%links,
     };
 
-    my @tags;
-    for my $t (@{$content->header->tags}) {
-        push @tags, $self->mkhref($self->tags->{lc $t});
+    if ($content->isa('App::PFT::Content::Text')) {
+        my @tags;
+        foreach ($content->tags) {
+            push @tags, $self->mkhref($_);
+        }
+        my $cvars = $vars->{content};
+        $cvars->{tags} = \@tags if @tags;
+        @{$cvars}{'text', 'html'} = (
+            encode($self->outputenc, $content->text),
+            encode(
+                $self->outputenc,
+                $self->resolve($content, markdown $content->text),
+            ),
+        );
     }
-    $vars->{content}{tags} = \@tags if @tags;
 
     @links{keys %{$self->links}} = values %{$self->links};
-    $links{prev} = $self->mkhref($content->prev) if $content->has_prev;
-    $links{next} = $self->mkhref($content->next) if $content->has_next;
-    $links{root} = $self->mkhref($content->month) if $content->has_month;
 
-    if ($content->has_links) {
-        my @hrefs =
-            map { $self->mkhref($_) }
-            sort @{$content->links}
-        ;
-        $links{related} = \@hrefs;
+    if ($content->isa('App::PFT::Content::Linked')) {
+        $links{prev} = $self->mkhref($content->prev) if $content->has_prev;
+        $links{next} = $self->mkhref($content->next) if $content->has_next;
+        $links{root} = $self->mkhref($content->root) if $content->has_root;
+
+        if ($content->has_links) {
+            $links{related} = [
+                map { $self->mkhref($_) } sort $content->list_links
+            ];
+        }
     }
 
-    my $fn = catfile($self->build_path, $content->from_root) . '.html';
+    my $fn = catfile($self->tree->dir_build, $content->from_root) . '.html';
     make_path dirname($fn), { verbose => 1 };
     $be->process(
         $content->template . '.html',
@@ -276,14 +270,14 @@ sub build {
     my $next = $self->next;
     my $sched = $self->schedule;
 
-    &$sched($_) foreach (
-        $self->entries,
-        $self->pages,
-        @{$self->months},
-        $self->tree->link_tags,
+    $self->tree->link;
+
+    $sched->($_) foreach (
+        $self->tree->list_entries,
+        $self->tree->list_pages,
     );
 
-    while (my $e = &$next()) {
+    while (my $e = $next->()) {
         eval {
             $self->process($e);
         };
@@ -299,7 +293,7 @@ sub DEMOLISH {
     my $self = shift;
     my $h = $self->tree->page(title => $self->site_home, -noinit => 1);
     if ($h->exists) {
-        my $fn = catfile($self->build_path, 'index.html');
+        my $fn = catfile($self->tree->dir_build, 'index.html');
         my $f = IO::File->new($fn, 'w') or die "Unable to open $fn: $!";
         my $href = $self->mkhref($h);
         print $f
