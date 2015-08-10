@@ -96,14 +96,14 @@ sub open {
     my $self = shift;
     my $mode = shift;
     my $f = $self->SUPER::open($mode);
-    if (index $mode, 'w') {
+    if (1 + index $mode, 'w') {
         confess "Cannot write-open unless header defined"
             unless $self->header_is_loaded;
 
         $self->header->dump($f);
-        print $f "\n---";
+        print $f '---';
     }
-    return $f;
+    $f;
 }
 
 sub tags {
