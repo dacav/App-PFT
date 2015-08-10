@@ -88,13 +88,13 @@ sub main {
     );
 
     App::PFT::Output::HTML->new(
-        site_title => $SITE_TITLE,
-        site_home => $HOME_PAGE,
+        title => $SITE_TITLE,
+        home => $HOME_PAGE,
         # site_footer => $ENV{SITE_FOOTER},
         base_url => $preview ? $tree->dir_build : $SITE_URL,
-        outputenc => $OUTPUT_ENC || 'utf-8',
-        default_template => $TEMPLATE,
+        encoding => $OUTPUT_ENC || 'utf-8',
 
+        default_template => $TEMPLATE,
         tree => $tree,
     )->build;
 

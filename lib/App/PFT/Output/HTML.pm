@@ -42,12 +42,41 @@ use constant {
     prefix_len => length('App::PFT::Content::'),
 };
 
-has site_title => (is => 'ro', isa => 'Str');
-has site_home => (is => 'ro', isa => 'Str');
-has base_url => (is => 'ro', isa => 'Str');
-has outputenc => (is => 'ro', isa => 'Str', default => sub{'utf-8'});
-has default_template => (is => 'ro', isa => 'Str');
-has tree => (is => 'ro', isa => 'App::PFT::Struct::Tree');
+has title => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
+
+has home => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
+
+has base_url => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
+
+has encoding => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
+
+has default_template => (
+    is => 'ro',
+    isa => 'Str',
+    required => 1,
+);
+
+has tree => (
+    is => 'ro',
+    isa => 'App::PFT::Struct::Tree',
+    required => 1,
+);
 
 sub build_path { shift->tree->dir_build }
 sub pages { shift->tree->list_pages }
@@ -110,19 +139,6 @@ has backend => (
             #}
         );
     }
-);
-
-has site_vars => (
-    is => 'ro',
-    isa => 'HashRef',
-    lazy => 1,
-    default => sub {
-        my $self = shift;
-        {
-            title => encode($self->outputenc, $self->site_title),
-            encoding => $self->outputenc,
-        }
-    },
 );
 
 around BUILDARGS => sub {
@@ -196,7 +212,7 @@ sub mkhref {
 
     my $out = {
         href => join('/', $self->base_url, $content->from_root) . '.html',
-        slug => encode($self->outputenc, $content->title),
+        slug => encode($self->encoding, $content->title),
     };
     if (my $date = $content->date) {
         $out->{date} = $date->to_hash;
@@ -229,9 +245,9 @@ sub process {
 
     my %links;
     my $vars = {
-        site => $self->site_vars,
+        site => $self,
         content => {
-            title => encode($self->outputenc, $content->title),
+            title => encode($self->encoding, $content->title),
             date => $content->date ? $content->date->to_hash : undef,
             kind => substr(ref $content, prefix_len),
         },
@@ -246,9 +262,9 @@ sub process {
         my $cvars = $vars->{content};
         $cvars->{tags} = \@tags if @tags;
         @{$cvars}{'text', 'html'} = (
-            encode($self->outputenc, $content->text),
+            encode($self->encoding, $content->text),
             encode(
-                $self->outputenc,
+                $self->encoding,
                 $self->resolve($content, markdown $content->text),
             ),
         );
@@ -307,7 +323,7 @@ sub build {
 
 sub DEMOLISH {
     my $self = shift;
-    my $h = $self->tree->page(title => $self->site_home);
+    my $h = $self->tree->page(title => $self->home);
     if ($h->exists) {
         my $fn = catfile($self->tree->dir_build, 'index.html');
         my $f = IO::File->new($fn, 'w') or die "Unable to open $fn: $!";
