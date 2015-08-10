@@ -61,10 +61,8 @@ has lines => (
     lazy => 1,
     default => sub {
         my $self = shift;
-        my $fd = $self->file;
-        my $hdr = App::PFT::Data::Header->new(
-            -load => $fd
-        );
+        my $fd = $self->open('r');
+        my $hdr = App::PFT::Data::Header->new(-load => $fd);
         $self->header($hdr) unless $self->header_is_loaded;
         my @out = map { chomp; decode($hdr->encoding, $_) } <$fd>;
         \@out;
