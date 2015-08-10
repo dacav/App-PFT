@@ -25,7 +25,8 @@ use Carp;
 use Moose;
 use namespace::autoclean;
 
-use File::Basename qw/basename/;
+use File::Basename qw/basename dirname/;
+use File::Path qw/make_path/;
 
 has path => (
     isa => 'Str',
@@ -37,14 +38,35 @@ has fname => (
     isa => 'Str',
     is => 'ro',
     lazy => 1,
-    default => sub {
-        basename shift->path;
-    }
+    default => sub { basename shift->path },
 );
+
+sub open {
+    my $path = shift->path;
+    my $mode = shift;
+    make_path dirname $path if $mode =~ /w|a/;
+    IO::File->new($path, $mode) or croak "Cannot open $path: $!"
+}
+
+sub touch {
+    shift->open('a')
+};
 
 sub exists {
     -e shift->path
 }
+
+around BUILDARGS => sub {
+    my($orig, $self, %opts) = @_;
+    if (delete $opts{'-verify'} && ! -e $opts{path}) {
+        croak "File $opts{path} does not exist";
+    }
+    my $create = delete $opts{'-create'};
+    my $out = $self->$orig(%opts);
+    $out->open('w') if $create && !$out->exists;
+
+    $out;
+};
 
 no Moose;
 1;

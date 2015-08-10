@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use feature qw/say/;
-use Test::More tests => 35;
+use Test::More tests => 39;
 
 use Scalar::Util qw/refaddr/;
 
@@ -36,14 +36,19 @@ ok !defined $undef && $@, "Initially, latest: $@";
 
 for my $i (1 .. 4) {
     my $e1 = $tree->entry(
-        title => "Hello $i",
-        author => 'perl',
         date => App::PFT::Data::Date->new(
             year => 1,
             month => 2,
             day => $i,
         ),
+        header => App::PFT::Data::Header->new(
+            title => "Hello $i",
+            author => 'perl',
+            encoding => 'utf-8',
+        )
     );
+    ok !-e $e1->path, "Initially no entry $e1";
+    $e1->touch;
     ok -e $e1->path, "Creation of entry $e1";
     ok $e1->fname eq sprintf('%02d-hello-%d', $i, $i),
         'Title entry (' . $e1->fname . ')';
@@ -54,40 +59,34 @@ for my $i (1 .. 4) {
 };
 
 do {
-    my $noe = eval {
-        $tree->entry(
-            title => 'garbage',
-            date => App::PFT::Data::Date->new(
-                year => 1,
-                month => 2,
-                day => 3,
-            ),
-            -verify => 1,
-        )
-    };
-    $@ and $@ =~ s/ at .*$//sm;
-    ok !defined $noe && $@, "Fail since $@";
+    my $noe = $tree->entry(
+        title => 'garbage',
+        date => App::PFT::Data::Date->new(
+            year => 1,
+            month => 2,
+            day => 3,
+        ),
+    );
+    ok !$noe->exists, 'Garbage does not exist'
 };
 
 # -------------------- Creation of pages --------------------------------
 
 do {
     my $p = $tree->page(
-        title => 'Hello 2',
-        author => 'perl',
+        header => App::PFT::Data::Header->new( 
+            title => 'Hello 2',
+            author => 'perl',
+            encoding => 'utf-8',
+        )
     );
-    ok -e $p->path, "Creation of entry $p";
+    $p->touch;
+    ok $p->exists, "Creation of entry $p";
     ok $p->fname eq 'hello-2',
         'Title page (' . $p->fname . ')';
 
-    my $nop = eval {
-        $tree->page(
-            title => 'garbage',
-            -verify => 1,
-        )
-    };
-    $@ and $@ =~ s/ at .*$//sm;
-    ok !defined $nop && $@, "Fail since $@";
+    my $nop = $tree->page(title => 'garbage');
+    ok !$nop->exists, 'Other garbage does not exist';
 };
 
 # -------------------- Creation of months -------------------------------
@@ -157,7 +156,7 @@ do {
     ));
 
     do {
-        ok -e $t2->path, 'File was created';
+        ok $t2->exists, 'File was created';
         my $hdr = eval {
             App::PFT::Data::Header->new(
                 -load => IO::File->new($t2->path, 'r')

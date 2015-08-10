@@ -27,6 +27,7 @@ extends qw/
     App::PFT::Content::File
 /;
 
+use File::Path qw/make_path/;
 use IO::File;
 use Carp;
 
@@ -52,12 +53,6 @@ sub edit() {
 
 sub title() {
     shift->header->title
-}
-
-sub file {
-    my $self = shift;
-    IO::File->new($self->path, @_) # Has autoclose upon undef.
-        or confess 'Cannot open "' . $self->path . ": $!";
 }
 
 has lines => (
@@ -89,13 +84,27 @@ has header => (
         my $self = shift;
         my $hdr = eval {
             App::PFT::Data::Header->new(
-                -load => $self->file,
+                -load => $self->open('r'),
             );
         };
-        croak 'Bad file format in ', $self->path, ': ', $@ if $@;
+        confess 'Bad file format in ', $self->path, ': ', $@ if $@;
         $hdr
     }
 );
+
+sub open {
+    my $self = shift;
+    my $mode = shift;
+    my $f = $self->SUPER::open($mode);
+    if (index $mode, 'w') {
+        confess "Cannot write-open unless header defined"
+            unless $self->header_is_loaded;
+
+        $self->header->dump($f);
+        print $f "\n---";
+    }
+    return $f;
+}
 
 sub tags {
     my $self = shift;
