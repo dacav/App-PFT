@@ -50,7 +50,7 @@ use App::PFT::Struct::Conf qw/
 /;
 use App::PFT::Struct::Tree;
 use App::PFT::Output::HTML;
-use App::PFT::Util qw/ln/;
+use App::PFT::Util;
 
 Getopt::Long::Configure ("bundling");
 
