@@ -163,8 +163,14 @@ use IO::File;
 use File::Spec::Functions qw/catfile/;
 
 use App::PFT::Struct::Tree;
-use App::PFT::Struct::Conf qw/cfg_is_loaded cfg_default cfg_dump $ROOT $HOME_PAGE/;
-use App::PFT::Util;
+use App::PFT::Struct::Conf qw/
+    cfg_is_loaded
+    cfg_default
+    cfg_dump
+    $ROOT
+    $TEMPLATE
+    $HOME_PAGE
+/;
 
 use Exporter qw/import/;
 use feature qw/say/;
@@ -176,24 +182,30 @@ use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
 
 my $HELP = <<"EOF";
-This is the templates directory. Here you must have three files:
+Templates directory
+===================
 
-- page.html     -> Mandatory, template for pages
-- entry.html    -> Mandatory, template for blog entries
-- gen.html      -> Mandatory, template for generated pages (e.g. month)
+This is the templates directory. Here $0 will search for the HTML
+templates.
 
-Upon initialization, the three files are all symlinked to a fourth file
-named `default.html`, which is created by $0 with sensible defaults.
+Content and templates
+---------------------
 
-If you wish to modify all the pages together you may change
-`default.html`.
+Each content can specify a custom template though the `Template`
+configuration in the header. Unless specified, the content will default to
+the global configuration `Template`, which is mandatory.
 
-In order to modify a single template replace the symlinks with regular
-template files.
+Unless differently configured, the default template is `default.html`. It
+has been created automatically with an arguably decent default.  It can be
+restored by running `$0 init`.
 
-The default can be restored by running `$0 init`: `default.html` is
-regenerated if it is missing. Each of the other missing files is symlinked
-to `default.html`.
+How to write a template
+-----------------------
+
+For documentation about how to write a template, have a look at the manual
+of the Template::Alloy perl library. Here follows a list of available keys:
+
+
 
 EOF
 
@@ -225,6 +237,7 @@ sub main {
         'home-page=s' => \$App::PFT::Struct::Conf::HOME_PAGE,
         'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
         'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
+        'template=s' => \$App::PFT::Struct::Conf::TEMPLATE,
         'remote-method=s' => \$App::PFT::Struct::Conf::REMOTE{Method},
         'remote-host=s' => \$App::PFT::Struct::Conf::REMOTE{Host},
         'remote-user=s' => \$App::PFT::Struct::Conf::REMOTE{User},
@@ -243,7 +256,7 @@ sub main {
     }
 
     my $tree = App::PFT::Struct::Tree->new(basepath => '.');
-    my $default = catfile($tree->dir_templates, 'default.html');
+    my $default = catfile($tree->dir_templates, "$TEMPLATE.html");
     unless (-e $default) {
         say STDERR 'Creating template ', $default;
         my $fd = IO::File->new($default, 'w');
@@ -251,14 +264,7 @@ sub main {
         close App::PFT::Cmd::Init::DATA;
     }
 
-    foreach (qw/page.html entry.html gen.html/) {
-        my $fn = catfile($tree->dir_templates, $_);
-        unless (-e $fn) {
-            App::PFT::Util::ln 'default.html', $fn, 1
-        }
-    }
-
-    my $readme = catfile($tree->dir_templates, 'README');
+    my $readme = catfile($tree->dir_templates, 'README.md');
     unless (-e $readme) {
         my $rf = IO::File->new($readme, 'w');
         print $rf $HELP;

@@ -28,13 +28,18 @@ use Encode;
 use Carp;
 use YAML::Tiny;
 
-use App::PFT::Struct::Conf qw/$AUTHOR $INPUT_ENC/;
+use App::PFT::Struct::Conf qw/$AUTHOR $TEMPLATE $INPUT_ENC/;
 use App::PFT::Util qw/slugify/;
 
 has title => (
     isa => 'Str',
     is => 'ro',
     required => 1,
+);
+
+has template => (
+    isa => 'Maybe[Str]',
+    is => 'ro',
 );
 
 has author => (
@@ -66,11 +71,13 @@ sub dump {
         confess "Only supporting GLOB and IO::File. Got ",
             $type ? $type : 'Scalar'
     }
+    my $tags = $self->tags;
     print $to YAML::Tiny::Dump {
         Title => $self->title,
         Author => $self->author,
         Encoding => $self->encoding,
-        Tags => $self->tags,
+        Template => $self->template,
+        Tags => @$tags ? $tags : undef,
     }
 }
 
@@ -105,6 +112,7 @@ around BUILDARGS => sub {
         my $enc = $params{encoding} = $hdr->{Encoding} || $INPUT_ENC;
         $params{title} = decode($enc, $hdr->{Title}) || croak 'Title is strictly required';
         $params{author} = decode($enc, $hdr->{Author});
+        $params{template} = decode($enc, $hdr->{Template}) if $hdr->{Template};
 
         my $tags = $hdr->{Tags};
         $params{tags} = ref $tags eq 'ARRAY' ? $tags

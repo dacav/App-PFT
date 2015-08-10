@@ -90,6 +90,10 @@ has header => (
     }
 );
 
+sub template {
+    shift->header->template;
+}
+
 sub open {
     my $self = shift;
     my $mode = shift;

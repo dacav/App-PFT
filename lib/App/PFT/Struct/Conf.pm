@@ -31,6 +31,7 @@ our @EXPORT_OK = qw/
     $ROOT
     $CONF_FILENAME
     $AUTHOR
+    $TEMPLATE
     $SITE_TITLE
     $SITE_URL
     $HOME_PAGE
@@ -49,6 +50,7 @@ our $CONF_FILENAME = basename($0) . '.yaml';
 our $ROOT;
 
 our $AUTHOR;
+our $TEMPLATE;
 our $SITE_TITLE;
 our $SITE_URL;
 our $HOME_PAGE;
@@ -58,6 +60,7 @@ our $OUTPUT_ENC;
 
 sub cfg_default {
     $AUTHOR = $ENV{USER} || 'John Doe';
+    $TEMPLATE = 'default';
     $SITE_TITLE = "My $0 website";
     $SITE_URL = 'http://example.org/';
     $HOME_PAGE = 'Welcome';
@@ -73,6 +76,7 @@ sub cfg_default {
 sub cfg_dump {
     DumpFile catfile(shift, $CONF_FILENAME), {
         Author => $AUTHOR,
+        Template => $TEMPLATE,
         SiteTitle => $SITE_TITLE,
         SiteURL => $SITE_URL,
         HomePage => $HOME_PAGE,
@@ -108,6 +112,7 @@ sub cfg_load {
 
     (
         $AUTHOR,
+        $TEMPLATE,
         $SITE_TITLE,
         $SITE_URL,
         $HOME_PAGE,
@@ -120,6 +125,7 @@ sub cfg_load {
         $OUTPUT_ENC,
     ) = check_assign $cfg,
         'Author',
+        'Template',
         'SiteTitle',
         'SiteURL',
         'HomePage',

@@ -35,10 +35,6 @@ sub date {
     undef
 }
 
-sub template {
-    'gen'
-}
-
 sub title {
     shift->name
 }
