@@ -196,7 +196,7 @@ sub month {
                 date => $date,
                 header => $hdr,
             );
-            $out->touch;
+            $out->open('w');
             $out;
         } else {
             $have || App::PFT::Content::Month->new(
@@ -235,7 +235,7 @@ sub tag {
                 name => $name,
                 header => $hdr,
             );
-            $out->touch;
+            $out->open('w');
             $out;
         } else {
             $have || App::PFT::Content::Tag->new(
