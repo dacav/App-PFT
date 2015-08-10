@@ -46,6 +46,7 @@ use App::PFT::Struct::Conf qw/
     $SITE_URL
     $HOME_PAGE
     $OUTPUT_ENC
+    $TEMPLATE
 /;
 use App::PFT::Struct::Tree;
 use App::PFT::Output::HTML;
@@ -92,6 +93,7 @@ sub main {
         # site_footer => $ENV{SITE_FOOTER},
         base_url => $preview ? $tree->dir_build : $SITE_URL,
         outputenc => $OUTPUT_ENC || 'utf-8',
+        default_template => $TEMPLATE,
 
         tree => $tree,
     )->build;
