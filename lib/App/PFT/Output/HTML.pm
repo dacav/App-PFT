@@ -108,6 +108,19 @@ has backend => (
     }
 );
 
+has site_vars => (
+    is => 'ro',
+    isa => 'HashRef',
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        {
+            title => encode($self->outputenc, $self->site_title),
+            encoding => $self->outputenc,
+        }
+    },
+);
+
 around BUILDARGS => sub {
     my ($orig, $class, %params) = @_;
 
@@ -212,10 +225,7 @@ sub process {
 
     my %links;
     my $vars = {
-        site => {
-            title => encode($self->outputenc, $self->site_title),
-            encoding => $self->outputenc,
-        },
+        site => $self->site_vars,
         content => {
             title => encode($self->outputenc, $content->title),
             date => $content->date ? $content->date->to_hash : undef,
