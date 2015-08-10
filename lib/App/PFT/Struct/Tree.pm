@@ -321,16 +321,19 @@ sub latest_entry {
             my $entries = $self->entries;
             my $k = join '-', $y, $m, $d, $t;
 
-            return $entries->{$k}
-                or $entries->{$k} = App::PFT::Content::Entry->new(
-                tree => $self,
-                path => $p_l2,
-                date => App::PFT::Data::Date->new(
-                    year => $y,
-                    month => $m,
-                    day => $d,
-                )
-            );
+            if (my $out = $entries->{$k}) {
+                return $out;
+            } else {
+                return $entries->{$k} = App::PFT::Content::Entry->new(
+                    tree => $self,
+                    path => $p_l2,
+                    date => App::PFT::Data::Date->new(
+                        year => $y,
+                        month => $m,
+                        day => $d,
+                    )
+                );
+            }
         }
     }
 

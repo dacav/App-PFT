@@ -45,7 +45,7 @@ sub edit() {
         unlink $path;
     } else {
         eval {
-            App::PFT::Data::Header->new(-load => $self->file);
+            App::PFT::Data::Header->new(-load => $self->open('r'));
         };
         say STDERR "WARNING: Bad file format in $path: $@" if $@;
     }
@@ -96,7 +96,8 @@ sub open {
     my $self = shift;
     my $mode = shift;
     my $f = $self->SUPER::open($mode);
-    if (1 + index $mode, 'w') {
+    if (index($mode, 'w') >= 0 or
+            index($mode, 'a') >= 0 && -z $self->path) {
         confess "Cannot write-open unless header defined"
             unless $self->header_is_loaded;
 
