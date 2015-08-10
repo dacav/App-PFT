@@ -38,6 +38,10 @@ use Moose;
 
 use feature qw/say/;
 
+use constant {
+    prefix_len => length('App::PFT::Content::'),
+};
+
 has site_title => (is => 'ro', isa => 'Str');
 has site_home => (is => 'ro', isa => 'Str');
 has base_url => (is => 'ro', isa => 'Str');
@@ -229,6 +233,7 @@ sub process {
         content => {
             title => encode($self->outputenc, $content->title),
             date => $content->date ? $content->date->to_hash : undef,
+            kind => substr(ref $content, prefix_len),
         },
         links => \%links,
     };
