@@ -135,7 +135,7 @@ sub page {
     my $out = App::PFT::Content::Page->new(
         tree => $self,
         path => $path,
-        fname => $hdr->slug,
+        fname => $slug,
     );
     $self->pages->{$slug} = $out;
 }
