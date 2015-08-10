@@ -72,7 +72,7 @@ has links => (
 
         my @pages = map &$mkhref, sort $tree->list_pages;
         my @entries = map &$mkhref, sort $tree->list_entries;
-        my @months = map &$mkhref, sort { $b cmp $a } values %{$tree->months};
+        my @months = map &$mkhref, sort values %{$tree->months};
         my @tags = map &$mkhref, sort values %{$tree->tags};
 
         {
