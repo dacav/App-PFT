@@ -23,6 +23,8 @@ use warnings;
 use Moose;
 use namespace::autoclean;
 
+use App::PFT::Util;
+
 extends 'App::PFT::Content::Linked';
 
 has name => (
@@ -42,7 +44,7 @@ sub title {
 sub from_root {
     (
         'tag',
-        shift->name,
+        App::PFT::Util::slugify(shift->name),
     )
 }
 
