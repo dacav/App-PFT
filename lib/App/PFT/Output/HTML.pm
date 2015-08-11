@@ -152,6 +152,24 @@ around BUILDARGS => sub {
     remove_tree $build_path;
     make_path $build_path;
 
+    my(@todo, %seen);
+    my $sched = $params{schedule} = sub {
+        my $content = shift;
+        unless (exists $seen{$content->uid}) {
+            undef $seen{$content->uid};
+            push @todo, $content;
+        }
+    };
+    $params{next} = sub {
+        my $content = pop @todo;
+        if ($content) {
+            my $uid = $content->uid;
+            die if $seen{$uid};
+            $seen{$uid}++;
+        }
+        $content;
+    };
+
     $params{lookup} = do {
         App::PFT::Util::ln
             $tree->dir_pics,
@@ -172,6 +190,7 @@ around BUILDARGS => sub {
 
                 my $type = shift;
                 if ($type eq 'page' || $type eq 'blog' || $type eq 'tag') {
+                    $sched->($got_content);
                     # If this is a generated page, it's an HTML.
                     $out .= '.html';
                 }
@@ -181,26 +200,6 @@ around BUILDARGS => sub {
             # Else this is an URL
             $got_content;
         }
-    };
-
-    my(@todo, %seen);
-
-    $params{schedule} = sub {
-        my $content = shift;
-        unless (exists $seen{$content->uid}) {
-            undef $seen{$content->uid};
-            push @todo, $content;
-        }
-    };
-
-    $params{next} = sub {
-        my $content = pop @todo;
-        if ($content) {
-            my $uid = $content->uid;
-            die if $seen{$uid};
-            $seen{$uid}++;
-        }
-        $content;
     };
 
     $class->$orig(%params);
