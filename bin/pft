@@ -73,6 +73,7 @@ use App::PFT::Cmd::Make;
 use App::PFT::Cmd::Publish;
 use App::PFT::Cmd::Clean;
 use App::PFT::Cmd::Tag;
+use App::PFT::Cmd::Month;
 use App::PFT::Cmd::Help;
 
 use feature qw/say/;
@@ -85,6 +86,7 @@ my %COMMANDS = (
     pub => \&App::PFT::Cmd::Publish::main,
     clean => \&App::PFT::Cmd::Clean::main,
     tag => \&App::PFT::Cmd::Tag::main,
+    month => \&App::PFT::Cmd::Month::main,
     help => \&App::PFT::Cmd::Help::main,
 );
 

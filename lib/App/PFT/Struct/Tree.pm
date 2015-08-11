@@ -188,7 +188,7 @@ sub month {
 
         if (-e $path || $opts{'-create'}) {
             my $hdr = $opts{header} || App::PFT::Data::Header->new(
-                title => $key,
+                title => $opts{title} || $key,
             );
             my $out = App::PFT::Content::MonthPage->new(
                 tree => $self,
