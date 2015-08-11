@@ -31,8 +31,8 @@ extends qw/
 /;
 
 sub tostr {
-    my $self = shift;
-    sprintf 'MonthPage(%04d/%02d)', $self->date->year, $self->date->month
+    my $date = shift->date;
+    sprintf 'MonthPage(%04d/%02d)', $date->year, $date->month
 }
 
 with qw/
