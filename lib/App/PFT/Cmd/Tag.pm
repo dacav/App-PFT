@@ -70,7 +70,8 @@ sub main {
 
     my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
     my $page = $tree->tag(
-        title => join(' ', @ARGV),
+        name => join(' ', @ARGV),
+        -create => 1,
         %opts
     );
 
