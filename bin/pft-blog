@@ -17,6 +17,15 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
+=head1 NAME
+
+pft blog
+
+=head1 SYNOPSYS
+
+pft blog ...
+
+=cut
 
 use strict;
 use warnings;

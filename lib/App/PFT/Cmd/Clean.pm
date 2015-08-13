@@ -17,16 +17,6 @@
 #
 package App::PFT::Cmd::Clean;
 
-=head1 NAME
-
-pft clean
-
-=head1 SYNOPSYS
-
-pft clean ...
-
-=cut
-
 use strict;
 use warnings;
 

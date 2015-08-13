@@ -17,16 +17,6 @@
 #
 package App::PFT::Cmd::Page;
 
-=head1 NAME
-
-pft page
-
-=head1 SYNOPSYS
-
-pft page ...
-
-=cut
-
 use strict;
 use warnings;
 

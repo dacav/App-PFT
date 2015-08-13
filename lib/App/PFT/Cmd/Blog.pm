@@ -17,16 +17,6 @@
 #
 package App::PFT::Cmd::Blog;
 
-=head1 NAME
-
-pft blog
-
-=head1 SYNOPSYS
-
-pft blog ...
-
-=cut
-
 use strict;
 use warnings;
 

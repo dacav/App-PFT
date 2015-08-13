@@ -17,16 +17,6 @@
 #
 package App::PFT::Cmd::Month;
 
-=head1 NAME
-
-pft month
-
-=head1 SYNOPSYS
-
-pft month ...
-
-=cut
-
 use strict;
 use warnings;
 
