@@ -10,7 +10,7 @@ WriteMakefile(
     ABSTRACT         => 'Hacker friendly static blog generator',
     LICENSE          => 'GNU GPL v3',
     PL_FILES         => {},
-    EXE_FILES        => ['bin/pft'],
+    EXE_FILES        => [grep { -x } glob 'bin/*'],
     MIN_PERL_VERSION => 5.006,
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
