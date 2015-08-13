@@ -6,7 +6,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME             => 'App::PFT',
     AUTHOR           => q{Giovanni Simoni <dacav@openmailbox.org>},
-    VERSION          => 0.02.0,
+    VERSION_FROM     => 'lib/App/PFT.pm',
     ABSTRACT         => 'Hacker friendly static blog generator',
     LICENSE          => 'GNU GPL v3',
     PL_FILES         => {},

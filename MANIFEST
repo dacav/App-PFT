@@ -2,6 +2,7 @@ bin/pft
 Changes
 COPYING
 ignore.txt
+lib/App/PFT.pm
 lib/App/PFT/Cmd/Blog.pm
 lib/App/PFT/Cmd/Clean.pm
 lib/App/PFT/Cmd/Help.pm
