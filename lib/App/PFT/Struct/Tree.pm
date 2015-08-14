@@ -344,7 +344,7 @@ sub link {
     my $self = shift;
 
     my($prev_entry, $cur_month);
-    for my $c (sort ($self->list_pages, $self->list_entries)) {
+    for my $c (sort { $b cmp $a } ($self->list_pages, $self->list_entries)) {
         $_->add_link($c) foreach $c->tags;
 
         if ($c->isa('App::PFT::Content::Entry')) {
