@@ -19,11 +19,25 @@
 #
 =head1 NAME
 
-pft clean
+pft clean - Clean the build directory
 
 =head1 SYNOPSYS
 
-pft clean ...
+pft clean [-v]
+
+=head1 DESCRIPTION
+
+Clean the build directory
+
+=head1 OPTIONS
+
+=over
+
+=item --verbose | -v
+
+=item --help | -h
+
+=back
 
 =cut
 

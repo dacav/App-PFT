@@ -19,11 +19,28 @@
 #
 =head1 NAME
 
-pft page
+pft page - Edit a page
 
 =head1 SYNOPSYS
 
-pft page ...
+pft page [options] Title
+
+=head1 DESCRIPTION
+
+Edit a page.
+
+=head1 OPTIONS
+
+=over
+
+=item --author=<name> | -a <name>
+
+=item --tag=<tag> | -t <tag>
+
+=item --help | -h
+
+=back
+
 
 =cut
 

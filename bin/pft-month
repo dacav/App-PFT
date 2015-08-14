@@ -19,11 +19,32 @@
 #
 =head1 NAME
 
-pft month
+pft month - Edit month pages
 
 =head1 SYNOPSYS
 
-pft month ...
+pft month [options]
+
+=head1 DESCRIPTION
+
+Edit month pages.
+
+=head1 OPTIONS
+
+=over
+
+=item --year=<y> | -y <y>
+
+=item --month=<m> | -m <m>
+
+=item --author=<name> | -a <name>
+
+=item --tag=<tag> | -t <tag>
+
+=item --help | -h
+
+=back
+
 
 =cut
 

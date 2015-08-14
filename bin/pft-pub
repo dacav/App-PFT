@@ -19,11 +19,15 @@
 #
 =head1 NAME
 
-pft pub
+pft pub - Publish content
 
 =head1 SYNOPSYS
 
-pft pub ...
+pft pub
+
+=head1 DESCRIPTION
+
+Publish content
 
 =cut
 

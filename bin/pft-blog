@@ -19,11 +19,38 @@
 #
 =head1 NAME
 
-pft blog
+pft blog - Edit a blog entry
 
 =head1 SYNOPSYS
 
-pft blog ...
+pft blog [options] <Title...>
+
+=head1 DESCRIPTION
+
+Edit a blog entry
+
+=head1 OPTIONS
+
+=over
+
+=item --year=<y> | -y <y>
+
+=item --month=<m> | -m <m>
+
+=item --day=<d> | -d <d>
+
+=item --author=<name> | -a <name>
+
+=item --tag=<tag> | -t <tag>
+
+=item --resume | -r
+
+=item --back=<count> | -b <count>
+
+=item --help | -h
+
+=back
+
 
 =cut
 

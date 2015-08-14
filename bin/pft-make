@@ -19,11 +19,26 @@
 #
 =head1 NAME
 
-pft make
+pft make - Build the website
 
 =head1 SYNOPSYS
 
-pft make ...
+pft make [options]
+
+=head1 DESCRIPTION
+
+Build the website into the build directory.
+
+=head1 OPTIONS
+
+=over
+
+=item --preview | -p
+
+=item --help | -h
+
+=back
+
 
 =cut
 
