@@ -55,8 +55,6 @@ sub main {
         },
     );
 
-    $opts{title} = join(' ', @ARGV) if @ARGV;
-
     my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
     my $page = $tree->month(
         date => App::PFT::Data::Date->new(
