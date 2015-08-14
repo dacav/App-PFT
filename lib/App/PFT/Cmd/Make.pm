@@ -17,16 +17,6 @@
 #
 package App::PFT::Cmd::Make;
 
-=head1 NAME
-
-pft compile
-
-=head1 SYNOPSYS
-
-pft compile ...
-
-=cut
-
 use strict;
 use warnings;
 

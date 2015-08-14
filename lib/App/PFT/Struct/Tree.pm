@@ -380,19 +380,21 @@ sub lookup {
     }
 
     if ($params{kind} eq 'attach') {
+        my $hint = $params{hint};
         return App::PFT::Content::Blob->new(
             tree => $self,
-            group => 'attachments',
-            path => catfile($self->dir_attach, @{$params{hint}}),
+            group => ['attachments', @{$hint}[0 .. $#$hint - 1]],
+            path => catfile($self->dir_attach, @$hint),
             -verify => 1,
         );
     }
 
     if ($params{kind} eq 'pic') {
+        my $hint = $params{hint};
         return App::PFT::Content::Blob->new(
             tree => $self,
-            path => catfile($self->dir_pics, @{$params{hint}}),
-            group => 'pics',
+            path => catfile($self->dir_pics, @$hint),
+            group => ['pics', @{$hint}[0 .. $#$hint - 1]],
             -verify => 1,
         );
     }

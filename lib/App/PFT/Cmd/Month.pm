@@ -17,16 +17,6 @@
 #
 package App::PFT::Cmd::Month;
 
-=head1 NAME
-
-pft month
-
-=head1 SYNOPSYS
-
-pft month ...
-
-=cut
-
 use strict;
 use warnings;
 
@@ -64,8 +54,6 @@ sub main {
             ;
         },
     );
-
-    $opts{title} = join(' ', @ARGV) if @ARGV;
 
     my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
     my $page = $tree->month(

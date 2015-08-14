@@ -231,7 +231,7 @@ sub resolve {
     /mge;
 
     $str =~ s/(<img\s.*?src="):pic:(.*?)(".*?>)/
-        my $h = $lookup->($curr_content, 'pic', $2);
+        my $h = $lookup->($curr_content, 'pic', split m|\/|, $2);
         "<a href=\"$h\">$1$h$3<\/a>"
     /mge;
 

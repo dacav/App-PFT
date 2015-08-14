@@ -17,16 +17,6 @@
 #
 package App::PFT::Cmd::Tag;
 
-=head1 NAME
-
-pft tag
-
-=head1 SYNOPSYS
-
-pft tag ...
-
-=cut
-
 use strict;
 use warnings;
 

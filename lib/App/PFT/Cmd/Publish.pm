@@ -17,16 +17,6 @@
 #
 package App::PFT::Cmd::Publish;
 
-=head1 NAME
-
-pft publish
-
-=head1 SYNOPSYS
-
-pft publish ...
-
-=cut
-
 use strict;
 use warnings;
 
