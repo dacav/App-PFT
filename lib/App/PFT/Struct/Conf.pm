@@ -61,7 +61,7 @@ our $OUTPUT_ENC;
 sub cfg_default {
     $AUTHOR = $ENV{USER} || 'John Doe';
     $TEMPLATE = 'default';
-    $SITE_TITLE = "My $0 website";
+    $SITE_TITLE = "My $App::PFT::Name website";
     $SITE_URL = 'http://example.org/';
     $HOME_PAGE = 'Welcome';
     %REMOTE = (
@@ -74,7 +74,7 @@ sub cfg_default {
 }
 
 sub cfg_dump {
-    DumpFile catfile(shift, App::PFT::conf_name), {
+    DumpFile catfile(shift, $App::PFT::ConfName), {
         Author => $AUTHOR,
         Template => $TEMPLATE,
         SiteTitle => $SITE_TITLE,
@@ -108,7 +108,7 @@ sub cfg_is_loaded { defined $ROOT }
 
 sub cfg_load {
     $ROOT = shift;
-    my $cfg = LoadFile (catfile $ROOT, App::PFT::conf_name);
+    my $cfg = LoadFile (catfile $ROOT, $App::PFT::ConfName);
 
     (
         $AUTHOR,

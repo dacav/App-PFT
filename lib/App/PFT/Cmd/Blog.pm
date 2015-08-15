@@ -26,6 +26,7 @@ use feature qw/say/;
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
 
+use App::PFT;
 use App::PFT::Struct::Tree;
 use App::PFT::Data::Date;
 
@@ -70,7 +71,7 @@ sub main {
         }
     } else {
         unless (@ARGV) {
-            say STDERR "Usage: $0 blog [options] <title>";
+            say STDERR "Usage: $App::PFT::Name blog [options] <title>";
             exit 1;
         }
 

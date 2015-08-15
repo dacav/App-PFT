@@ -3,9 +3,10 @@ package App::PFT v0.03.0;
 use strict;
 use warnings;
 
-use constant (
-    app => 'pft',
-    conf_name => 'pft.yaml',
-);
+use Exporter 'import';
+our @EXPORT_OK = qw/$Name $ConfName/;
+
+our $Name = 'pft';
+our $ConfName = 'pft.yaml';
 
 1;

@@ -430,7 +430,7 @@ sub help_asked {
     return 0
 }
 
-if (my $root = findroot type => 'file', name => App::PFT::conf_name) {
+if (my $root = findroot type => 'file', name => $App::PFT::ConfName) {
     cfg_load $root;
     chdir $root;
 } elsif ($command ne 'init' && $command ne 'help' && !&help_asked) {
