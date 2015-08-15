@@ -74,7 +74,8 @@ sub cfg_default {
 }
 
 sub cfg_dump {
-    DumpFile catfile(shift, $App::PFT::ConfName), {
+    $ROOT = shift;
+    DumpFile catfile($ROOT, $App::PFT::ConfName), {
         Author => $AUTHOR,
         Template => $TEMPLATE,
         SiteTitle => $SITE_TITLE,
