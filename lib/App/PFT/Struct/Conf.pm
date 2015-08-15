@@ -26,10 +26,11 @@ use File::Spec::Functions qw/catfile/;
 
 use Carp;
 
+use App::PFT;
+
 use Exporter qw/import/;
 our @EXPORT_OK = qw/
     $ROOT
-    $CONF_FILENAME
     $AUTHOR
     $TEMPLATE
     $SITE_TITLE
@@ -46,7 +47,6 @@ our @EXPORT_OK = qw/
 # Adding more configuration variables? Mind adding configs also as option.
 # See App::PFT::Cmd::Init command.
 
-our $CONF_FILENAME = basename($0) . '.yaml';
 our $ROOT;
 
 our $AUTHOR;
@@ -74,7 +74,7 @@ sub cfg_default {
 }
 
 sub cfg_dump {
-    DumpFile catfile(shift, $CONF_FILENAME), {
+    DumpFile catfile(shift, App::PFT::conf_name), {
         Author => $AUTHOR,
         Template => $TEMPLATE,
         SiteTitle => $SITE_TITLE,
@@ -108,7 +108,7 @@ sub cfg_is_loaded { defined $ROOT }
 
 sub cfg_load {
     $ROOT = shift;
-    my $cfg = LoadFile (catfile $ROOT, $CONF_FILENAME);
+    my $cfg = LoadFile (catfile $ROOT, App::PFT::conf_name);
 
     (
         $AUTHOR,

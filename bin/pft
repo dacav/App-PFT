@@ -380,7 +380,8 @@ BEGIN { $0 = basename $0 }
 use Pod::Usage;
 use File::Spec::Functions qw/catfile/;
 
-use App::PFT::Struct::Conf qw/$CONF_FILENAME cfg_default cfg_load/;
+use App::PFT;
+use App::PFT::Struct::Conf qw/cfg_default cfg_load/;
 use App::PFT::Util qw/findroot/;
 
 use App::PFT::Cmd::Init;
@@ -429,7 +430,7 @@ sub help_asked {
     return 0
 }
 
-if (my $root = findroot type=>'file', name=>$CONF_FILENAME) {
+if (my $root = findroot type => 'file', name => App::PFT::conf_name) {
     cfg_load $root;
     chdir $root;
 } elsif ($command ne 'init' && $command ne 'help' && !&help_asked) {
