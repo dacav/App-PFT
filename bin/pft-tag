@@ -64,10 +64,9 @@ use App::PFT::Struct::Conf qw/
 use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
 
-my %opts = (
-    author => $AUTHOR,
-    tags => [],
-);
+cfg_load App::PFT::findroot -die => 1;
+
+my %opts;
 my %datespec;
 GetOptions(
     'author|a=s'    => \$opts{author},
@@ -80,7 +79,6 @@ GetOptions(
     },
 );
 
-cfg_load App::PFT::findroot -die => 1;
 
 unless (@ARGV) {
     say STDERR "Usage: $App::PFT::Name tag [options] <title>";
@@ -91,7 +89,10 @@ my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
 my $page = $tree->tag(
     name => join(' ', @ARGV),
     -create => 1,
-    %opts
+    %opts,
+
+    author => $AUTHOR,
+    tags => [],
 );
 
 $page->edit;
