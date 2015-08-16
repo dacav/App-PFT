@@ -343,7 +343,7 @@ sub latest_entry {
 sub link {
     my $self = shift;
 
-    my($prev_entry, $cur_month);
+    my($prev_entry, $prev_month);
     for my $c (sort { $b cmp $a } ($self->list_pages, $self->list_entries)) {
         $_->add_link($c) foreach $c->tags;
 
@@ -352,11 +352,11 @@ sub link {
 
             $c->root($month);
             $month->add_link($c);
-            if (defined $cur_month && $cur_month cmp $month) {
-                $cur_month->prev($month);
-                $month->next($cur_month);
+            if (defined $prev_month && $prev_month cmp $month) {
+                $prev_month->next($month);
+                $month->prev($prev_month);
             }
-            $cur_month = $month;
+            $prev_month = $month;
 
             if (defined $prev_entry) {
                 $c->prev($prev_entry);

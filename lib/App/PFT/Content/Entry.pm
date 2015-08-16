@@ -52,7 +52,7 @@ sub from_root {
     (
         'blog',
         sprintf('%04d-%02d', $date->year, $date->month),
-        sprintf('%02d-%s', $date->day, $self->fname),
+        $self->fname,
     )
 }
 
