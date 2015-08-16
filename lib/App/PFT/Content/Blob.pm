@@ -32,7 +32,7 @@ extends qw/
 
 has group => (
     is => 'ro',
-    isa => 'Str',
+    isa => 'ArrayRef[Str]',
 );
 
 sub tostr {
@@ -50,7 +50,7 @@ sub date {
 sub from_root {
     my $self = shift;
     (
-        $self->group,
+        @{$self->group},
         $self->fname,
     )
 }
