@@ -388,4 +388,8 @@ if (!defined($subcmd) || $subcmd =~ /^(?:help|-h|--help)$/) {
         -verbose => 2,
         -input => pod_where({-inc => 1}, __PACKAGE__)
 }
-do catfile $FindBin::RealBin, $App::PFT::Name . '-' . $subcmd;
+my $return = do catfile $FindBin::RealBin, $App::PFT::Name . '-' . $subcmd;
+unless (defined $return) {
+    $@ =~ /(.*) at .*$/;
+    print STDERR 'pft: ', $1, "\n";
+}

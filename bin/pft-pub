@@ -56,8 +56,6 @@ use Carp;
 use Getopt::Long;
 Getopt::Long::Configure 'bundling';
 
-cfg_load App::PFT::findroot -die => 1;
-
 sub check {
     foreach (@_) {
         croak "Cannot use $REMOTE{Method}: missing Remote.$_ in pft.yaml"
@@ -120,10 +118,11 @@ GetOptions(
         pod2usage
             -exitval => 1,
             -verbose => 2,
-            -input => pod_where({-inc => 1}, __PACKAGE__)
-        ;
+            -input => App::PFT::help_of 'pub',
     }
 ) or exit 1;
+
+cfg_load App::PFT::findroot -die => 1;
 
 my $method = {
     'rsync+ssh' => \&rsync_ssh,

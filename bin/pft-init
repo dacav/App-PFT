@@ -203,9 +203,9 @@ GetOptions(
         pod2usage
             -exitval => 0,
             -verbose => 2,
-            -input => pod_where({-inc => 1}, __PACKAGE__)
+            -input => App::PFT::help_of 'init',
     },
-);
+) or exit 1;
 
 if (my $root = App::PFT::findroot) {
     say STDERR 'Caressing configuration in ', $root;

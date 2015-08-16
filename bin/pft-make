@@ -83,8 +83,6 @@ sub inject {
         )
 }
 
-cfg_load App::PFT::findroot -die => 1;
-
 my $preview;
 GetOptions(
     'preview|p!' => \$preview,
@@ -92,10 +90,11 @@ GetOptions(
         pod2usage
             -exitval => 1,
             -verbose => 2,
-            -input => pod_where({-inc => 1}, __PACKAGE__)
-        ;
+            -input => App::PFT::help_of 'make',
     }
 ) or exit 1;
+
+cfg_load App::PFT::findroot -die => 1;
 
 my $tree = App::PFT::Struct::Tree->new(
     basepath => $ROOT

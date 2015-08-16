@@ -63,12 +63,10 @@ use App::PFT::Data::Date;
 use App::PFT::Struct::Conf qw/cfg_load $ROOT $AUTHOR/;
 
 use Pod::Usage;
-use Pod::Find qw/pod_where/;
+use FindBin;
 
 use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
-
-cfg_load App::PFT::findroot -die => 1;
 
 my %opts = (
     author => $AUTHOR,
@@ -87,10 +85,11 @@ GetOptions(
         pod2usage
             -exitval => 1,
             -verbose => 2,
-            -input => pod_where({-inc => 1}, __PACKAGE__)
-        ;
+            -input => App::PFT::help_of 'blog',
     },
-);
+) or exit 1;
+
+cfg_load App::PFT::findroot -die => 1;
 
 my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
 my $entry;

@@ -7,6 +7,9 @@ use Exporter 'import';
 our @EXPORT_OK = qw/$Name $ConfName findroot/;
 
 use App::PFT::Util;
+
+use FindBin;
+use File::Spec::Functions qw/catfile/;
 use Carp;
 
 # Application Constants
@@ -14,6 +17,10 @@ use Carp;
 our $Name = 'pft';
 our $ConfName = 'pft.yaml';
 our $NoInitMsg = "Not a $Name site. Try running: $Name init";
+
+sub help_of {
+    catfile $FindBin::RealBin, join '-', $Name, @_
+}
 
 sub findroot {
     my %opts = @_;

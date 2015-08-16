@@ -66,8 +66,6 @@ use App::PFT::Struct::Conf qw/
 use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
 
-cfg_load App::PFT::findroot -die => 1;
-
 my %opts = (
     author => $AUTHOR,
     tags => [],
@@ -82,10 +80,11 @@ GetOptions(
         pod2usage
             -exitval => 1,
             -verbose => 2,
-            -input => pod_where({-inc => 1}, __PACKAGE__)
-        ;
+            -input => App::PFT::help_of 'month',
     },
-);
+) or exit 1;
+
+cfg_load App::PFT::findroot -die => 1;
 
 my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
 my $page = $tree->month(
