@@ -51,14 +51,52 @@ Edit month pages.
 use strict;
 use warnings;
 
-use FindBin qw/$Script $RealBin/;
-BEGIN {
-    # The value of $0 is used around in this code (e.g. the configuration file
-    # is named after it).
-    my($zero, $one) = split '-', $Script, 2;
-    $0 = $zero;
-    unshift @ARGV, $one;
-}
+use Pod::Usage;
+use Pod::Find qw/pod_where/;
 
-use File::Spec::Functions qw/catfile/;
-do catfile $RealBin, $0;
+use App::PFT;
+use App::PFT::Struct::Tree;
+use App::PFT::Data::Date;
+use App::PFT::Struct::Conf qw/
+    cfg_load
+    $ROOT
+    $AUTHOR
+/;
+
+use Getopt::Long qw/GetOptionsFromArray/;
+Getopt::Long::Configure qw/bundling/;
+
+cfg_load App::PFT::findroot -die => 1;
+
+my %opts = (
+    author => $AUTHOR,
+    tags => [],
+);
+my %datespec;
+GetOptions(
+    'author|a=s'    => \$opts{author},
+    'tag|t=s@'      => \$opts{tags},
+    'year|y=i'      => \$datespec{year},
+    'month|m=s'     => \$datespec{month},
+    'help|h!'       => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => pod_where({-inc => 1}, __PACKAGE__)
+        ;
+    },
+);
+
+my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+my $page = $tree->month(
+    date => App::PFT::Data::Date->new(
+        %datespec,
+        -fill => 'now',
+    ),
+    -create => 1,
+    %opts,
+);
+
+$page->edit;
+
+1;

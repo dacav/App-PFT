@@ -56,9 +56,7 @@ use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
 use App::PFT::Struct::Tree;
 use App::PFT::Util qw/findroot ln/;
 
-if (my $root = findroot type => 'file', name => $App::PFT::ConfName) {
-    cfg_load $root;
-}
+cfg_load App::PFT::findroot -die => 1;
 
 my $verbose = 0;
 GetOptions(

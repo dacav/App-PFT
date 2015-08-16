@@ -160,7 +160,6 @@ use strict;
 use warnings;
 
 use App::PFT qw/$Name $ConfName/;
-use App::PFT::Util qw/findroot/;
 use App::PFT::Cmd::Init qw/$HOME_TEXT $TEMPLATE_HELP $TEMPLATE_TEXT/;
 use App::PFT::Struct::Tree;
 use App::PFT::Struct::Conf qw/
@@ -208,7 +207,7 @@ GetOptions(
     },
 );
 
-if (my $root = findroot type => 'file', name => $App::PFT::ConfName) {
+if (my $root = App::PFT::findroot) {
     say STDERR 'Caressing configuration in ', $root;
     cfg_load $root;
     cfg_dump $root;
