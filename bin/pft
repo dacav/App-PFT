@@ -374,68 +374,18 @@ directory upon compilation.
 use strict;
 use warnings;
 
-use File::Basename qw/basename/;
-BEGIN { $0 = basename $0 }
-
-use Pod::Usage;
-use File::Spec::Functions qw/catfile/;
-
 use App::PFT;
-use App::PFT::Struct::Conf qw/cfg_default cfg_load/;
-use App::PFT::Util qw/findroot/;
 
-use App::PFT::Cmd::Init;
-use App::PFT::Cmd::Blog;
-use App::PFT::Cmd::Page;
-use App::PFT::Cmd::Make;
-use App::PFT::Cmd::Publish;
-use App::PFT::Cmd::Clean;
-use App::PFT::Cmd::Tag;
-use App::PFT::Cmd::Month;
-use App::PFT::Cmd::Help;
+use FindBin;
+use File::Spec::Functions;
+use Pod::Usage;
+use Pod::Find qw/pod_where/;
 
-use feature qw/say/;
-
-my %COMMANDS = (
-    init => \&App::PFT::Cmd::Init::main,
-    blog => \&App::PFT::Cmd::Blog::main,
-    page => \&App::PFT::Cmd::Page::main,
-    make => \&App::PFT::Cmd::Make::main,
-    pub => \&App::PFT::Cmd::Publish::main,
-    clean => \&App::PFT::Cmd::Clean::main,
-    tag => \&App::PFT::Cmd::Tag::main,
-    month => \&App::PFT::Cmd::Month::main,
-    help => \&App::PFT::Cmd::Help::main,
-);
-
-unless(@ARGV) {
-    say 'Usage:';
-    say "  $0 --help";
-    say "  $0 $_ [options]" foreach keys %COMMANDS;
-    exit 1;
+my $subcmd = shift @ARGV;
+if (!defined($subcmd) || $subcmd =~ /^(?:help|-h|--help)$/) {
+    pod2usage
+        -exitval => 1,
+        -verbose => 2,
+        -input => pod_where({-inc => 1}, __PACKAGE__)
 }
-
-my $command = shift @ARGV;
-
-if ($command =~ /^(?:--help|help|h)$/) {
-    pod2usage -exitval => 1, -verbose => 2;
-}
-
-# Help asked for subcommand? If so we can let it go even if there's no
-# configuration available.
-sub help_asked {
-    for my $a (@ARGV) {
-        return 1 if $a =~ /^-(?:h|-help)$/
-    }
-    return 0
-}
-
-if (my $root = findroot type => 'file', name => $App::PFT::ConfName) {
-    cfg_load $root;
-    chdir $root;
-} elsif ($command ne 'init' && $command ne 'help' && !&help_asked) {
-    say STDERR "Not a $0 site. Try running: $0 init";
-    exit 1;
-}
-
-($COMMANDS{$command} || die "Unknown command $command")->();
+do catfile $FindBin::RealBin, $App::PFT::Name . '-' . $subcmd;
