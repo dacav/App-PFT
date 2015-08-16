@@ -67,7 +67,7 @@ do {
 };
 
 $tree->link;
-@entries = sort @entries;
+@entries = sort { $b cmp $a } @entries;
 
 foreach (0 .. $#entries) {
     my($p, $c, $n) = @entries[$_ - 1 .. $_ + 1];
