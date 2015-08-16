@@ -159,14 +159,86 @@ configuration will be used as user for SSH login.
 use strict;
 use warnings;
 
-use FindBin qw/$Script $RealBin/;
-BEGIN {
-    # The value of $0 is used around in this code (e.g. the configuration file
-    # is named after it).
-    my($zero, $one) = split '-', $Script, 2;
-    $0 = $zero;
-    unshift @ARGV, $one;
+use App::PFT qw/$Name $ConfName/;
+use App::PFT::Cmd::Init qw/$HOME_TEXT $TEMPLATE_HELP $TEMPLATE_TEXT/;
+use App::PFT::Struct::Tree;
+use App::PFT::Struct::Conf qw/
+    cfg_load
+    cfg_default
+    cfg_dump
+    $ROOT
+    $TEMPLATE
+    $HOME_PAGE
+/;
+
+use IO::File;
+use File::Spec::Functions qw/catfile/;
+
+use Pod::Usage;
+use Pod::Find qw/pod_where/;
+
+use Getopt::Long qw/GetOptionsFromArray/;
+Getopt::Long::Configure qw/bundling/;
+
+my %opts = (
+    home => 1,
+);
+
+GetOptions(
+    'author=s' => \$App::PFT::Struct::Conf::AUTHOR,
+    'site-title=s' => \$App::PFT::Struct::Conf::SITE_TITLE,
+    'site-url=s' => \$App::PFT::Struct::Conf::SITE_URL,
+    'home-page=s' => \$App::PFT::Struct::Conf::HOME_PAGE,
+    'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
+    'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
+    'template=s' => \$App::PFT::Struct::Conf::TEMPLATE,
+    'remote-method=s' => \$App::PFT::Struct::Conf::REMOTE{Method},
+    'remote-host=s' => \$App::PFT::Struct::Conf::REMOTE{Host},
+    'remote-user=s' => \$App::PFT::Struct::Conf::REMOTE{User},
+    'remote-path=s' => \$App::PFT::Struct::Conf::REMOTE{Path},
+    'remote-port=i' => \$App::PFT::Struct::Conf::REMOTE{Port},
+
+    'home!' => \$opts{home},
+    'help|h!' => sub {
+        pod2usage
+            -exitval => 0,
+            -verbose => 2,
+            -input => App::PFT::help_of 'init',
+    },
+) or exit 1;
+
+if (my $root = App::PFT::findroot) {
+    say STDERR 'Caressing configuration in ', $root;
+    cfg_load $root;
+    cfg_dump $root;
+} else {
+    say STDERR 'Creating configuration';
+    cfg_default;
+    cfg_dump '.';
 }
 
-use File::Spec::Functions qw/catfile/;
-do catfile $RealBin, $0;
+my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+my $default = catfile($tree->dir_templates, "$TEMPLATE.html");
+unless (-e $default) {
+    say STDERR 'Creating template ', $default;
+    my $fd = IO::File->new($default, 'w');
+    say $fd $TEMPLATE_TEXT;
+}
+
+my $readme = catfile($tree->dir_templates, 'README.md');
+unless (-e $readme) {
+    my $rf = IO::File->new($readme, 'w');
+    print $rf $TEMPLATE_HELP;
+}
+
+my $home = $tree->page(title => $HOME_PAGE);
+unless ($home->exists) {
+    if ($opts{home}) {
+        say STDERR "Creating default site home: $HOME_PAGE";
+        my $hf = $home->open('w');
+        print $hf $HOME_TEXT;
+    } else {
+        say STDERR 'Skipping creation of page "', $HOME_PAGE,
+                   '" as requested';
+    }
+}

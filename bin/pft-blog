@@ -57,14 +57,65 @@ Edit a blog entry
 use strict;
 use warnings;
 
-use FindBin qw/$Script $RealBin/;
-BEGIN {
-    # The value of $0 is used around in this code (e.g. the configuration file
-    # is named after it).
-    my($zero, $one) = split '-', $Script, 2;
-    $0 = $zero;
-    unshift @ARGV, $one;
+use App::PFT;
+use App::PFT::Struct::Tree;
+use App::PFT::Data::Date;
+use App::PFT::Struct::Conf qw/cfg_load $ROOT $AUTHOR/;
+
+use Pod::Usage;
+use FindBin;
+
+use Getopt::Long qw/GetOptionsFromArray/;
+Getopt::Long::Configure qw/bundling/;
+
+my %opts = (
+    author => $AUTHOR,
+    tags => [],
+);
+my %datespec;
+GetOptions(
+    'year|y=i'      => \$datespec{year},
+    'month|m=s'     => \$datespec{month},
+    'day|d=i'       => \$datespec{day},
+    'author|a=s'    => \$opts{author},
+    'tag|t=s@'      => \$opts{tags},
+    'resume|r!'     => sub { $opts{back} = 0 },
+    'back=i'        => \$opts{back},
+    'help|h!'       => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'blog',
+    },
+) or exit 1;
+
+cfg_load App::PFT::findroot -die => 1;
+
+my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+my $entry;
+
+if (defined $opts{back}) {
+    $entry = eval {
+        $tree->latest_entry($opts{back});
+    };
+    if ($@) {
+        die 'Cannot go back by ', $opts{back}, ': ', $@;
+    }
+} else {
+    unless (@ARGV) {
+        say STDERR "Usage: $App::PFT::Name blog [options] <title>";
+        exit 1;
+    }
+
+    $entry = $tree->entry(
+        title => join(' ', @ARGV),
+        date => App::PFT::Data::Date->new(
+            %datespec,
+            -fill => 'now',
+        ),
+        %opts
+    );
 }
 
-use File::Spec::Functions qw/catfile/;
-do catfile $RealBin, $0;
+$entry->open('a');
+$entry->edit;
