@@ -394,5 +394,6 @@ unless (defined $subcmd) {
 }
 my $return = do catfile $FindBin::RealBin, $App::PFT::Name . '-' . $subcmd;
 unless (defined $return) {
-    print STDERR 'pft: ', $@, "\n";
+    print STDERR 'pft: ', $@, "\n" if $@;
+    print STDERR 'pft: cannot run command ', $subcmd, ': ', $!, "\n" if $!;
 }
