@@ -390,6 +390,5 @@ if (!defined($subcmd) || $subcmd =~ /^(?:help|-h|--help)$/) {
 }
 my $return = do catfile $FindBin::RealBin, $App::PFT::Name . '-' . $subcmd;
 unless (defined $return) {
-    $@ =~ /(.*) at .*$/;
-    print STDERR 'pft: ', $1, "\n";
+    print STDERR 'pft: ', $@, "\n";
 }
