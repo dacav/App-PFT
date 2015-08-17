@@ -68,18 +68,17 @@ use FindBin;
 use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
 
-cfg_load App::PFT::findroot -die => 1;
-
 my %opts;
 my %datespec;
+
 GetOptions(
     'year|y=i'      => \$datespec{year},
     'month|m=s'     => \$datespec{month},
     'day|d=i'       => \$datespec{day},
-    'author|a=s'    => \$opts{author},
-    'tag|t=s@'      => \$opts{tags},
+    'author|a=s'    => sub { $opts{author} = $_[1] },
+    'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
     'resume|r!'     => sub { $opts{back} = 0 },
-    'back=i'        => \$opts{back},
+    'back=i'        => sub { $opts{back} = int($_[1]) },
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -87,6 +86,8 @@ GetOptions(
             -input => App::PFT::help_of 'blog',
     },
 ) or exit 1;
+
+cfg_load App::PFT::findroot -die => 1;
 
 my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
 my $entry;
@@ -110,11 +111,13 @@ if (defined $opts{back}) {
             %datespec,
             -fill => 'now',
         ),
-        %opts,
 
         # defaults
         author => $AUTHOR,
         tags => [],
+
+        # override
+        %opts,
     );
 }
 

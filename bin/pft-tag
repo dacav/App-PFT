@@ -64,13 +64,11 @@ use App::PFT::Struct::Conf qw/
 use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
 
-cfg_load App::PFT::findroot -die => 1;
-
 my %opts;
 my %datespec;
 GetOptions(
-    'author|a=s'    => \$opts{author},
-    'tag|t=s@'      => \$opts{tags},
+    'author|a=s'    => sub { $opts{author} = $_[1] },
+    'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -79,6 +77,7 @@ GetOptions(
     },
 );
 
+cfg_load App::PFT::findroot -die => 1;
 
 unless (@ARGV) {
     say STDERR "Usage: $App::PFT::Name tag [options] <title>";
@@ -89,10 +88,13 @@ my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
 my $page = $tree->tag(
     name => join(' ', @ARGV),
     -create => 1,
-    %opts,
 
+    # defaults
     author => $AUTHOR,
     tags => [],
+
+    # override
+    %opts,
 );
 
 $page->edit;

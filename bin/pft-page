@@ -66,8 +66,8 @@ Getopt::Long::Configure qw/bundling/;
 my %opts;
 my %datespec;
 GetOptions(
-    'author|a=s'    => \$opts{author},
-    'tag|t=s@'      => \$opts{tags},
+    'author|a=s'    => sub { $opts{author} = $_[1] },
+    'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -86,11 +86,13 @@ unless (@ARGV) {
 my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
 my $page = $tree->page(
     title => join(' ', @ARGV),
-    %opts,
 
     # defaults
     author => $AUTHOR,
     tags => [],
+
+    # override
+    %opts,
 );
 
 $page->open('a');

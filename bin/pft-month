@@ -66,13 +66,11 @@ use App::PFT::Struct::Conf qw/
 use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
 
-cfg_load App::PFT::findroot -die => 1;
-
 my %opts;
 my %datespec;
 GetOptions(
-    'author|a=s'    => \$opts{author},
-    'tag|t=s@'      => \$opts{tags},
+    'author|a=s'    => sub { $opts{author} = $_[1] },
+    'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
     'year|y=i'      => \$datespec{year},
     'month|m=s'     => \$datespec{month},
     'help|h!'       => sub {
@@ -83,6 +81,8 @@ GetOptions(
     },
 ) or exit 1;
 
+cfg_load App::PFT::findroot -die => 1;
+
 my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
 my $page = $tree->month(
     date => App::PFT::Data::Date->new(
@@ -90,10 +90,13 @@ my $page = $tree->month(
         -fill => 'now',
     ),
     -create => 1,
-    %opts,
 
+    # defaults
     author => $AUTHOR,
     tags => [],
+
+    # override
+    %opts,
 );
 
 $page->edit;
