@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Output::HTML;
+package App::PFT::Output::HTML v0.03.1;
 
 use strict;
 use warnings;
