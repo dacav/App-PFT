@@ -382,7 +382,11 @@ use Pod::Usage;
 use Pod::Find qw/pod_where/;
 
 my $subcmd = shift @ARGV;
-if (!defined($subcmd) || $subcmd =~ /^(?:help|-h|--help)$/) {
+unless (defined $subcmd) {
+    print STDERR "Usage: pft <command> [<args>]\n",
+                 "Usage: pft --help\n";
+    exit 1;
+} elsif ($subcmd =~ /^(?:help|-h|--help)$/) {
     pod2usage
         -exitval => 1,
         -verbose => 2,
