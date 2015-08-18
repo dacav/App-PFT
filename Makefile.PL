@@ -26,7 +26,6 @@ WriteMakefile(
         'File::Basename'        => 0,
         'File::Copy::Recursive' => 0,
         'File::Path'            => 0,
-        'File::Slurp'           => 0,
         'File::Spec::Functions' => 0,
         'Getopt::Long'          => 0,
         'IO::File'              => 0,

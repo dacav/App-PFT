@@ -25,7 +25,6 @@ use Moose;
 
 use File::Spec::Functions qw/catdir catfile abs2rel/;
 use File::Path qw/make_path/;
-use File::Slurp qw/write_file/;
 use File::Basename;
 
 use IO::File;
