@@ -35,6 +35,8 @@ Build the website into the build directory.
 
 =item --preview | -p
 
+=item --fast | -f
+
 =item --help | -h
 
 =back
@@ -83,10 +85,11 @@ sub inject {
         )
 }
 
-my $preview;
+my($preview, $fast);
 GetOptions(
     'preview|p!' => \$preview,
-    'help|h' => sub {
+    'fast|f!'    => \$fast,
+    'help|h'     => sub {
         pod2usage
             -exitval => 1,
             -verbose => 2,
@@ -105,6 +108,7 @@ App::PFT::Output::HTML->new(
     home => $HOME_PAGE,
     # site_footer => $ENV{SITE_FOOTER},
     base_url => $preview ? $tree->dir_build : $SITE_URL,
+    fast_mode => $fast,
     encoding => $OUTPUT_ENC || 'utf-8',
 
     default_template => $TEMPLATE,

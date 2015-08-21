@@ -41,6 +41,10 @@ has fname => (
     default => sub { basename shift->path },
 );
 
+sub mtime {
+    (stat shift->path)[9];
+}
+
 sub open {
     my $path = shift->path;
     my $mode = shift;
