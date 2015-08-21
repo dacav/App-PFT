@@ -109,10 +109,20 @@ around BUILDARGS => sub {
         };
         croak $@ if $@;
 
-        my $enc = $params{encoding} = $hdr->{Encoding} || $INPUT_ENC;
-        $params{title} = decode($enc, $hdr->{Title}) || croak 'Title is strictly required';
-        $params{author} = decode($enc, $hdr->{Author});
-        $params{template} = decode($enc, $hdr->{Template}) if $hdr->{Template};
+        my $decode = do {
+            my $enc = $params{encoding} = $hdr->{Encoding} || $INPUT_ENC;
+            sub {
+                my $v = $hdr->{$_[0]};
+                croak "Conf '$_[0]' is mandatory" if $_[1] && !defined $v;
+                if (ref $v) {
+                    croak "Conf '$_[0]' must be a string"
+                }
+                decode($enc, $v)
+            }
+        };
+        $params{title} = $decode->(Title => 1);
+        $params{author} = $decode->(Author => 0);
+        $params{template} = $decode->(Template => 0) if $hdr->{Template};
 
         my $tags = $hdr->{Tags};
         $params{tags} = ref $tags eq 'ARRAY' ? $tags
