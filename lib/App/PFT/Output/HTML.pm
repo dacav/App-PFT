@@ -78,6 +78,12 @@ has tree => (
     required => 1,
 );
 
+has build_opts => (
+    is => 'ro',
+    isa => 'HashRef',
+    default => sub{{}},
+);
+
 sub build_path { shift->tree->dir_build }
 sub pages { shift->tree->list_pages }
 sub entries { shift->tree->list_entries }
