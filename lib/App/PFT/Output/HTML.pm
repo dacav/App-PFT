@@ -78,6 +78,12 @@ has tree => (
     required => 1,
 );
 
+has build_opts => (
+    is => 'ro',
+    isa => 'HashRef',
+    default => sub{{}},
+);
+
 sub build_path { shift->tree->dir_build }
 sub pages { shift->tree->list_pages }
 sub entries { shift->tree->list_entries }
@@ -149,7 +155,7 @@ around BUILDARGS => sub {
     my $build_path = $tree->dir_build;
     die unless $base_url;
 
-    remove_tree $build_path;
+    remove_tree $build_path unless $params{build_opts}->{fast};
     make_path $build_path;
 
     my(@todo, %seen);
@@ -240,6 +246,15 @@ sub resolve {
 
 sub process {
     my($self, $content) = @_;
+
+    my $fn = catfile($self->tree->dir_build, $content->from_root) . '.html';
+    if ($self->build_opts->{fast}
+            && $content->isa('App::PFT::Content::File')
+            && -e $fn
+            && $content->mtime <= (stat $fn)[9]) {
+        return 'Skip';
+    }
+
     my $be = $self->backend;
 
     my %links;
@@ -283,7 +298,6 @@ sub process {
         }
     }
 
-    my $fn = catfile($self->tree->dir_build, $content->from_root) . '.html';
     make_path dirname($fn), { verbose => 1 };
     $be->process(
         ($content->template || $self->default_template) . '.html',
@@ -294,6 +308,8 @@ sub process {
         "\n\ttemplate engine says: ", $be->error,
         "\n\t(Missing template?)",
     ;
+
+    'OK'
 }
 
 sub build {
@@ -309,14 +325,16 @@ sub build {
     );
 
     while (my $e = $next->()) {
-        eval {
+        my $info = eval {
             $self->process($e);
         };
+        printf STDOUT '%-60s ', $e;
         if ($@) {
-            croak "While compiling $e: \n\t", $@;
+            say STDOUT 'Fail: ', $@;
         } else {
-            say STDERR "Compiled $e";
+            say STDOUT 'OK: ', $info;
         }
+        $|++;
     }
 }
 

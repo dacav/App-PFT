@@ -35,6 +35,8 @@ Build the website into the build directory.
 
 =item --preview | -p
 
+=item --fast | -f
+
 =item --help | -h
 
 =back
@@ -83,10 +85,11 @@ sub inject {
         )
 }
 
-my $preview;
+my($preview, %build_opts);
 GetOptions(
     'preview|p!' => \$preview,
-    'help|h' => sub {
+    'fast|f!'    => \$build_opts{fast},
+    'help|h'     => sub {
         pod2usage
             -exitval => 1,
             -verbose => 2,
@@ -109,6 +112,7 @@ App::PFT::Output::HTML->new(
 
     default_template => $TEMPLATE,
     tree => $tree,
+    build_opts => \%build_opts,
 )->build;
 
 inject $tree;
