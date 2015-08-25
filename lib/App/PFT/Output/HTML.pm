@@ -42,10 +42,6 @@ use constant {
     prefix_len => length('App::PFT::Content::'),
 };
 
-has fast_mode => (
-    is => 'ro',
-);
-
 has title => (
     is => 'ro',
     isa => 'Str',
@@ -80,6 +76,12 @@ has tree => (
     is => 'ro',
     isa => 'App::PFT::Struct::Tree',
     required => 1,
+);
+
+has build_opts => (
+    is => 'ro',
+    isa => 'HashRef',
+    default => sub{{}},
 );
 
 sub build_path { shift->tree->dir_build }
@@ -153,7 +155,7 @@ around BUILDARGS => sub {
     my $build_path = $tree->dir_build;
     die unless $base_url;
 
-    remove_tree $build_path unless $params{fast_mode};
+    remove_tree $build_path unless $params{build_opts}->{fast};
     make_path $build_path;
 
     my(@todo, %seen);
@@ -246,7 +248,7 @@ sub process {
     my($self, $content) = @_;
 
     my $fn = catfile($self->tree->dir_build, $content->from_root) . '.html';
-    if ($self->fast_mode
+    if ($self->build_opts->{fast}
             && $content->isa('App::PFT::Content::File')
             && -e $fn
             && $content->mtime <= (stat $fn)[9]) {

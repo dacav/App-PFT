@@ -85,10 +85,10 @@ sub inject {
         )
 }
 
-my($preview, $fast);
+my($preview, %build_opts);
 GetOptions(
     'preview|p!' => \$preview,
-    'fast|f!'    => \$fast,
+    'fast|f!'    => \$build_opts{fast},
     'help|h'     => sub {
         pod2usage
             -exitval => 1,
@@ -108,11 +108,11 @@ App::PFT::Output::HTML->new(
     home => $HOME_PAGE,
     # site_footer => $ENV{SITE_FOOTER},
     base_url => $preview ? $tree->dir_build : $SITE_URL,
-    fast_mode => $fast,
     encoding => $OUTPUT_ENC || 'utf-8',
 
     default_template => $TEMPLATE,
     tree => $tree,
+    build_opts => \%build_opts,
 )->build;
 
 inject $tree;
