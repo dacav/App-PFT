@@ -83,7 +83,7 @@ sub inject {
         )
 }
 
-my $preview;
+my($preview, %build_opts);
 GetOptions(
     'preview|p!' => \$preview,
     'help|h' => sub {
@@ -109,6 +109,7 @@ App::PFT::Output::HTML->new(
 
     default_template => $TEMPLATE,
     tree => $tree,
+    build_opts => \%build_opts,
 )->build;
 
 inject $tree;
