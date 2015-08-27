@@ -1,0 +1,77 @@
+#!/usr/bin/perl
+#
+# Copyright 2014 - Giovanni Simoni
+#
+# This file is part of PFT.
+#
+# PFT is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# PFT is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with PFT.  If not, see <http://www.gnu.org/licenses/>.
+#
+=head1 NAME
+
+pft show - Show the built site
+
+=head1 SYNOPSYS
+
+pft clean [-v]
+
+=head1 DESCRIPTION
+
+Show the built site
+
+=head1 OPTIONS
+
+=over
+
+=item --verbose | -v
+
+=item --help | -h
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+use Pod::Usage;
+use File::Spec::Functions qw/catfile/;
+
+use Getopt::Long;
+Getopt::Long::Configure ("bundling");
+
+use App::PFT;
+use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
+use App::PFT::Struct::Tree;
+
+my $verbose = 0;
+my $browser = $ENV{BROWSER};
+GetOptions(
+    'browser|b=s' => \$browser,
+    'help|h' => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'show',
+    }
+) or exit 1;
+
+cfg_load App::PFT::findroot -die => 1;
+
+die 'Use --browser or define $BROWSER' unless $browser;
+
+my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+my $index = catfile $tree->dir_build, 'index.html';
+die 'Need to build first, use pft make' unless -f $index;
+
+system($browser, $index);
