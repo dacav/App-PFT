@@ -41,13 +41,22 @@ sub edit() {
     system($ENV{EDITOR}, $path);
 
     if (-z $path) {
-        print STDERR 'Removing file', $path, "\n";
+        say STDERR 'Removing empty file', $path;
         unlink $path;
-    } else {
-        eval {
-            App::PFT::Data::Header->new(-load => $self->open('r'));
-        };
-        say STDERR "WARNING: Bad file format in $path: $@" if $@;
+        return
+    }
+
+    my $f = $self->open('r');
+    eval {
+        App::PFT::Data::Header->new(-load => $f);
+    };
+    if ($@) {
+        say STDERR "WARNING: Bad file format in $path: $@";
+        return
+    }
+    if (eof $f) {
+        say STDERR 'Removing file', $path, ': no content';
+        return
     }
 }
 
