@@ -59,3 +59,18 @@ for more details.
 
 You should have received a copy of the GNU General Public License along
 with PFT.  If not, see <http://www.gnu.org/licenses/>.
+
+# DEVELOPMENT IDEAS
+
+Ordered by difficulty, from most to least
+
+ * Nested Sites
+ * Attachments download page
+ * Encryption support (e.g `| encrypt_if` filter)
+ * Source code coloring (e.g. `| highlight_code` filter)
+ * Attach command (`pft attach`, yields link name in form :attach:x/y.z)
+ * Configuration options (e.g. `Editor : vim`)
+ * Custom editor modes (e.g. if using vim, add modelines)
+ * Additional template variables
+    - Random value (e.g. for random css effects)
+    - Random quote from a pool
