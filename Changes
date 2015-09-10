@@ -8,3 +8,8 @@ Revision history for App-PFT
 
 0.03    2015-08-15
         Commands refactoring, ready for CPAN
+
+0.04    2015-09-10
+        Fast-make (pft make -f)
+        Untouched files (only header) get deleted
+        Misc fixes & small improvements
