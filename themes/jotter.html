@@ -1,0 +1,285 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=[% site.encoding %]">
+    <title>[% site.title %] :: [% content.title %]</title>
+
+      <style type="text/css">
+
+          html {
+              margin : 0;
+              padding : 0;
+              font-family : sans-serif;
+          }
+
+          body {
+              margin : 0 auto 0;
+              padding : 5em 5em 0;
+              min-width : 40em;
+              max-width : 70em;
+              font-size : 10pt;
+              line-height : 1.3em;
+              background: repeating-linear-gradient(#e5e5e5, #fff);
+          }
+
+          h1,h2,h3,h4,h5,h6 {
+              line-height : 1em;
+          }
+
+          a a:link a:visited {
+              color : cornflowerblue;
+              text-decoration : none;
+          }
+
+          a:hover {
+              color : #87aced;
+          }
+
+          .side {
+              float : right;
+          }
+
+          div#sitemap {
+              width : 30%;
+              margin-right : 4%;
+          }
+
+          div#sitemap h1 {
+              color : #00679D;
+              font-size : 1.5em;
+              padding-bottom : .5em;
+              border-bottom : 1px solid #00679D;
+          }
+
+          div#sitemap h2 {
+              font-size : 1em;
+              font-style : italic;
+          }
+
+          h1#sitetitle {
+              text-align : right;
+              padding : 2em;
+              background : #fff;
+              padding : 2em 4% 1em;
+              font-variant : small-caps;
+              border-radius : 25px;
+
+              color : #00679D;
+          }
+
+          div#page {
+              box-shadow : 0 0 .6em grey;
+              border-radius : 25px;
+              padding : 0 0 3em;
+              margin-bottom : 3em;
+
+              background: repeating-linear-gradient(#d1d1d1, #fff .1em, #fff 1.49em);
+              line-height : 1.5em;
+          }
+
+          div#pagetitle {
+              margin-bottom : 2em;
+
+              color : #9d0700;
+              margin : 0 4% 3em;
+              border-bottom : 1px solid #9d0700;
+          }
+
+          div#pagetitle h2 {
+              font-size : 1em;
+          }
+
+          div#pagetitle h3 {
+              font-size : 1em;
+              display : inline;
+              font-style : italic;
+          }
+
+          div#navigation ul {
+              list-style-type : none;
+          }
+
+          div#navigation li h3 {
+              display : inline;
+          }
+
+          div#content {
+              font-family : sanf;
+              width : 60%;
+              margin-left : 4%
+          }
+
+          div#content code {
+              color : #333;
+          }
+
+          div#content blockquote {
+              font-style : italic;
+              color : #5C0400;
+              font-family: serif;
+          }
+
+          div#content #title h1 {
+              font-size : 2em;
+          }
+
+          div#content #text pre {
+              overflow : auto;
+              border-radius : 3px;
+              background : #fffddd;
+              padding : .75em;
+              box-shadow : 0 0 .2em grey;
+              margin : 1.5em 0;
+          }
+
+          div#content p img {
+              max-width : 100%;
+              box-shadow : 0 0 .3em grey;
+              margin : 1em 0;
+          }
+
+          div#content p img:hover {
+              transform : rotate(3deg);
+          }
+
+          div#content h1,h2,h3,h4,h5,h6 {
+              font-family : sans;
+              color : #9d0700;
+          }
+
+          div#content h1 { font-size : 1.7em; }
+          div#content h2 { font-size : 1.5em; }
+          div#content h3 { font-size : 1.4em; }
+          div#content h4 { font-size : 1.3em; }
+          div#content h5 { font-size : 1.2em; }
+          div#content h6 { font-size : 1.1em; }
+
+          div#footer {
+              clear : both;
+              color : silver;
+              padding-right : 10%;
+              font-size : .8em;
+              text-align : right;
+          }
+
+      </style>
+  </head>
+
+  <body>
+    <div id="page">
+      <h1 id="sitetitle">[% site.title %]</h1>
+
+      <div id="pagetitle">
+        <h1>[% content.title %]</h1>
+        [% IF content.date %]
+        <h2>
+            <a href="[% links.root.href %]">[% content.date.y %] / [% content.date.m %]</a> / [% content.date.d %]
+        </h2>
+        [% END %]
+      </div>
+
+      <div id="sitemap" class="side">
+        <h1>Site Map:</h1>
+
+        [% IF links.pages %]
+        <h2>Pages:</h2>
+        <ul>
+          [% FOREACH p = links.pages %]
+            <li><a href="[% p.href %]">[% p.slug %]</a></li>
+          [% END %]
+        </ul>
+        [% END %]
+
+        [% IF links.backlog %]
+        <h2>Last 5 entries:</h2>
+        <ul>
+          [% FOREACH e = links.backlog; IF loop.count > 5 BREAK END %]
+            <li>
+              <a href="[% e.href %]">
+                [% e.slug %]
+              </a>
+            </li>
+          [% END %]
+        </ul>
+        [% END %]
+
+        [% IF links.months %]
+        <h2>Last 5 months:</h2>
+        <ul>
+          [% FOREACH m = links.months; IF loop.count > 5 BREAK END %]
+            <li>
+              <a href="[% m.href %]">[% m.slug %]</a>
+            </li>
+          [% END %]
+        </ul>
+        [% END %]
+
+        [% IF links.tags %]
+        <h2>All the tags</h2>
+        <ul>
+          [% FOREACH t = links.tags %]
+            <li>
+              <a href="[% t.href %]">[% t.slug %]</a>
+            </li>
+          [% END %]
+        </ul>
+        [% END %]
+
+      </div>
+
+      <div id="navigation">
+        <ul>
+          [% IF links.prev %]
+          <li>
+            <h3>Prev:</h3>
+            <a href="[% links.prev.href %]">[% links.prev.slug %]</a>
+          </li>
+          [% END %]
+
+          [% IF links.next %]
+          <li>
+            <h3>Next:</h3>
+            <a href="[% links.next.href %]">[% links.next.slug %]</a>
+          </li>
+          [% END %]
+
+          [% IF content.tags %]
+          <li>
+            <h3>Tags:</h3>
+            <ul>
+              [% FOREACH t = content.tags %]
+                <li><a href="[% t.href %]">[% t.slug %]</a></li>
+              [% END %]
+            </uL>
+          </li>
+          [% END %]
+        </ul>
+      </div> <!-- sitemap -->
+
+      <div id="content">
+        <div id="text">
+          [% content.html %]
+
+          [% IF links.related %]
+          <ul>
+            [% FOREACH l = links.related %]
+              <li>
+              [% IF l.date %]
+                [% l.date.y %] / [% l.date.m %] / [% l.date.d %]:
+              [% ELSE %]
+                Page:
+              [% END %]
+              <a href="[% l.href %]">[% l.slug %]</a></li>
+            [% END %]
+          </ul>
+          [% END %]
+        </div>
+      </div> <!-- content -->
+
+      <div id="footer">
+          <a href="#top">Up</a>
+      </div>
+    </div> <!-- page -->
+
+  </body>
+</html>
