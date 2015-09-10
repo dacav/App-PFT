@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Struct::Tree;
+package App::PFT::Struct::Tree v0.03.2;
 
 use strict;
 use warnings;
@@ -25,7 +25,6 @@ use Moose;
 
 use File::Spec::Functions qw/catdir catfile abs2rel/;
 use File::Path qw/make_path/;
-use File::Slurp qw/write_file/;
 use File::Basename;
 
 use IO::File;

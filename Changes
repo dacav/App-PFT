@@ -3,3 +3,8 @@ Revision history for App-PFT
 0.01    2015-06-22
         First version, from Backport's ashes.
 
+0.02    2015-08-13
+        Revision, fix-up, best-practice driven distribution
+
+0.03    2015-08-15
+        Commands refactoring, ready for CPAN

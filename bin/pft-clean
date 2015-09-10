@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+#
 # Copyright 2014 - Giovanni Simoni
 #
 # This file is part of PFT.
@@ -15,57 +17,63 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Cmd::Clean;
-
 =head1 NAME
 
-pft clean
+pft clean - Clean the build directory
 
 =head1 SYNOPSYS
 
-pft clean ...
+pft clean [-v]
+
+=head1 DESCRIPTION
+
+Clean the build directory
+
+=head1 OPTIONS
+
+=over
+
+=item --verbose | -v
+
+=item --help | -h
+
+=back
 
 =cut
 
 use strict;
 use warnings;
 
-use Exporter qw/import/;
-use feature qw/say/;
-
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
-
-use App::PFT::Struct::Conf qw/$ROOT/;
-use App::PFT::Struct::Tree;
-use App::PFT::Util qw/ln/;
-
 use File::Path;
-use Getopt::Long;
 
+use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-sub main {
-    my $verbose = 0;
-    GetOptions(
-        'verbose|v' => \$verbose,
-        'help|h' => sub {
-            pod2usage
-                -exitval => 1,
-                -verbose => 2,
-                -input => pod_where({-inc => 1}, __PACKAGE__)
-            ;
-        }
-    ) or exit 1;
+use App::PFT;
+use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
+use App::PFT::Struct::Tree;
+use App::PFT::Util qw/findroot ln/;
 
-    my $tree = App::PFT::Struct::Tree->new(
-        basepath => $ROOT
-    );
+my $verbose = 0;
+GetOptions(
+    'verbose|v' => \$verbose,
+    'help|h' => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'clean',
+    }
+) or exit 1;
 
-    File::Path::rmtree
-        $tree->dir_build,
-        { verbose => $verbose }
-    ;
-}
+cfg_load App::PFT::findroot -die => 1;
 
-1;
+my $tree = App::PFT::Struct::Tree->new(
+    basepath => $ROOT
+);
+
+File::Path::rmtree
+    $tree->dir_build,
+    { verbose => $verbose }
+;

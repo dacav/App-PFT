@@ -15,177 +15,21 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Cmd::Init;
-
-=head1 NAME
-
-pft init - Initialize a PFT Site
-
-=head1 SYNOPSYS
-
-pft init [<options>]
-
-=head1 DESCRIPTION
-
-Initialize a PFT Site.
-
-The command generates the C<pft.yaml> configuration file, creates the
-filesystem structure for a PFT site, a site Home Page and the site
-templates.
-
-A test configuration is provided by default, and can be later modified by
-editing the be modified by editing the C<pft.yaml> configuration file.
-
-The C<pft init> command accepts options which will override the default
-configuration. The options are listed in this document (see
-B<CONFIGURATION OPTIONS>)
-
-The C<pft init> command can also be used to override an existing
-configuration by running it on a site which was already initialized.
-The existing configuration will be respected, except for the overriden
-keys.
-
-=head1 OPTIONS
-
-=over
-
-=item --no-home
-
-Skip Home Page generation.
-
-=item --help | -h
-
-Show this help page.
-
-=back
-
-=head1 CONFIGURATION OPTIONS
-
-=over
-
-=item --author
-
-Specify a C<Author> configuration.
-
-The C<Author> value will be used as default C<Author> for all new content
-files.
-
-=item --site-title
-
-Specify a C<SiteTitle> configuration.
-
-The C<SiteTitle> value will be accessible by the template engine, so the
-title can be shown on all pages.
-
-=item --site-url
-
-Specify a C<SiteURL> configuration.
-
-C<SiteURL> is the base URL for the site. This will be used as prefix for
-all internal URLs. You probably want to specify something like
-C<http://example.org/path/to/site/>. Since B<pft> will not try to guess
-your protocol scheme, you should put it right.
-
-=item --home-page
-
-Specify a C<HomePage> configuration.
-
-C<HomePage> declares a Home Page for the site. The page will be generated
-automatically unless it exists already or the C<--no-home> is used.
-
-=item --input-enc
-
-Specify a C<InputEnc> configuration.
-
-C<InputEnc> declares the default encoding for content files. The encoding
-of single content files can be redefined by editing their header.
-
-=item --output-enc
-
-Specify a C<OutputEnc> configuration.
-
-C<OutputEnc> declares the encoding for output HTML files.
-
-=item --remote-method
-
-Specify a C<Remote.Method> configuration.
-
-C<Remote.Method> indicates how to upload the compiled content onto a
-remote machine. Current valid values are:
-
-=over
-
-=item * C<rsync+ssh> (default): Use I<RSync> over I<SSH> for sending files.
-
-=back
-
-=item --remote-host
-
-Specify a C<Remote.Host> configuration.
-
-C<Remote.Host> is optional, and declares the host name (or ip address) of
-the remote machine hosting the website. The selected remote method
-(C<--remote-method> option) may require this configuration.
-
-=item --remote-port
-
-Specify a C<Remote.Port> configuration.
-
-C<Remote.Port> is optional, and declares a port on the remote machine
-where a file upload service is running. The value may be used as parameter
-for different transport protocols, depending on the C<--remote-method> in
-use. Sensible defaults are assumed unless diffrently specified.
-
-For instance, if using C<--remote-method=rsync+ssh>, the C<Remote.Port>
-configuration will be used to determine the I<SSH> port, and will default
-to 22.
-
-=item --remote-user
-
-Specify a C<Remote.User> configuration.
-
-C<Remote.User> is optional, and declares a user on the remote machine
-where a file upload service is running. The value may be used as parameter
-for different transport protocols, depending on the C<--remote-method> in
-use.
-
-For instance, if using C<--remote-method=rsync+ssh>, the C<Remote.User>
-configuration will be used as user for SSH login.
-
-=back
-
-=cut
+package App::PFT::Cmd::Init v0.03.2;
 
 use strict;
 use warnings;
 
-use IO::File;
-use File::Spec::Functions qw/catfile/;
-
-use App::PFT::Struct::Tree;
-use App::PFT::Struct::Conf qw/
-    cfg_is_loaded
-    cfg_default
-    cfg_dump
-    $ROOT
-    $TEMPLATE
-    $HOME_PAGE
-/;
+use App::PFT qw/$Name $ConfName/;
 
 use Exporter qw/import/;
-use feature qw/say/;
+our @EXPORT_OK = qw/$HOME_TEXT $TEMPLATE_HELP $TEMPLATE_TEXT/;
 
-use Pod::Usage;
-use Pod::Find qw/pod_where/;
-
-use Getopt::Long qw/GetOptionsFromArray/;
-Getopt::Long::Configure qw/bundling/;
-
-my $HELP = <<"EOF";
+our $TEMPLATE_HELP = <<"EOF";
 Templates directory
 ===================
 
-This is the templates directory. Here $0 will search for the HTML
+This is the templates directory. Here $Name will search for the HTML
 templates.
 
 Content and templates
@@ -193,11 +37,11 @@ Content and templates
 
 Each content can optionally specify a custom template though the
 `Template` configuration in the header. The default one is given by the
-global configuration key `Template`, in `$0.yaml`.
+global configuration key `Template`, in `$ConfName`.
 
-Unless differently specified in `$0.yaml`, the default template is
+Unless differently specified in `$ConfName`, the default template is
 `default.html`. An arguably decent default gets created automatically and
-restored by `$0 init`.
+restored by `$Name init`.
 
 How to write a template
 -----------------------
@@ -222,84 +66,14 @@ of the Template::Alloy perl library. Here follows a list of available keys:
 
 EOF
 
-my $HOME_TEXT = <<"EOF";
+our $HOME_TEXT = <<"EOF";
 
-Welcome to this $0 site.
+Welcome to this $Name site.
 
-This page was auto-generated by the $0 Configurator.
+This page was auto-generated by the $Name Configurator.
 EOF
 
-sub main {
-    if (grep /^--help|-h$/, @ARGV) {
-        pod2usage
-            -exitval => 0,
-            -verbose => 2,
-            -input => pod_where({-inc => 1}, __PACKAGE__)
-    }
-
-    cfg_default unless cfg_is_loaded;
-
-    my %opts = (
-        home => 1,
-    );
-
-    GetOptions(
-        'author=s' => \$App::PFT::Struct::Conf::AUTHOR,
-        'site-title=s' => \$App::PFT::Struct::Conf::SITE_TITLE,
-        'site-url=s' => \$App::PFT::Struct::Conf::SITE_URL,
-        'home-page=s' => \$App::PFT::Struct::Conf::HOME_PAGE,
-        'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
-        'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
-        'template=s' => \$App::PFT::Struct::Conf::TEMPLATE,
-        'remote-method=s' => \$App::PFT::Struct::Conf::REMOTE{Method},
-        'remote-host=s' => \$App::PFT::Struct::Conf::REMOTE{Host},
-        'remote-user=s' => \$App::PFT::Struct::Conf::REMOTE{User},
-        'remote-path=s' => \$App::PFT::Struct::Conf::REMOTE{Path},
-        'remote-port=i' => \$App::PFT::Struct::Conf::REMOTE{Port},
-
-        'home!' => \$opts{home},
-    );
-
-    if (cfg_is_loaded) {
-        say STDERR 'Configuration file caressed in ', $ROOT;
-        cfg_dump $ROOT;
-    } else {
-        say STDERR 'Creating configuration';
-        cfg_dump '.';
-    }
-
-    my $tree = App::PFT::Struct::Tree->new(basepath => '.');
-    my $default = catfile($tree->dir_templates, "$TEMPLATE.html");
-    unless (-e $default) {
-        say STDERR 'Creating template ', $default;
-        my $fd = IO::File->new($default, 'w');
-        say $fd <App::PFT::Cmd::Init::DATA>;
-        close App::PFT::Cmd::Init::DATA;
-    }
-
-    my $readme = catfile($tree->dir_templates, 'README.md');
-    unless (-e $readme) {
-        my $rf = IO::File->new($readme, 'w');
-        print $rf $HELP;
-    }
-
-    my $home = $tree->page(title => $HOME_PAGE);
-    unless ($home->exists) {
-        if ($opts{home}) {
-            say STDERR "Creating default site home: $HOME_PAGE";
-            my $hf = $home->open('w');
-            print $hf $HOME_TEXT;
-        } else {
-            say STDERR 'Skipping creation of page "', $HOME_PAGE,
-                       '" as requested';
-        }
-    }
-}
-
-1;
-
-__DATA__
-
+our $TEMPLATE_TEXT = <<'EOF';
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
@@ -543,3 +317,4 @@ __DATA__
 
 </body>
 </html>
+EOF

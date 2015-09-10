@@ -1,3 +1,5 @@
+#!/usr/bin/perl
+#
 # Copyright 2014 - Giovanni Simoni
 #
 # This file is part of PFT.
@@ -15,23 +17,32 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Cmd::Publish;
-
 =head1 NAME
 
-pft publish
+pft pub - Publish content
 
 =head1 SYNOPSYS
 
-pft publish ...
+pft pub
+
+=head1 DESCRIPTION
+
+Publish content
 
 =cut
 
 use strict;
 use warnings;
 
-use Exporter qw/import/;
 use feature qw/say state/;
+
+use App::PFT;
+use App::PFT::Struct::Tree;
+use App::PFT::Struct::Conf qw/
+    cfg_load
+    $ROOT
+    %REMOTE
+/;
 
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
@@ -39,9 +50,6 @@ use Pod::Find qw/pod_where/;
 use File::Spec::Functions qw/catfile/;
 use File::Path qw/make_path remove_tree/;
 use File::Copy::Recursive;
-
-use App::PFT::Struct::Conf qw/$ROOT %REMOTE/;
-use App::PFT::Struct::Tree;
 
 use Carp;
 
@@ -105,25 +113,22 @@ sub todir {
     );
 }
 
-sub main {
-    GetOptions(
-        'help|h' => sub {
-            pod2usage
-                -exitval => 1,
-                -verbose => 2,
-                -input => pod_where({-inc => 1}, __PACKAGE__)
-            ;
-        }
-    ) or exit 1;
+GetOptions(
+    'help|h' => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'pub',
+    }
+) or exit 1;
 
-    my $method = {
-        'rsync+ssh' => \&rsync_ssh,
-        'todir' => \&todir,
-    }->{$REMOTE{Method}};
-    die 'Unknown method ', $REMOTE{Method} unless $method;
+cfg_load App::PFT::findroot -die => 1;
 
-    my $tree = App::PFT::Struct::Tree->new( basepath => $ROOT);
-    $method->($tree);
-}
+my $method = {
+    'rsync+ssh' => \&rsync_ssh,
+    'todir' => \&todir,
+}->{$REMOTE{Method}};
+die 'Unknown method ', $REMOTE{Method} unless $method;
 
-1;
+my $tree = App::PFT::Struct::Tree->new( basepath => $ROOT);
+$method->($tree);

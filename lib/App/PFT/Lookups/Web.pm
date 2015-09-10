@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Lookups::Web;
+package App::PFT::Lookups::Web v0.03.2;
 
 use strict;
 use warnings;
