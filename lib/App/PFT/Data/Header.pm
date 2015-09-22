@@ -72,63 +72,77 @@ sub dump {
             $type ? $type : 'Scalar'
     }
     my $tags = $self->tags;
-    print $to YAML::Tiny::Dump {
+    print $to Encode::encode($INPUT_ENC, YAML::Tiny::Dump {
         Title => $self->title,
         Author => $self->author,
         Encoding => $self->encoding,
         Template => $self->template,
         Tags => @$tags ? $tags : undef,
-    }
+    })
 }
 
 sub slug {
     slugify shift->title;
 }
 
+my $load_file = sub {
+    my $params = shift;
+    my $from = $params->{'-load'};
+
+    my $hdr = do {
+        # Header starts with a valid YAML document (including the leading
+        # /^---$/ string) and ends with another /^---$/ string.
+
+        my $text;
+        my $type = ref $from;
+        if ($type eq 'GLOB' || $type eq 'IO::File') {
+            $text = <$from>;
+            while (<$from>) {
+                last if ($_ =~ /^---$/);
+                $text .= $_;
+            }
+        } else {
+            confess "Only supporting GLOB and IO::File. Got $type" if $type;
+            $text = $from;
+        }
+        eval { YAML::Tiny::Load($text) };
+    };
+    croak $@ if $@;
+
+    my $decode = do {
+        my $enc = $params->{encoding} = $hdr->{Encoding} || $INPUT_ENC;
+        sub {
+            my $v = $hdr->{$_[0]};
+            croak "Conf '$_[0]' is mandatory" if $_[1] && !defined $v;
+            if (ref $v) {
+                croak "Conf '$_[0]' must be a string"
+            }
+            decode($enc, $v)
+        }
+    };
+    $params->{title} = $decode->(Title => 1);
+    $params->{author} = $decode->(Author => 0);
+    $params->{template} = $decode->(Template => 0) if $hdr->{Template};
+
+    my $tags = $hdr->{Tags};
+    $params->{tags} = ref $tags eq 'ARRAY' ? $tags
+                    : defined $tags ? [$tags]
+                    : []
+                    ;
+};
+
+my $generate = sub {
+    my $params = shift;
+    $params->{title} = Encode::decode($INPUT_ENC, $params->{title});
+};
+
 around BUILDARGS => sub {
     my ($orig, $class, %params) = @_;
 
-    if (my $from = $params{'-load'}) {
-        my $hdr = do {
-            # Header starts with a valid YAML document (including the leading
-            # /^---$/ string) and ends with another /^---$/ string.
-
-            my $text;
-            my $type = ref $from;
-            if ($type eq 'GLOB' || $type eq 'IO::File') {
-                $text = <$from>;
-                while (<$from>) {
-                    last if ($_ =~ /^---$/);
-                    $text .= $_;
-                }
-            } else {
-                confess "Only supporting GLOB and IO::File. Got $type" if $type;
-                $text = $from;
-            }
-            eval { YAML::Tiny::Load($text) };
-        };
-        croak $@ if $@;
-
-        my $decode = do {
-            my $enc = $params{encoding} = $hdr->{Encoding} || $INPUT_ENC;
-            sub {
-                my $v = $hdr->{$_[0]};
-                croak "Conf '$_[0]' is mandatory" if $_[1] && !defined $v;
-                if (ref $v) {
-                    croak "Conf '$_[0]' must be a string"
-                }
-                decode($enc, $v)
-            }
-        };
-        $params{title} = $decode->(Title => 1);
-        $params{author} = $decode->(Author => 0);
-        $params{template} = $decode->(Template => 0) if $hdr->{Template};
-
-        my $tags = $hdr->{Tags};
-        $params{tags} = ref $tags eq 'ARRAY' ? $tags
-                      : defined $tags ? [$tags]
-                      : []
-                      ;
+    if ($params{'-load'}) {
+        $load_file->(\%params)
+    } else {
+        $generate->(\%params)
     }
 
     $class->$orig(%params);
