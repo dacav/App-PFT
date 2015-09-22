@@ -51,6 +51,8 @@ use feature qw/say/;
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
 
+use Encode qw/decode encode/;
+
 use App::PFT;
 use App::PFT::Struct::Tree;
 use App::PFT::Data::Date;
