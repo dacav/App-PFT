@@ -64,9 +64,11 @@ has tags => (
 );
 
 has opts => (
-    isa => 'Maybe[HashRef]',
+    isa => 'HashRef',
     is => 'ro',
-    predicate => 'has_opts',
+    default => sub{{
+        hide => 0,
+    }}
 );
 
 sub dump {
@@ -84,7 +86,7 @@ sub dump {
         Encoding => $self->encoding,
         Template => $self->template,
         Tags => @$tags ? $tags : undef,
-        Options => $self->has_opts ? $self->opts : undef,
+        Options => $self->opts,
     })
 }
 
@@ -129,8 +131,8 @@ my $load_file = sub {
     };
     $params->{title} = $decode->(Title => 1);
     $params->{author} = $decode->(Author => 0);
-    $params->{template} = $decode->(Template => 0) if $hdr->{Template};
-    $params->{opts} = $hdr->{Options};
+    $params->{template} = $decode->(Template => 0) if exists $hdr->{Template};
+    $params->{opts} = $hdr->{Options} if exists $hdr->{Options};
 
     my $tags = $hdr->{Tags};
     $params->{tags} = ref $tags eq 'ARRAY' ? $tags

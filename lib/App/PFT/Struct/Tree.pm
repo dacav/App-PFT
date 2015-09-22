@@ -257,11 +257,12 @@ sub list_pages {
         my $slug = substr($path, $N);
         next if $pages->{$slug};
 
-        $pages->{$slug} = App::PFT::Content::Page->new(
+        my $p = App::PFT::Content::Page->new(
             tree => $self,
             path => $path,
             fname => $slug,
         );
+        $pages->{$slug} = $p unless $p->header->opts->{hide};
     }
 
     wantarray ? values %$pages : [ values %$pages ];
@@ -283,7 +284,7 @@ sub list_entries {
         my $k = join '-', $y, $m, $d, $t;
         next if $entries->{$k};
 
-        $entries->{$k} = App::PFT::Content::Entry->new(
+        my $e = App::PFT::Content::Entry->new(
             tree => $self,
             path => $path,
             date => App::PFT::Data::Date->new(
@@ -292,6 +293,8 @@ sub list_entries {
                 day => $d,
             ),
         );
+
+        $entries->{$k} = $e unless $e->header->opts->{hide};
     }
 
     wantarray ? values %$entries : [ values %$entries ];
