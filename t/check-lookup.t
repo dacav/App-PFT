@@ -8,6 +8,8 @@ use Test::More ;#tests => 30;
 
 use Scalar::Util qw/refaddr/;
 
+use Encode qw/encode/;
+
 use File::Temp;
 use File::Spec::Functions qw/catdir catfile/;
 
@@ -15,6 +17,9 @@ use IO::File;
 
 use App::PFT::Struct::Tree;
 use App::PFT::Data::Date;
+
+use App::PFT::Struct::Conf qw/$INPUT_ENC/;
+BEGIN { $INPUT_ENC = 'utf-8' }
 
 sub same {
     my($x, $y) = map { refaddr $_ } @_;
@@ -33,7 +38,7 @@ my $tree = App::PFT::Struct::Tree->new(
 my @pages;
 for my $i (1 .. 4) {
     push @pages, $tree->entry(
-        title => "Hello $i",
+        title => encode('utf-8', "Hello $i"),
         author => 'perl',
         date => App::PFT::Data::Date->new(
             year => 1,
@@ -44,7 +49,7 @@ for my $i (1 .. 4) {
 };
 
 my $page = $tree->page(
-    title => 'Hello 2',
+    title => encode('utf-8', 'Hello 2'),
     author => 'perl',
 );
 

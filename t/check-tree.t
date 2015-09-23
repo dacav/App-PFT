@@ -13,9 +13,14 @@ use File::Spec::Functions qw/catdir catfile/;
 
 use IO::File;
 
+use Encode qw/encode/;
+
 use App::PFT::Struct::Tree;
 use App::PFT::Data::Date;
 use App::PFT::Data::Header;
+
+use App::PFT::Struct::Conf qw/$INPUT_ENC/;
+BEGIN { $INPUT_ENC = 'utf-8' }
 
 my $dir = File::Temp->newdir();
 
@@ -42,7 +47,7 @@ for my $i (1 .. 4) {
             day => $i,
         ),
         header => App::PFT::Data::Header->new(
-            title => "Hello $i",
+            title => encode('utf-8', "Hello $i"),
             author => 'perl',
             encoding => 'utf-8',
         )
@@ -60,7 +65,7 @@ for my $i (1 .. 4) {
 
 do {
     my $noe = $tree->entry(
-        title => 'garbage',
+        title => encode('utf-8', 'garbage'),
         date => App::PFT::Data::Date->new(
             year => 1,
             month => 2,
@@ -75,7 +80,7 @@ do {
 do {
     my $p = $tree->page(
         header => App::PFT::Data::Header->new( 
-            title => 'Hello 2',
+            title => encode('utf-8', 'Hello 2'),
             author => 'perl',
             encoding => 'utf-8',
         )
@@ -85,7 +90,7 @@ do {
     ok $p->fname eq 'hello-2',
         'Title page (' . $p->fname . ')';
 
-    my $nop = $tree->page(title => 'garbage');
+    my $nop = $tree->page(title => encode('utf-8', 'garbage'));
     ok !$nop->exists, 'Other garbage does not exist';
 };
 
@@ -112,7 +117,7 @@ do {
         year => 2015,
         -create => 1,
         header => App::PFT::Data::Header->new(
-            title => 'Herp derp',
+            title => encode('utf-8', 'Herp derp'),
             author => 'perl',
             encoding => 'utf-8',
         )
@@ -150,7 +155,7 @@ do {
     ok $t1->name eq 'Foo Bar Baz', 'Tag name conversion: ' . $t1->name;
 
     my $t2 = $t1->create(header => App::PFT::Data::Header->new(
-        title => 'Hurr durr',
+        title => encode('utf-8', 'Hurr durr'),
         author => 'perl',
         encoding => 'utf-8',
     ));

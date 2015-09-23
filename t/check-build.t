@@ -6,6 +6,8 @@ use strict;
 use feature qw/say/;
 use Test::More tests => 30;
 
+use Encode qw/encode/;
+
 use Scalar::Util qw/refaddr/;
 
 use File::Temp;
@@ -24,13 +26,16 @@ sub same {
     $x == $y;
 }
 
+use App::PFT::Struct::Conf qw/$INPUT_ENC/;
+BEGIN { $INPUT_ENC = 'utf-8' }
+
 # ------ Populate -------------------------------------------------------
 
 my(@entries, @pages);
 for my $i (1 .. 4) {
     push @entries, my $e = $tree->entry(
         header => App::PFT::Data::Header->new(
-            title => "Hello $i",
+            title => encode('utf-8', "Hello $i"),
             author => 'perl',
             tags => ["foo_$i"],
             encoding => 'utf-8',
@@ -50,7 +55,7 @@ for my $i (1 .. 4) {
     ok same($e->month, $tree->month(date => $e->date)), "Consistent date";
 
     push @pages, my $p = $tree->page(
-        title => "Page $i",
+        title => encode('utf-8', "Page $i"),
         author => 'perl',
         encoding => 'utf-8',
     );
