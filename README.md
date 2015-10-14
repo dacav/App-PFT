@@ -66,6 +66,7 @@ Ordered by difficulty, from most to least
 
  * Nested Sites
  * Attachments download page
+ * Optional per-{post,entry} picture
  * Encryption support (e.g `| encrypt_if` filter)
  * Source code coloring (e.g. `| highlight_code` filter)
  * Attach command (`pft attach`, yields link name in form :attach:x/y.z)
