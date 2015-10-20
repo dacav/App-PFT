@@ -80,7 +80,6 @@ GetOptions(
     'with-date|D!' => \$opts{date},
     'picture|p!'   => sub { $opts{dst} = 'p' },
     'attach|a!'    => sub { $opts{dst} = 'a' },
-    'markdown|m!'  => \$opts{md},
     'help|h' => sub {
         pod2usage
             -exitval => 1,
@@ -117,19 +116,19 @@ my $dst_dir = do {
     }
 };
 
-make_path $dst_dir, {verbose => 1};
+make_path $dst_dir;
 
 for my $orig_path (@ARGV) {
     my $fn = basename $orig_path;
     my $dst_path = catfile($dst_dir, $fn);
+    my $relative = abs2rel($dst_path, $dst_base);
 
     File::Copy::copy($orig_path, $dst_path) or die "Copy failed: $!";
 
-    if ($opts{md}) {
-        my $relative = abs2rel($dst_path, $dst_base);
-        print
-            $opts{dst} eq 'a' ? "[$fn] :attach:$relative" :
-            $opts{dst} eq 'p' ? "![$fn](:pic:$relative)" :
-            die;
+    if ($opts{dst} eq 'a') {
+        print "[download link][$fn]\n\n";
+        print "[$fn]: :attach:$relative";
+    } else {
+        print "![$fn](:pic:$relative)";
     }
 }
