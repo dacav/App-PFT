@@ -12,4 +12,6 @@ Revision history for App-PFT
 0.04    2015-09-10
         Fast-make (pft make -f)
         Untouched files (only header) get deleted
+        Publishing mode "install" for nested websites
+        Attachments/pictures grab command (pft grab)
         Misc fixes & small improvements

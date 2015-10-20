@@ -47,7 +47,7 @@ use App::PFT::Struct::Conf qw/
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
 
-use File::Spec::Functions qw/catfile/;
+use File::Spec::Functions qw/catfile catdir splitdir/;
 use File::Path qw/make_path remove_tree/;
 use File::Copy::Recursive;
 
@@ -89,17 +89,18 @@ sub rsync_ssh {
     );
 }
 
-sub todir {
-    state $relative = do {
-        my $sup = File::Spec::Functions::updir;
-        qr/^$sup/;
-    };
+sub install {
     my $tree = shift;
-
     check qw/Path/;
 
-    my $dst = $REMOTE{Path} =~ /$relative/
-        ? catfile($tree->basepath, $REMOTE{Path})
+    state $relstep = do {
+        my $sup = File::Spec::Functions::updir;
+        my $cur = File::Spec::Functions::curdir;
+        qr/^(?:\Q$sup\E|\Q$cur\E)$/;
+    };
+
+    my $dst = (splitdir $REMOTE{Path})[0] =~ $relstep
+        ? catdir($tree->basepath, $REMOTE{Path})
         : $REMOTE{Path}
         ;
 
@@ -126,7 +127,7 @@ cfg_load App::PFT::findroot -die => 1;
 
 my $method = {
     'rsync+ssh' => \&rsync_ssh,
-    'todir' => \&todir,
+    'install'   => \&install,
 }->{$REMOTE{Method}};
 die 'Unknown method ', $REMOTE{Method} unless $method;
 

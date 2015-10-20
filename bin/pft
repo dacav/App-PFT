@@ -47,6 +47,8 @@ Here follows a list of available commands:
 
 =item * B<tag>: Edit tag page;
 
+=item * B<grab>: Grab a file as attachment or picture
+
 =item * B<help>: Show usage manual.
 
 =back

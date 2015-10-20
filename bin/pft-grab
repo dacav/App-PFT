@@ -1,0 +1,135 @@
+#!/usr/bin/perl
+#
+# Copyright 2014 - Giovanni Simoni
+#
+# This file is part of PFT.
+#
+# PFT is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# PFT is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with PFT.  If not, see <http://www.gnu.org/licenses/>.
+#
+=head1 NAME
+
+pft grab - Grab a file as attachment or picture
+
+=head1 SYNOPSYS
+
+pft grab [options] <file> [<file> ...]
+
+=head1 DESCRIPTION
+
+Grab a file as attachment or picture
+
+=head1 OPTIONS
+
+=over
+
+=item --with-date | -d
+
+=item --picture   | -p
+
+=item --attach    | -a
+
+=item --markdown  | -m
+
+=item --help      | -h
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+use Pod::Usage;
+use File::Spec::Functions qw/catfile catdir abs2rel/;
+use File::Path qw/make_path/;
+use File::Basename qw/basename/;
+use File::Copy;
+
+use Getopt::Long;
+Getopt::Long::Configure ("bundling");
+
+use App::PFT;
+use App::PFT::Data::Date;
+use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
+use App::PFT::Struct::Tree;
+
+use App::PFT::Util qw/slugify/;
+
+my %date;
+my %opts = (
+    dst     => 'a',
+    md      => 0,
+    date    => 0,
+);
+GetOptions(
+    'year|y=i'      => \$date{year},
+    'month|m=s'     => \$date{month},
+    'day|d=i'       => \$date{day},
+
+    'with-date|D!' => \$opts{date},
+    'picture|p!'   => sub { $opts{dst} = 'p' },
+    'attach|a!'    => sub { $opts{dst} = 'a' },
+    'markdown|m!'  => \$opts{md},
+    'help|h' => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'show',
+    }
+) or exit 1;
+
+@ARGV or do {
+    print STDERR 'Any file?';
+    exit 1;
+};
+
+cfg_load App::PFT::findroot -die => 1;
+
+my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+
+my $dst_base = do {
+    my $o = $opts{dst};
+
+    $o eq 'a' ? $tree->dir_attach :
+    $o eq 'p' ? $tree->dir_pics :
+    die;
+};
+
+my $dst_dir = do {
+    if ($opts{date} || grep defined @date{qw/year month day/}) {
+        catdir(
+            $dst_base,
+            App::PFT::Data::Date->new(%date, -fill => 'now')->repr('-'),
+        )
+    } else {
+        $dst_base
+    }
+};
+
+make_path $dst_dir, {verbose => 1};
+
+for my $orig_path (@ARGV) {
+    my $fn = basename $orig_path;
+    my $dst_path = catfile($dst_dir, $fn);
+
+    File::Copy::copy($orig_path, $dst_path) or die "Copy failed: $!";
+
+    if ($opts{md}) {
+        my $relative = abs2rel($dst_path, $dst_base);
+        print
+            $opts{dst} eq 'a' ? "[$fn] :attach:$relative" :
+            $opts{dst} eq 'p' ? "![$fn](:pic:$relative)" :
+            die;
+    }
+}
