@@ -69,9 +69,10 @@ Ordered by difficulty, from most to least
  * Optional per-{post,entry} picture
  * Encryption support (e.g `| encrypt_if` filter)
  * Source code coloring (e.g. `| highlight_code` filter)
- * Attach command (`pft attach`, yields link name in form :attach:x/y.z)
  * Configuration options (e.g. `Editor : vim`)
  * Custom editor modes (e.g. if using vim, add modelines)
+ * More special references
+    - Configurable redirector for avoiding referrers (e.g :redirect:<url>)
  * Additional template variables
     - Random value (e.g. for random css effects)
     - Random quote from a pool
