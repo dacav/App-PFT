@@ -69,7 +69,6 @@ use App::PFT::Util qw/slugify/;
 my %date;
 my %opts = (
     dst     => 'a',
-    md      => 0,
     date    => 0,
 );
 GetOptions(
