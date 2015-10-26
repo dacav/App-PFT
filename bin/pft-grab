@@ -83,7 +83,7 @@ GetOptions(
         pod2usage
             -exitval => 1,
             -verbose => 2,
-            -input => App::PFT::help_of 'show',
+            -input => App::PFT::help_of 'grab',
     }
 ) or exit 1;
 
