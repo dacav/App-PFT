@@ -27,7 +27,15 @@ pft grab [options] <file> [<file> ...]
 
 =head1 DESCRIPTION
 
-Grab a file as attachment or picture
+Grab one or more files as attachments or pictures, put it in the right
+place (I<content> directory).
+
+This command outputs the I<markdown> code for linking
+
+If you are using the vim editor, probably you want to call this command
+from within it as follows:
+
+    :read ! pft grab [options] file [file...]
 
 =head1 OPTIONS
 
@@ -35,13 +43,31 @@ Grab a file as attachment or picture
 
 =item --with-date | -d
 
+Store the file inside a content directory named with the current day. This
+is meant to avoid name conflict with previously stored attachments or
+pictures having the same name.
+
 =item --picture   | -p
+
+Store the files into the C<I<ROOT>/content/pics> directory and output the
+I<markdown> code required to show it as a picture.
+
+Note that no check is performed on the file content.
 
 =item --attach    | -a
 
-=item --markdown  | -m
+Store the files into the C<I<ROOT>/content/attach> directory and output
+the I<markdown> code required to link it.
+
+=item --year      | -y
+
+=item --month     | -m
+
+=item --day       | -d
 
 =item --help      | -h
+
+Show this help.
 
 =back
 
