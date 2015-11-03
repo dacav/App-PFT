@@ -69,7 +69,6 @@ use App::PFT::Util qw/slugify/;
 my %date;
 my %opts = (
     dst     => 'a',
-    md      => 0,
     date    => 0,
 );
 GetOptions(
@@ -80,7 +79,6 @@ GetOptions(
     'with-date|D!' => \$opts{date},
     'picture|p!'   => sub { $opts{dst} = 'p' },
     'attach|a!'    => sub { $opts{dst} = 'a' },
-    'markdown|m!'  => \$opts{md},
     'help|h' => sub {
         pod2usage
             -exitval => 1,
