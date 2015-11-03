@@ -75,6 +75,7 @@ Show this help.
 
 use strict;
 use warnings;
+use feature qw/say/;
 
 use Pod::Usage;
 use File::Spec::Functions qw/catfile catdir abs2rel/;
@@ -105,6 +106,7 @@ GetOptions(
     'with-date|D!' => \$opts{date},
     'picture|p!'   => sub { $opts{dst} = 'p' },
     'attach|a!'    => sub { $opts{dst} = 'a' },
+    'rename|r=s'   => \$opts{rename},
     'help|h' => sub {
         pod2usage
             -exitval => 1,
@@ -114,7 +116,12 @@ GetOptions(
 ) or exit 1;
 
 @ARGV or do {
-    print STDERR 'Any file?';
+    say STDERR 'Any file?';
+    exit 1;
+};
+
+@ARGV > 1 and $opts{rename} and do {
+    say STDERR '--name is not allowed with multiple files';
     exit 1;
 };
 
@@ -145,7 +152,7 @@ make_path $dst_dir, {verbose => 1};
 
 for my $orig_path (@ARGV) {
     my $fn = basename $orig_path;
-    my $dst_path = catfile($dst_dir, $fn);
+    my $dst_path = catfile($dst_dir, $opts{rename} || $fn);
 
     File::Copy::copy($orig_path, $dst_path) or die "Copy failed: $!";
 
