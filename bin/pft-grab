@@ -27,7 +27,15 @@ pft grab [options] <file> [<file> ...]
 
 =head1 DESCRIPTION
 
-Grab a file as attachment or picture
+Grab one or more files as attachments or pictures, put it in the right
+place (I<content> directory).
+
+This command outputs the I<markdown> code for linking
+
+If you are using the vim editor, probably you want to call this command
+from within it as follows:
+
+    :read ! pft grab [options] file [file...]
 
 =head1 OPTIONS
 
@@ -35,13 +43,31 @@ Grab a file as attachment or picture
 
 =item --with-date | -d
 
+Store the file inside a content directory named with the current day. This
+is meant to avoid name conflict with previously stored attachments or
+pictures having the same name.
+
 =item --picture   | -p
+
+Store the files into the C<I<ROOT>/content/pics> directory and output the
+I<markdown> code required to show it as a picture.
+
+Note that no check is performed on the file content.
 
 =item --attach    | -a
 
-=item --markdown  | -m
+Store the files into the C<I<ROOT>/content/attach> directory and output
+the I<markdown> code required to link it.
+
+=item --year      | -y
+
+=item --month     | -m
+
+=item --day       | -d
 
 =item --help      | -h
+
+Show this help.
 
 =back
 
@@ -49,6 +75,7 @@ Grab a file as attachment or picture
 
 use strict;
 use warnings;
+use feature qw/say/;
 
 use Pod::Usage;
 use File::Spec::Functions qw/catfile catdir abs2rel/;
@@ -79,6 +106,7 @@ GetOptions(
     'with-date|D!' => \$opts{date},
     'picture|p!'   => sub { $opts{dst} = 'p' },
     'attach|a!'    => sub { $opts{dst} = 'a' },
+    'rename|r=s'   => \$opts{rename},
     'help|h' => sub {
         pod2usage
             -exitval => 1,
@@ -88,7 +116,12 @@ GetOptions(
 ) or exit 1;
 
 @ARGV or do {
-    print STDERR 'Any file?';
+    say STDERR 'Any file?';
+    exit 1;
+};
+
+@ARGV > 1 and $opts{rename} and do {
+    say STDERR '--name is not allowed with multiple files';
     exit 1;
 };
 
@@ -119,7 +152,7 @@ make_path $dst_dir;
 
 for my $orig_path (@ARGV) {
     my $fn = basename $orig_path;
-    my $dst_path = catfile($dst_dir, $fn);
+    my $dst_path = catfile($dst_dir, $opts{rename} || $fn);
     my $relative = abs2rel($dst_path, $dst_base);
 
     File::Copy::copy($orig_path, $dst_path) or die "Copy failed: $!";
