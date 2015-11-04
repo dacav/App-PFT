@@ -41,7 +41,7 @@ from within it as follows:
 
 =over
 
-=item --with-date | -d
+=item --today | -d
 
 Store the file inside a content directory named with the current day. This
 is meant to avoid name conflict with previously stored attachments or
@@ -106,7 +106,7 @@ GetOptions(
     'month|m=s'     => \$date{month},
     'day|d=i'       => \$date{day},
 
-    'with-date|D!' => \$opts{date},
+    'today|t!'     => \$opts{date_prefix},
     'picture|p!'   => sub { $opts{dst} = 'p' },
     'attach|a!'    => sub { $opts{dst} = 'a' },
     'rename|r=s'   => \$opts{rename},
@@ -141,7 +141,7 @@ my $dst_base = do {
 };
 
 my $dst_dir = do {
-    if ($opts{date} || grep defined @date{qw/year month day/}) {
+    if ($opts{date_prefix} || grep defined @date{qw/year month day/}) {
         catdir(
             $dst_base,
             App::PFT::Data::Date->new(%date, -fill => 'now')->repr('-'),
