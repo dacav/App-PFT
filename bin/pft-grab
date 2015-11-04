@@ -93,6 +93,9 @@ use App::PFT::Struct::Tree;
 
 use App::PFT::Util qw/slugify/;
 
+use URI;
+use LWP::Simple;
+
 my %date;
 my %opts = (
     dst     => 'a',
@@ -151,10 +154,24 @@ my $dst_dir = do {
 make_path $dst_dir, {verbose => 1};
 
 for my $orig_path (@ARGV) {
-    my $fn = basename $orig_path;
+
+    # TODO: probably decode $orig_path with the encoding defined in the
+    # configuration file.
+
+    my $uri = URI->new($orig_path);
+    my $fn = basename $uri->path;
+
     my $dst_path = catfile($dst_dir, $opts{rename} || $fn);
 
-    File::Copy::copy($orig_path, $dst_path) or die "Copy failed: $!";
+    if ($uri->has_recognized_scheme) {
+        my $status = LWP::Simple::getstore($uri->as_string, $dst_path);
+        if ($status < 200 || $status >= 300) {
+            say STDERR 'Failed to retrieve ', $uri->as_iri, ': ', $status
+        }
+    }
+    else {
+        File::Copy::copy($orig_path, $dst_path) or die "Copy failed: $!";
+    }
 
     if ($opts{md}) {
         my $relative = abs2rel($dst_path, $dst_base);
