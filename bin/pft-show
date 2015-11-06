@@ -51,11 +51,11 @@ use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
 use App::PFT;
-use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
+use App::PFT::Struct::Conf qw/cfg_load $ROOT %SYSTEM/;
 use App::PFT::Struct::Tree;
 
 my $verbose = 0;
-my $browser = $ENV{BROWSER};
+my $browser;
 GetOptions(
     'browser|b=s' => \$browser,
     'help|h' => sub {
@@ -68,7 +68,9 @@ GetOptions(
 
 cfg_load App::PFT::findroot -die => 1;
 
-die 'Use --browser or define $BROWSER' unless $browser;
+$browser = $SYSTEM{Browser} || $ENV{BROWSER} unless $browser;
+die 'Use --browser, define env $BROWSER or define one in the config file'
+    unless $browser;
 
 my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
 my $index = catfile $tree->dir_build, 'index.html';

@@ -37,6 +37,7 @@ our @EXPORT_OK = qw/
     $SITE_URL
     $HOME_PAGE
     %REMOTE
+    %SYSTEM
     $INPUT_ENC
     $OUTPUT_ENC
     cfg_is_loaded
@@ -55,6 +56,7 @@ our $SITE_TITLE;
 our $SITE_URL;
 our $HOME_PAGE;
 our %REMOTE;
+our %SYSTEM;
 our $INPUT_ENC;
 our $OUTPUT_ENC;
 
@@ -70,6 +72,10 @@ sub cfg_default {
         User => 'user',
         Path => '/home/user/public-html/whatever',
     );
+    %SYSTEM = (
+        Browser => undef,
+        Editor => undef,
+    );
     $INPUT_ENC = $OUTPUT_ENC = 'utf-8';
 }
 
@@ -82,6 +88,7 @@ sub cfg_dump {
         SiteURL => $SITE_URL,
         HomePage => $HOME_PAGE,
         Remote => \%REMOTE,
+        System => \%SYSTEM,
         InputEnc => $INPUT_ENC,
         OutputEnc => $OUTPUT_ENC,
     };
@@ -122,6 +129,8 @@ sub cfg_load {
         $REMOTE{User},
         $REMOTE{Path},
         $REMOTE{Port},
+        $SYSTEM{Editor},
+        $SYSTEM{Browser},
         $INPUT_ENC,
         $OUTPUT_ENC,
     ) = check_assign $cfg,
@@ -135,6 +144,8 @@ sub cfg_load {
         'Remote.User?',
         'Remote.Path?',
         'Remote.Port?',
+        'System.Editor?',
+        'System.Browser?',
         'InputEnc',
         'OutputEnc',
     ;
