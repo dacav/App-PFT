@@ -53,13 +53,13 @@ use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
 use App::PFT;
-use App::PFT::Struct::Conf qw/cfg_load $ROOT %SYSTEM/;
+use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
 use App::PFT::Struct::Tree;
+use App::PFT::Launcher;
 
 my $verbose = 0;
 my $browser;
 GetOptions(
-    'browser|b=s' => \$browser,
     'help|h' => sub {
         pod2usage
             -exitval => 1,
@@ -70,10 +70,10 @@ GetOptions(
 
 cfg_load App::PFT::findroot -die => 1;
 
-$browser = $SYSTEM{Browser} || $ENV{BROWSER} unless $browser;
+$browser = App::PFT::Launcher::browser $browser;
 unless($browser) {
     say STDERR
-        'Use --browser, define env $BROWSER or define one in the config file';
+        'define env $BROWSER or config key System.Browser';
     exit 1;
 }
 
@@ -85,4 +85,4 @@ unless ($index) {
     exit 1;
 }
 
-system($browser, $index);
+$browser->($index);
