@@ -123,4 +123,4 @@ if (defined $opts{back}) {
 }
 
 $entry->open('a');
-$page->edit($opts{editor});
+$entry->edit($opts{editor});
