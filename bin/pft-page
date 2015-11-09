@@ -70,6 +70,7 @@ my %datespec;
 GetOptions(
     'author|a=s'    => sub { $opts{author} = $_[1] },
     'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
+    'editor=s'      => \$opts{editor},
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -98,4 +99,4 @@ my $page = $tree->page(
 );
 
 $page->open('a');
-$page->edit;
+$page->edit($opts{editor});
