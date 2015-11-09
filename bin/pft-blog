@@ -79,6 +79,7 @@ GetOptions(
     'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
     'resume|r!'     => sub { $opts{back} = 0 },
     'back=i'        => sub { $opts{back} = int($_[1]) },
+    'editor=s'      => \$opts{editor},
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -122,4 +123,4 @@ if (defined $opts{back}) {
 }
 
 $entry->open('a');
-$entry->edit;
+$page->edit($opts{editor});

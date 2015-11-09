@@ -60,6 +60,7 @@ use App::PFT::Launcher;
 my $verbose = 0;
 my $browser;
 GetOptions(
+    'browser=s' => \$browser,
     'help|h' => sub {
         pod2usage
             -exitval => 1,

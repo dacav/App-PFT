@@ -73,6 +73,7 @@ GetOptions(
     'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
     'year|y=i'      => \$datespec{year},
     'month|m=s'     => \$datespec{month},
+    'editor=s'      => \$opts{editor},
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -99,6 +100,4 @@ my $page = $tree->month(
     %opts,
 );
 
-$page->edit;
-
-1;
+$page->edit($opts{editor});

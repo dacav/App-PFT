@@ -39,7 +39,7 @@ sub edit() {
     my $self = shift;
     my $path = $self->path;
 
-    my $edit = App::PFT::Launcher::editor;
+    my $edit = &App::PFT::Launcher::editor;
     unless ($edit) {
         say STDERR 'define env $EDITOR or config key System.Editor';
         return;
