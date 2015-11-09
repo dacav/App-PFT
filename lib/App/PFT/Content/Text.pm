@@ -33,12 +33,19 @@ use Carp;
 
 use Encode;
 use App::PFT::Data::Header;
+use App::PFT::Launcher;
 
 sub edit() {
     my $self = shift;
     my $path = $self->path;
-    croak 'Undefined env variable $EDITOR' unless defined $ENV{EDITOR};
-    system($ENV{EDITOR}, $path);
+
+    my $edit = App::PFT::Launcher::editor;
+    unless ($edit) {
+        say STDERR 'define env $EDITOR or config key System.Editor';
+        return;
+    }
+
+    $edit->($path);
 
     if (-z $path) {
         say STDERR 'Removing empty file', $path;
@@ -52,11 +59,10 @@ sub edit() {
     };
     if ($@) {
         say STDERR "WARNING: Bad file format in $path: $@";
-        return
     }
-    if (eof $f) {
+    elsif (eof $f) {
         say STDERR 'Removing file', $path, ': no content';
-        return
+        unlink $path;
     }
 }
 

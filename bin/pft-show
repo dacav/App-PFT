@@ -44,6 +44,8 @@ Show the built site
 use strict;
 use warnings;
 
+use feature qw/say/;
+
 use Pod::Usage;
 use File::Spec::Functions qw/catfile/;
 
@@ -53,11 +55,11 @@ Getopt::Long::Configure ("bundling");
 use App::PFT;
 use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
 use App::PFT::Struct::Tree;
+use App::PFT::Launcher;
 
 my $verbose = 0;
-my $browser = $ENV{BROWSER};
+my $browser;
 GetOptions(
-    'browser|b=s' => \$browser,
     'help|h' => sub {
         pod2usage
             -exitval => 1,
@@ -68,10 +70,19 @@ GetOptions(
 
 cfg_load App::PFT::findroot -die => 1;
 
-die 'Use --browser or define $BROWSER' unless $browser;
+$browser = App::PFT::Launcher::browser $browser;
+unless($browser) {
+    say STDERR
+        'define env $BROWSER or config key System.Browser';
+    exit 1;
+}
 
 my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
 my $index = catfile $tree->dir_build, 'index.html';
-die 'Need to build first, use pft make' unless -f $index;
 
-system($browser, $index);
+unless ($index) {
+    say STDERR 'Need to build first, use pft make';
+    exit 1;
+}
+
+$browser->($index);

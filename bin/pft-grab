@@ -159,7 +159,7 @@ ITEM: for my $orig_path (@ARGV) {
     # configuration file.
 
     my $uri = URI->new($orig_path);
-    my $fn = basename $uri->path . $uri->query;
+    my $fn = basename $uri->path . ($uri->query || '');
 
     my $dst_path = catfile($dst_dir, $opts{rename} || $fn);
 
