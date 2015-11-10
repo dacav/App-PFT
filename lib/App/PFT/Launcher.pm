@@ -1,4 +1,4 @@
-package App::PFT::Launcher v0.05.1;
+package App::PFT::Launcher v0.05.2;
 
 use strict;
 use warnings;
