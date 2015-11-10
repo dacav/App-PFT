@@ -16,3 +16,10 @@ Revision history for App-PFT
         Attachments/pictures grab command (pft grab)
         Misc fixes & small improvements
         Improved configuration
+
+0.05    2015-11-14
+        Hide posts (don't publish)
+        Smart attachments / pictures
+        Grab files from URL or filesystem
+        Improved configuration
+        Misc fixes
