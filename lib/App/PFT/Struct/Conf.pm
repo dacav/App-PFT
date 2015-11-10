@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Struct::Conf v0.05.0;
+package App::PFT::Struct::Conf v0.05.1;
 
 use strict;
 use warnings;
