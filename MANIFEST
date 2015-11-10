@@ -31,6 +31,7 @@ lib/App/PFT/Output/HTML.pm
 lib/App/PFT/Struct/Conf.pm
 lib/App/PFT/Struct/Tree.pm
 lib/App/PFT/Util.pm
+lib/App/PFT/Launcher.pm
 Makefile.PL
 MANIFEST			This list of files
 README
