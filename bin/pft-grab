@@ -176,7 +176,7 @@ ITEM: for my $orig_path (@ARGV) {
 
     my $relative = abs2rel($dst_path, $dst_base);
     say STDOUT
-        $opts{dst} eq 'a' ? "[$fn] :attach:$relative" :
+        $opts{dst} eq 'a' ? "[$fn]: :attach:$relative" :
         $opts{dst} eq 'p' ? "![$fn](:pic:$relative)" :
         die;
 }
