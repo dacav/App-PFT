@@ -111,12 +111,12 @@ my $load_file = sub {
                 $text .= $_;
             }
         } else {
-            confess "Only supporting GLOB and IO::File. Got $type" if $type;
+            croak "Only supporting GLOB and IO::File. Got $type" if $type;
             $text = $from;
         }
         eval { YAML::Tiny::Load($text) };
     };
-    croak $@ if $@;
+    croak $@ =~ s/ at .*$//rs if $@;
 
     my $decode = do {
         my $enc = $params->{encoding} = $hdr->{Encoding} || $INPUT_ENC;

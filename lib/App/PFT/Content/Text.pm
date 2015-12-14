@@ -34,6 +34,7 @@ use Carp;
 use Encode;
 use App::PFT::Data::Header;
 use App::PFT::Launcher;
+use App::PFT::Struct::Conf qw/$INPUT_ENC/;
 
 sub edit() {
     my $self = shift;
@@ -47,26 +48,33 @@ sub edit() {
 
     $edit->($path);
 
-    if (-z $path) {
-        say STDERR 'Removing empty file', $path;
-        unlink $path;
-        return
-    }
-
+    my $drop;
     my $f = $self->open('r');
     eval {
-        App::PFT::Data::Header->new(-load => $f);
+        App::PFT::Data::Header->new(-load => $f); 1
     };
     if ($@) {
-        say STDERR "WARNING: Bad file format in $path: $@";
+        $drop = 'Bad header format: ' . $@ =~ s/ at .*$//rs;
     }
-    elsif (eof $f) {
-        say STDERR 'Removing file', $path, ': no content';
+    else {
+        my $content;
+        while (<$f>) {
+            unless (/^\s*$/) {
+                $content ++;
+                last;
+            }
+        }
+
+        $content or $drop = 'No useful content.';
+    }
+
+    if ($drop) {
         unlink $path;
+        croak "Removed '", encode($INPUT_ENC, $self->title), "': $drop";
     }
 }
 
-sub title() {
+sub title {
     shift->header->title
 }
 
@@ -100,7 +108,8 @@ has header => (
                 -load => $self->open('r'),
             );
         };
-        confess 'Bad file format in ', $self->path, ': ', $@ if $@;
+        confess 'Bad file format in ', encode($INPUT_ENC, $self->title),
+            ': ', $@ if $@;
         $hdr
     }
 );

@@ -96,9 +96,10 @@ my $entry;
 if (defined $opts{back}) {
     $entry = eval {
         $tree->latest_entry($opts{back});
-    };
-    if ($@) {
-        die 'Cannot go back by ', $opts{back}, ': ', $@;
+        1
+    } or $@ && do {
+        say STDERR 'Cannot go back by ', $opts{back}, ': ', $@ =~ s/ at .*$//rs;
+        exit 1;
     }
 } else {
     unless (@ARGV) {
@@ -123,4 +124,9 @@ if (defined $opts{back}) {
 }
 
 $entry->open('a');
-$entry->edit($opts{editor});
+eval {
+    $entry->edit($opts{editor}); 1
+} or $@ && do {
+    say STDERR "After editing: ", $@ =~ s/at .*$//sr;
+    exit 1;
+}
