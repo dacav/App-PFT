@@ -99,4 +99,9 @@ my $page = $tree->page(
 );
 
 $page->open('a');
-$page->edit($opts{editor});
+eval {
+    $page->edit($opts{editor});
+} or $@ && do {
+    say STDERR "After editing: ", $@ =~ s/at .*$//sr;
+    exit 1;
+}
