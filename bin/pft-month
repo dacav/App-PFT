@@ -100,4 +100,9 @@ my $page = $tree->month(
     %opts,
 );
 
-$page->edit($opts{editor});
+eval {
+    $page->edit($opts{editor}); 1
+} or $@ && do {
+    say STDERR "After editing: ", $@ =~ s/at .*$//sr;
+    exit 1;
+}
