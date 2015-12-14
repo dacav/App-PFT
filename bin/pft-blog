@@ -96,7 +96,6 @@ my $entry;
 if (defined $opts{back}) {
     $entry = eval {
         $tree->latest_entry($opts{back});
-        1
     } or $@ && do {
         say STDERR 'Cannot go back by ', $opts{back}, ': ', $@ =~ s/ at .*$//rs;
         exit 1;
