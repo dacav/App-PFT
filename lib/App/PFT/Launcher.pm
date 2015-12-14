@@ -11,13 +11,12 @@ our @EXPORT_OK = qw(browser editor);
 sub browser {
     my $cmd = shift;
 
-    if (!defined $cmd && exists $SYSTEM{Browser}) {
-        $cmd = $SYSTEM{Browser};
-    }
     if (!defined $cmd && exists $ENV{BROWSER}) {
         $cmd = $ENV{BROWSER};
     }
-
+    if (!defined $cmd && exists $SYSTEM{Browser}) {
+        $cmd = $SYSTEM{Browser};
+    }
     unless (defined $cmd) {
         undef;
     }
