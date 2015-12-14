@@ -1,0 +1,123 @@
+#!/usr/bin/perl
+#
+# Copyright 2014 - Giovanni Simoni
+#
+# This file is part of PFT.
+#
+# PFT is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# PFT is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with PFT.  If not, see <http://www.gnu.org/licenses/>.
+#
+=head1 NAME
+
+pft ls - List objects
+
+=head1 SYNOPSYS
+
+pft ls <class> [options]
+pft ls --help
+
+=head1 DESCRIPTION
+
+List objects.
+
+The general usage provides a class of objects to lists. For instance
+
+    pft ls tags
+
+Will list all the tags from all pages and entries.
+
+=head1 CLASSES
+
+=over
+
+=item tags
+
+List tags of all entries
+
+=back
+
+=head1 GENERAL OPTIONS
+
+=over
+
+=item --help | -h
+
+Show this help.
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+use feature qw/say state/;
+use Pod::Usage;
+
+use Encode qw/decode encode/;
+
+use App::PFT;
+use App::PFT::Struct::Tree;
+use App::PFT::Struct::Conf qw/
+    cfg_load
+    $ROOT
+/;
+
+use Getopt::Long;
+Getopt::Long::Configure qw/bundling/;
+
+my %opts;
+GetOptions(
+    'count'         => \$opts{count},
+    'help|h!'       => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'ls',
+    },
+) or exit 1;
+
+cfg_load App::PFT::findroot -die => 1;
+
+unless (@ARGV) {
+    say STDERR "Usage: $App::PFT::Name <class> [options]";
+    exit 1;
+}
+
+my %classes = (
+    tags => \&handle_tag,
+);
+
+my $cls = shift;
+if (my $handle = $classes{$cls}) {
+    $handle->();
+}
+else {
+    say STDERR "Unknown class: $cls. Available:";
+    say "  $_" for keys %classes;
+    exit 1;
+}
+
+
+sub tree {
+    state $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+}
+
+sub handle_tag {
+    my %tags;
+    for my $c (tree->list_pages, tree->list_entries) {
+        $tags{$_->name} ++ for $c->tags;
+    }
+
+    say for $opts{count} ? map{"$tags{$_} $_"} keys %tags : keys %tags;
+}
