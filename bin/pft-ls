@@ -94,16 +94,23 @@ GetOptions(
 cfg_load App::PFT::findroot -die => 1;
 
 my %classes = (
-    tags => \&handle_tag,
+    tags => \&list_tags,
+    pages => \&list_pages,
 );
 
 my $cls = shift;
 if (defined $cls and my $handle = $classes{$cls}) {
     my $to_show = $handle->();
-    my @keys = sort keys %$to_show;
-    say for $opts{count}
-        ? map{"$to_show->{$_} $_"} @keys
-        : @keys
+    if (ref $to_show eq 'HASH') {
+        my @keys = sort keys %$to_show;
+        say for $opts{count}
+            ? map{"$to_show->{$_} $_"} @keys
+            : @keys
+    }
+    elsif (ref $to_show eq 'ARRAY') {
+        say for sort @$to_show;
+    }
+    else { die ref $to_show }
 }
 else {
     say STDERR "Usage: $App::PFT::Name <class> [options]";
@@ -112,14 +119,16 @@ else {
     exit 1;
 }
 
-sub tree {
-    state $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
-}
+sub tree { state $tree = App::PFT::Struct::Tree->new(basepath => $ROOT) }
 
-sub handle_tag {
+sub list_tags {
     my %tags;
     for my $c (tree->list_pages, tree->list_entries) {
         $tags{$_->name} ++ for $c->tags;
     }
     \%tags;
+}
+
+sub list_pages {
+    [map { $_->title } tree->list_pages]
 }
