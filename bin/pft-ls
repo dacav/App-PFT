@@ -50,6 +50,10 @@ List tags of all entries
 
 =over
 
+=item --count
+
+Count the listed items
+
 =item --help | -h
 
 Show this help.
@@ -89,25 +93,24 @@ GetOptions(
 
 cfg_load App::PFT::findroot -die => 1;
 
-unless (@ARGV) {
-    say STDERR "Usage: $App::PFT::Name <class> [options]";
-    exit 1;
-}
-
 my %classes = (
     tags => \&handle_tag,
 );
 
 my $cls = shift;
-if (my $handle = $classes{$cls}) {
-    $handle->();
+if (defined $cls and my $handle = $classes{$cls}) {
+    my $to_show = $handle->();
+    my @keys = sort keys %$to_show;
+    say for $opts{count}
+        ? map{"$to_show->{$_} $_"} @keys
+        : @keys
 }
 else {
-    say STDERR "Unknown class: $cls. Available:";
-    say "  $_" for keys %classes;
+    say STDERR "Usage: $App::PFT::Name <class> [options]";
+    say STDERR "Available classes:";
+    say "  * $_" for keys %classes;
     exit 1;
 }
-
 
 sub tree {
     state $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
@@ -118,6 +121,5 @@ sub handle_tag {
     for my $c (tree->list_pages, tree->list_entries) {
         $tags{$_->name} ++ for $c->tags;
     }
-
-    say for $opts{count} ? map{"$tags{$_} $_"} keys %tags : keys %tags;
+    \%tags;
 }
