@@ -40,13 +40,15 @@ Will list all the tags from all pages and entries.
 
 =over
 
-=item tags
+=item pages
 
-List tags of all entries
+=item entries
+
+=item tags
 
 =back
 
-=head1 GENERAL OPTIONS
+=head1 OPTIONS
 
 =over
 
@@ -57,6 +59,30 @@ Count the listed items
 =item --help | -h
 
 Show this help.
+
+=item --pretty=<fmt>
+
+=over
+
+=item %t -> Title
+
+=item %g -> Comma separated value of tags
+
+=item %a -> Author
+
+=item %e -> Encoding
+
+=item %o -> Comma separated value of option=value pairs
+
+=item %D -> Date in yyyy-mm-dd format if dated, empty string otherwise
+
+=item %y -> Year if dated, empty string otherwise
+
+=item %m -> Month if dated, empty string otherwise
+
+=item %d -> Day if dated, empty string otherwise
+
+=back
 
 =back
 
@@ -80,9 +106,13 @@ use App::PFT::Struct::Conf qw/
 use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
 
-my %opts;
+my %opts = (
+    pretty => \&title,
+);
+
 GetOptions(
-    'count'         => \$opts{count},
+    'count!'        => \$opts{count},
+    'pretty=s'      => sub { $opts{pretty} = pretty_parse($_[1]) },
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -96,6 +126,7 @@ cfg_load App::PFT::findroot -die => 1;
 my %classes = (
     tags => \&list_tags,
     pages => \&list_pages,
+    entries => \&list_entries,
 );
 
 my $cls = shift;
@@ -121,6 +152,32 @@ else {
 
 sub tree { state $tree = App::PFT::Struct::Tree->new(basepath => $ROOT) }
 
+sub title { $_->title }
+
+sub pretty_parse {
+    my $fmt = shift;
+    sub {
+        my $out = $fmt;
+
+        $out =~ s/(?<!%)%t/$_->title()/eg;
+        $out =~ s/(?<!%)%g/join(',', map{ $_->name } $_->tags())/eg;
+        $out =~ s/(?<!%)%a/$_->header->author()/eg;
+        $out =~ s/(?<!%)%e/$_->header->encoding()/eg;
+
+        $out =~ s/(?<!%)%o/
+            my $h = $_->header->opts();
+            join(',', map{ $_ .'='. $h->{$_} } keys %$h )
+        /eg;
+
+        $out =~ s/(?<!%)%D/$_->date ? $_->date->repr('-') : ''/eg;
+        $out =~ s/(?<!%)%y/$_->date ? $_->date->year() : ''/eg;
+        $out =~ s/(?<!%)%m/$_->date ? $_->date->month() : ''/eg;
+        $out =~ s/(?<!%)%d/$_->date ? $_->date->day() : ''/eg;
+
+        $out;
+    }
+}
+
 sub list_tags {
     my %tags;
     for my $c (tree->list_pages, tree->list_entries) {
@@ -130,5 +187,11 @@ sub list_tags {
 }
 
 sub list_pages {
-    [map { $_->title } tree->list_pages]
+    my $p = $opts{pretty};
+    [ map $p->(), tree->list_pages ]
+}
+
+sub list_entries {
+    my $p = $opts{pretty};
+    [ map $p->(), tree->list_entries ]
 }
