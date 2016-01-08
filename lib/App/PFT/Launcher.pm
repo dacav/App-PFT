@@ -11,12 +11,9 @@ our @EXPORT_OK = qw(browser editor);
 sub browser {
     my $cmd = shift;
 
-    if (!defined $cmd && exists $ENV{BROWSER}) {
-        $cmd = $ENV{BROWSER};
-    }
-    if (!defined $cmd && exists $SYSTEM{Browser}) {
-        $cmd = $SYSTEM{Browser};
-    }
+    $cmd = $SYSTEM{Browser} if !defined $cmd && exists $SYSTEM{Browser};
+    $cmd = $ENV{BROWSER} if !defined $cmd && exists $ENV{BROWSER};
+
     unless (defined $cmd) {
         undef;
     }
@@ -31,12 +28,8 @@ sub browser {
 sub editor {
     my $cmd = shift;
 
-    if (!defined $cmd && exists $SYSTEM{Editor}) {
-        $cmd = $SYSTEM{Editor};
-    }
-    if (!defined $cmd && exists $ENV{EDITOR}) {
-        $cmd = $ENV{EDITOR};
-    }
+    $cmd = $SYSTEM{Editor} if !defined $cmd && exists $SYSTEM{Editor};
+    $cmd = $ENV{EDITOR} if !defined $cmd && exists $ENV{EDITOR};
 
     unless (defined $cmd) {
         undef;
