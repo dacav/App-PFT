@@ -23,3 +23,7 @@ Revision history for App-PFT
         Grab files from URL or filesystem
         Improved configuration
         Misc fixes
+
+0.06    2015-12-29
+        List items (pft ls)
+        Misc fixes and improvements
