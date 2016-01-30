@@ -40,6 +40,7 @@ t/00-load.t
 t/check-build.t
 t/check-lookup.t
 t/check-tree.t
+t/check-header.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
