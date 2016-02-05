@@ -1,4 +1,4 @@
-package X;
+package PFT::Content::File;
 
 use v5.10;
 
@@ -18,26 +18,32 @@ PFT::Content::File - On disk content file.
 
     use PFT::Content::File;
 
-    # name defaults on basename($path)
-    my $f1 = PFT::Content::File->new($path);
-
-    # override default name with human friendly name
-    my $f2 = PFT::Content::File->new($path, $name);
+    my $f1 = PFT::Content::File->new({
+        tree => $tree,  # see PFT::Content::Base
+        path => $path,
+        name => $name,  # optional, defaults to basename($path)
+    });
 
 =cut
 
 use File::Basename 'basename';
 use File::Spec;
+use Carp;
+
+use parent 'PFT::Content::Base';
 
 sub new {
-    my $cls = shift;
-    my $path = shift;
-    my $name = @_ ? shift : basename $path;
+    my $self = shift->SUPER::new(@_);
+    my $params = shift;
 
-    bless {
-        p => File::Spec->rel2abs($path),
-        fn => $name,
-    } $cls;
+    exists $params->{path} or confess 'Missing param: path';
+    my $path = $params->{path};
+    my $name = $params->{name} || basename $path;
+
+    $self->{p} = File::Spec->rel2abs($path);
+    $self->{fn} = $name;
+
+    $self
 }
 
 =head1 DESCRIPTION
