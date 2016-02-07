@@ -40,8 +40,9 @@ header is broken returns undef and sets $@.
 =cut
 
 use parent 'PFT::Content::File';
-
 use PFT::Text::Header;
+
+use Carp;
 
 sub header {
     my $self = shift;
@@ -51,6 +52,32 @@ sub header {
     $@ =~ s/ at .*$// if $@;
     $h;
 }
+
+=item read
+
+Read the page. In scalar context returns an open file descriptor
+configured with the correct `binmode` according to the header.
+
+In list context returns the header and the same descriptor. Returns undef
+if the file does not exist.
+
+Croaks if the header is broken.
+
+=cut
+
+sub read {
+    my $self = shift;
+
+    return undef unless $self->exists;
+    my $fh = $self->open('r');
+    my $h = eval { PFT::Text::Header->load($fh) };
+    croak $@ =~ s/ at .*$//rs if $@;
+    binmode $fh, ':encoding(' . $h->encoding . ')';
+
+    wantarray ? ($h, $fh) : $fh;
+}
+
+=pod
 
 =back
 
