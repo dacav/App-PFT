@@ -19,8 +19,9 @@ my $dir = File::Temp->newdir();
 my $page = PFT::Content::Page->new({
     tree => undef,
     path => File::Spec->catfile($dir, 'foo'),
-    name => 'foo',
 });
+
+is($page->name, 'foo', 'Default name');
 
 is($page->header, undef, 'Empty file has no header');
 is($@, '', 'But also no error');
@@ -43,6 +44,6 @@ diag('Error was: ', $@);
 eval {
     my($h, $text) = $page->read();
 };
-isnt($@, undef, 'Error also if reading';
+isnt($@, undef, 'Error also if reading');
 
 done_testing()
