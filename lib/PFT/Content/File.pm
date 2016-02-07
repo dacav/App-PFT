@@ -19,38 +19,41 @@ PFT::Content::File - On disk content file.
     use PFT::Content::File;
 
     my $f1 = PFT::Content::File->new({
-        tree => $tree,  # see PFT::Content::Base
+        tree => $tree,
         path => $path,
         name => $name,  # optional, defaults to basename($path)
     });
 
 =cut
 
-use File::Basename 'basename';
+use File::Path qw/make_path/;
+use File::Basename qw/basename dirname/;
 use File::Spec;
 use Carp;
 
 use parent 'PFT::Content::Base';
 
 sub new {
-    my $self = shift->SUPER::new(@_);
+    my $cls = shift;
     my $params = shift;
 
     exists $params->{path} or confess 'Missing param: path';
     my $path = $params->{path};
-    my $name = $params->{name} || basename $path;
+    exists $params->{name} or $params->{name} = basename $path;
+    my $self = $cls->SUPER::new($params);
 
     $self->{p} = File::Spec->rel2abs($path);
-    $self->{fn} = $name;
-
     $self
 }
 
 =head1 DESCRIPTION
 
-This class describes a file on disk..
+This class describes a file on disk.
 
 =head2 Properties
+
+Besides the properties following in this section, more are inherited from
+PFT::Content::Base.
 
 =over
 
@@ -66,11 +69,11 @@ sub path { shift->{p} }
 
 =item filename
 
-Base naeme or human friendly name of the file.
+Base name of the file
 
 =cut
 
-sub filename { shift->{fn} }
+sub filename { basename shift->{p} }
 
 =item mtime
 
@@ -87,7 +90,7 @@ sub mtime {
 Open a file descriptor for the file:
 
     $f->open        # Read file descriptor
-    $f->open($mode) # Open with r/w/a mode
+    $f->open($mode) # Open with r|w|a mode
 
 =cut
 

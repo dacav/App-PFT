@@ -91,4 +91,3 @@ sub dir_inject { File::Spec->catdir(shift->{base}, 'inject') }
 sub dir_templates { File::Spec->catdir(shift->{base}, 'templates') }
 
 1;
-

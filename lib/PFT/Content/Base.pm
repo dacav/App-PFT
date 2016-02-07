@@ -22,7 +22,8 @@ PFT::Content::Base - Base class for content
         my $cls = shift;
         ...
         $cls->SUPER::new({
-            tree => $tree       # Mandatory
+            tree => $tree,
+            name => $name,
         })
         ...
     }
@@ -40,11 +41,35 @@ use Data::Dumper;
 sub new {
     my $cls = shift;
     my $params = shift;
-    exists $params->{tree} or confess 'Missing param: tree';
+
+    exists $params->{$_} or confess "Missing param: $_"
+        for qw/tree name/;
+
     bless {
         tree => $params->{tree},
+        name => $params->{name},
     }, $cls
 }
+
+=head2 Properties
+
+=over
+
+=item tree
+
+Path object
+
+=item name
+
+Name of the object
+
+=back
+
+=cut
+
+sub tree { shift->{tree} }
+
+sub name { shift->{name} }
 
 1;
 
