@@ -42,7 +42,7 @@ sub new {
     exists $params->{name} or $params->{name} = basename $path;
     my $self = $cls->SUPER::new($params);
 
-    $self->{p} = File::Spec->rel2abs($path);
+    $self->{path} = File::Spec->rel2abs($path);
     $self
 }
 
@@ -65,7 +65,7 @@ Absolute path of the file on the filesystem.
 
 =cut 
 
-sub path { shift->{p} }
+sub path { shift->{path} }
 
 =item filename
 
@@ -73,7 +73,7 @@ Base name of the file
 
 =cut
 
-sub filename { basename shift->{p} }
+sub filename { basename shift->{path} }
 
 =item mtime
 
