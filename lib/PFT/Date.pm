@@ -77,6 +77,16 @@ sub from_spec {
     bless [ @params{qw/y m d/} ], $cls
 }
 
+sub from_string {
+    my $cls = shift;
+    my $text = shift;
+
+    my ($y, $m, $d) = $text =~ m/^(\d{4})-(\d{2})-(\d{2})$/
+        or croak "Date \"$text\" not in YYYY-MM-DD format";
+
+    bless [int($y), int($m), int($d)], $cls;
+}
+
 sub y { shift->[0] }
 sub m { shift->[1] }
 sub d { shift->[2] }

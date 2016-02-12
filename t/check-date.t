@@ -34,5 +34,13 @@ is(
     'human-friendly',
 );
 
-done_testing()
+is_deeply(
+    PFT::Date->from_string('1999-08-02')->to_hash,
+    { y=>1999, m=>8, d=>2 },
+    'repr from string',
+);
 
+eval { PFT::Date->from_string('09-08-02')->to_hash };
+isnt($@, undef, 'parse error');
+
+done_testing()
