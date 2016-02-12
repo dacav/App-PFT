@@ -72,27 +72,6 @@ sub new {
     }, $cls;
 }
 
-sub dump {
-    my $self = shift;
-    my $to = shift;
-
-    my $type = ref $to;
-    if ($type ne 'GLOB' && $type ne 'IO::File') {
-        confess "Only supporting GLOB and IO::File. Got ",
-                $type ? $type : 'Scalar'
-    }
-    my $tags = $self->tags;
-    print $to encode($self->encoding, YAML::Tiny::Dump {
-        Title => $self->title,
-        Author => $self->author,
-        Encoding => $self->encoding,
-        Template => $self->template,
-        Tags => @$tags ? $tags : undef,
-        Date => $self->date ? $self->date->repr('-') : undef,
-        Options => $self->opts,
-    }), "---\n"
-}
-
 sub load {
     my $cls = shift;
     my $from = shift;
@@ -151,9 +130,7 @@ sub load {
     }, $cls;
 }
 
-=pod
-
-Available fields:
+=head2 Properties
 
     $hdr->title
     $hdr->author
@@ -173,5 +150,41 @@ sub tags { shift->{tags} }
 sub date { shift->{date} }
 sub opts { shift->{opts} }
 
-1;
+=head2 Methods
 
+=over
+
+=item dump
+
+Dump the header on a file. A GLOB or IO::File is expected as argument.
+
+=cut
+
+sub dump {
+    my $self = shift;
+    my $to = shift;
+
+    my $type = ref $to;
+    if ($type ne 'GLOB' && $type ne 'IO::File') {
+        confess "Only supporting GLOB and IO::File. Got ",
+                $type ? $type : 'Scalar'
+    }
+    my $tags = $self->tags;
+    print $to encode($self->encoding, YAML::Tiny::Dump {
+        Title => $self->title,
+        Author => $self->author,
+        Encoding => $self->encoding,
+        Template => $self->template,
+        Tags => @$tags ? $tags : undef,
+        Date => $self->date ? $self->date->repr('-') : undef,
+        Options => $self->opts,
+    }), "---\n"
+}
+
+=pod
+
+=back
+
+=cut
+
+1;
