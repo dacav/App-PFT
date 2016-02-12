@@ -68,6 +68,7 @@ sub _init {
 
 Quick accessors for directories
 
+    $tree->dir_root
     $tree->dir_build
     $tree->dir_attach
     $tree->dir_blog
@@ -81,6 +82,7 @@ Non-existing directories are created by the constructor.
 
 =cut
 
+sub dir_root { shift->{base} }
 sub dir_build { File::Spec->catdir(shift->{base}, 'build') }
 sub dir_attach { File::Spec->catdir(shift->{base}, 'content', 'attachments') }
 sub dir_blog { File::Spec->catdir(shift->{base}, 'content', 'blog') }
