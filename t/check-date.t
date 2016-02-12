@@ -35,6 +35,12 @@ is(
 );
 
 is(
+    PFT::Date->new(1, undef, 3)->repr,
+    '0001-*-03',
+    'derive'
+);
+
+is(
     PFT::Date->from_spec(y => 2000, m => 'january', d => 12)->repr,
     '2000-01-12',
     'human-friendly',
