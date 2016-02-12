@@ -98,7 +98,7 @@ sub open {
     my $path = shift->path;
     my $mode = shift;
     make_path dirname $path if $mode =~ /w|a/;
-    IO::File->new($path, $mode) or croak "Cannot open $path: $!"
+    IO::File->new($path, $mode) or confess "Cannot open $path: $!"
 }
 
 =item touch
