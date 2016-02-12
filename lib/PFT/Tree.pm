@@ -1,4 +1,4 @@
-package PFT::Tree;
+package PFT::Tree v0.0.1;
 
 use strict;
 use warnings;

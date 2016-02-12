@@ -1,4 +1,4 @@
-package PFT::Content::File;
+package PFT::Content::File v0.0.1;
 
 use v5.10;
 

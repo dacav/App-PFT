@@ -1,4 +1,4 @@
-package PFT::Date;
+package PFT::Date v0.0.1;
 
 use v5.10;
 
