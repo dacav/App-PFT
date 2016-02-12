@@ -37,6 +37,9 @@ The structure is the following:
 
 use File::Spec;
 use File::Path qw/make_path/;
+use Carp;
+
+use PFT::Content::Page;
 
 sub new {
     my $cls = shift;
@@ -66,6 +69,8 @@ sub _init {
 
 =pod
 
+=head2 Properties
+
 Quick accessors for directories
 
     $tree->dir_root
@@ -91,5 +96,42 @@ sub dir_pics { File::Spec->catdir(shift->{base}, 'content', 'pics') }
 sub dir_tags { File::Spec->catdir(shift->{base}, 'content', 'tags') }
 sub dir_inject { File::Spec->catdir(shift->{base}, 'inject') }
 sub dir_templates { File::Spec->catdir(shift->{base}, 'templates') }
+
+=head2 Methods
+
+=over
+
+=item page
+
+Get a page
+
+=cut
+
+my $slugify = sub {
+    $_[0]
+};
+
+sub page {
+    my $self = shift;
+    my $hdr = shift;
+    confess 'Not a header' if ref $hdr ne 'PFT::Text::Header';
+
+    my $p = PFT::Content::Page->new({
+        tree => $self,
+        path => File::Spec->catfile(
+            $self->dir_pages,
+            $slugify->($hdr->title)
+        ),
+        name => $hdr->title,
+    });
+
+    $hdr->dump($p->open('w')) unless $p->exists;
+
+    return $p
+}
+
+=back
+
+=cut
 
 1;
