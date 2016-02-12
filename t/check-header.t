@@ -14,6 +14,8 @@ use File::Temp qw/tempfile tempdir/;
 use PFT::Text::Header;
 use PFT::Date;
 
+my $dir = tempdir(CLEANUP => 1);
+
 for my $date (undef, PFT::Date->from_string('2014-12-16')) {
     my $h = PFT::Text::Header->new(
         title => 'Rådmansgatan',
@@ -21,7 +23,6 @@ for my $date (undef, PFT::Date->from_string('2014-12-16')) {
         date => $date,
     );
 
-    my $dir = tempdir(CLEANUP => 1);
     my($fh, $filename) = tempfile(DIR => $dir);
 
     $h->dump($fh);
@@ -30,9 +31,12 @@ for my $date (undef, PFT::Date->from_string('2014-12-16')) {
     my $hl = PFT::Text::Header->load($fh);
     close $fh;
 
-    is_deeply($h, $h,
-        'dump and reload ' . ($date ? $date : 'no date')
-    );
+    is_deeply($hl, $h, 'dump and reload, ' . ($date ? $date : 'no date'));
 }
+
+my $h = eval { PFT::Text::Header->new(
+    title => 'X', date => 0
+)};
+isnt(undef, $@, 'date must be PFT::Date');
 
 done_testing()
