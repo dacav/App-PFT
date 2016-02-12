@@ -46,6 +46,8 @@ use Encode qw/encode decode/;
 use Carp;
 use YAML::Tiny;
 
+use PFT::Date;
+
 our $DEFAULT_ENC = 'utf-8';
 
 sub new {
@@ -56,11 +58,15 @@ sub new {
 
     my $enc = $opts{encoding} || $DEFAULT_ENC;
 
+    defined $opts{date} and ref $opts{date} eq 'PFT::Date'
+        || confess 'date parameter must be PFT::Date';
+
     bless {
         title => $opts{title},
         author => $opts{author},
         template => $opts{template},
         encoding => $enc,
+        date => $opts{date},
         tags => $opts{tags} || [],
         opts => $opts{opts} || {},
     }, $cls;
@@ -82,6 +88,7 @@ sub dump {
         Encoding => $self->encoding,
         Template => $self->template,
         Tags => @$tags ? $tags : undef,
+        Date => $self->date ? $self->date->repr('-') : undef,
         Options => $self->opts,
     }), "---\n"
 }
@@ -118,6 +125,12 @@ sub load {
         decode($enc, $v)
     };
 
+    my $date;
+    $hdr->{Date} and $date = eval {
+        PFT::Date->from_string($hdr->{Date})
+    };
+    croak $@ =~ s/ at .*$//rs if $@;
+
     bless {
         title => $decode->(Title => 1),
         author => $decode->(Author => 0),
@@ -131,6 +144,7 @@ sub load {
                 : []
         },
         encoding => $enc,
+        date => $date,
         opts => exists $hdr->{Options}
             ? $hdr->{Options}
             : undef,
@@ -146,6 +160,7 @@ Available fields:
     $hdr->template
     $hdr->encoding
     $hdr->tags
+    $hdr->date
     $hdr->opts
 
 =cut
@@ -155,6 +170,7 @@ sub author { shift->{author} }
 sub template { shift->{template} }
 sub encoding { shift->{encoding} }
 sub tags { shift->{tags} }
+sub date { shift->{date} }
 sub opts { shift->{opts} }
 
 1;
