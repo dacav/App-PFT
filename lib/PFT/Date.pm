@@ -108,11 +108,11 @@ sub repr {
 sub derive {
     my $self = shift;
     my %change = @_;
-    $change{y} = $change{y} || $self->y;
-    $change{m} = $change{m} || $self->m;
-    $change{d} = $change{d} || $self->d;
-
-    PFT::Date->new(@change{qw/y m d/});
+    PFT::Date->new(
+        exists $change{y} ? $change{y} : $self->y,
+        exists $change{m} ? $change{m} : $self->m,
+        exists $change{d} ? $change{d} : $self->d,
+    )
 }
 
 1;
