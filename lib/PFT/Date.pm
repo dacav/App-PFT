@@ -41,7 +41,7 @@ use overload
 
 sub new {
     my $cls = shift;
-    bless [@_[0 .. 2]], $cls;
+    bless [map { defined and int or undef } @_[0 .. 2]], $cls;
 }
 
 my %MONTHS = (
