@@ -28,6 +28,9 @@ PFT::Date - Representation of date
 
 =head1 DESCRIPTION
 
+PFT::Date is defined as a blessed array reference. The first element is
+the year, the second is the month, the third is the day.
+
 =cut
 
 use Carp;
