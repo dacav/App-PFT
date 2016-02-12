@@ -24,6 +24,8 @@ PFT::Date - Representation of date
         # missing ones (e.g. year) filled with today's year.
     )
 
+    PFT::Date->from_string('1955-11-05');
+
 =head1 DESCRIPTION
 
 =cut
@@ -87,15 +89,51 @@ sub from_string {
     bless [int($y), int($m), int($d)], $cls;
 }
 
+=head2 Properties
+
+=over
+
+=item y
+
+Year getter
+
+=item m
+
+Month getter
+
+=item d
+
+Day getter
+
+=cut
+
 sub y { shift->[0] }
 sub m { shift->[1] }
 sub d { shift->[2] }
+
+=item to_hash
+
+Returns a dictionary in the form
+
+    { y => ..., m => ..., d => ... }
+
+=cut
 
 sub to_hash {
     my %out;
     @out{qw/y m d/} = @{shift()};
     \%out;
 }
+
+=item repr
+
+Returns a string representing the date. Optional parameter is a separator
+string, by default C<'-'>
+
+    PFT::Date->new(1,2,3)->repr      eq '0001-02-03'
+    PFT::Date->new(1,2,3)->repr('/') eq '0001/02/03'
+
+=cut
 
 sub repr {
     my $self = shift;
@@ -104,6 +142,19 @@ sub repr {
         defined $self->[1] ? sprintf('%02d', $self->[1]) : '*',
         defined $self->[2] ? sprintf('%02d', $self->[2]) : '*';
 }
+
+=item derive
+
+Returns a copy of the PFT::Date object with the provided components
+replaced.
+
+    PFT::Date->new(1, 2, 3)->derive(m => undef)
+
+is like
+
+    PFT::Date->new(1, undef, 3)
+
+=cut
 
 sub derive {
     my $self = shift;
@@ -114,5 +165,11 @@ sub derive {
         exists $change{d} ? $change{d} : $self->d,
     )
 }
+
+=pod
+
+=back
+
+=cut
 
 1;
