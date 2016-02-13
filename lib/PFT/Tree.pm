@@ -40,6 +40,7 @@ use File::Path qw/make_path/;
 use Carp;
 
 use PFT::Content::Page;
+use PFT::Date;
 
 sub new {
     my $cls = shift;
@@ -174,6 +175,28 @@ sub blog {
         });
     }
     @out
+}
+
+=item path_to_date
+
+Given a path (of a page) determine the corresponding date. Returns a
+PFT::Date object or undef if the page does not have date.
+
+=cut
+
+sub path_to_date {
+    my $self = shift;
+    my $path = shift;
+
+    my $rel = File::Spec->abs2rel($path, $self->dir_blog);
+    return undef unless -1 == index $rel, File::Spec->updir;
+
+    my($ym, $dt) = File::Spec->splitdir($rel);
+    PFT::Date->new(
+        substr($ym, 0, 4),
+        substr($ym, 5, 2),
+        substr($dt, 0, 2),
+    );
 }
 
 =back
