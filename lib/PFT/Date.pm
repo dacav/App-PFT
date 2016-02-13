@@ -190,6 +190,16 @@ sub derive {
     )
 }
 
+=item complete
+
+Check if the date is complete of year, month and day.
+
+=cut
+
+sub complete {
+    3 == scalar grep defined, @{shift()}
+}
+
 =pod
 
 =back

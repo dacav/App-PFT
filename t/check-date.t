@@ -10,6 +10,11 @@ use PFT::Date;
 
 use Test::More;
 
+ok(!PFT::Date->new(undef, 2, 3)->complete, 'Complete 1');
+ok(!PFT::Date->new(1, undef, 3)->complete, 'Complete 2');
+ok(!PFT::Date->new(1, 2, undef)->complete, 'Complete 3');
+ok(PFT::Date->new(1, 2, 3)->complete, 'Complete 4');
+
 is(
     PFT::Date->new(1, 2, 3)->repr,
     '0001-02-03',
