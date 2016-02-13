@@ -103,6 +103,8 @@ Open a file descriptor for the file:
     $f->open        # Read file descriptor
     $f->open($mode) # Open with r|w|a mode
 
+This method does automatic error checking (confessing on error).
+
 If C<protect_unlink> was previously called, returns the protected file
 descriptor, which could be positioned anywhere, depending on previous
 actions on it. The mode parameter is ignored.
@@ -143,6 +145,25 @@ sub exists {
     -e shift->path
 }
 
+=item empty
+
+Check if the file is empty
+
+=cut
+
+sub empty {
+    -z shift->path
+}
+
+=item unlink
+
+=cut
+
+sub unlink {
+    my $self = shift;
+    unlink $self->path or confess 'Cannot unlink ' . $self->path
+}
+
 =item protect_unlink
 
 Protect the file by unlinking it, keep it alive with a read file
@@ -154,7 +175,7 @@ sub protect_unlink {
     my $self = shift;
 
     my $out = $self->{unlinked} = $self->open('r+');
-    unlink $self->{path} or confess "Cannot unlink $!";
+    CORE::unlink($self->{path}) or confess "Cannot unlink $!";
 
     return $out;
 }
