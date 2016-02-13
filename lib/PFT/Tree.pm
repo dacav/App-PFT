@@ -139,6 +139,32 @@ sub entry {
     return $p
 }
 
+=item pages
+
+List all pages
+
+=cut
+
+sub pages {
+    my $self = shift;
+
+    for my $path (glob File::Spec->catfile($self->dir_pages, '*')) {
+    }
+}
+
+=item blog
+
+List all blog pages
+
+=cut
+
+sub blog {
+    my $self = shift;
+
+    for my $path (glob File::Spec->catfile($self->dir_blog, '*', '*')) {
+    }
+}
+
 =back
 
 =cut
