@@ -161,8 +161,19 @@ List all blog pages
 sub blog {
     my $self = shift;
 
-    for my $path (glob File::Spec->catfile($self->dir_blog, '*', '*')) {
+    my @out;
+    my $glob = File::Spec->catfile($self->dir_blog, '*', '*');
+    for my $path (glob $glob) {
+        my $h = eval { PFT::Text::Header->load($path) };
+        $h or croak "Loading $path: " . $@ =~ s/ at .*$//rs;
+
+        push @out, PFT::Content::Page->new({
+            tree => $self,
+            path => $path,
+            name => $h->title,
+        });
     }
+    @out
 }
 
 =back
