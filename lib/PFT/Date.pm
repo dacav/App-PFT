@@ -100,7 +100,7 @@ sub from_spec {
     }
     exists $params{y} or $params{y} = $y + 1900;
 
-    bless [ @params{qw/y m d/} ], $cls
+    $cls->new(@params{qw/y m d/});
 }
 
 sub from_string {
@@ -110,7 +110,7 @@ sub from_string {
     my ($y, $m, $d) = $text =~ m/^(\d{4})-(\d{2})-(\d{2})$/
         or croak "Date \"$text\" not in YYYY-MM-DD format";
 
-    bless [int($y), int($m), int($d)], $cls;
+    $cls->new(int($y), int($m), int($d))
 }
 
 =head2 Properties
