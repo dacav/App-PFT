@@ -23,7 +23,7 @@ for my $date (undef, PFT::Date->from_string('2014-12-16')) {
         date => $date,
     );
 
-    my($fh, $filename) = tempfile(DIR => $dir);
+    my $fh = tempfile(DIR => $dir);
 
     $h->dump($fh);
     say $fh $_ for qw/Hello world/;
@@ -40,5 +40,18 @@ my $h = eval { PFT::Text::Header->new(
     title => 'X', date => 0
 )};
 isnt(undef, $@, 'date must be PFT::Date');
+
+do {
+    my $h = PFT::Text::Header->new(
+        title => 'Rådmansgatan',
+        encoding => 'iso8859-15',
+    );
+
+    my($fh, $filename) = tempfile(DIR => $dir);
+    $h->dump($fh);
+    close $fh;
+    my $hl = PFT::Text::Header->load($filename);
+    is_deeply($hl, $h, 'reload from path');
+};
 
 done_testing()

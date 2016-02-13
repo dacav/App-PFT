@@ -76,25 +76,26 @@ sub load {
     my $cls = shift;
     my $from = shift;
 
-    my $hdr = do {
-        # Header starts with a valid YAML document (including the leading
-        # /^---$/ string) and ends with another /^---$/ string.
-
-        my $text;
-        my $type = ref $from;
-        if ($type eq 'GLOB' || $type eq 'IO::File') {
-            $text = <$from>;
-            local $_;
-            while (<$from>) {
-                last if ($_ =~ /^---$/);
-                $text .= $_;
-            }
-        } else {
-            croak "Only supporting GLOB and IO::File. Got $type" if $type;
+    if (my $type = ref $from) {
+        unless ($type eq 'GLOB' || $type eq 'IO::File') {
+            confess "Only supporting GLOB and IO::File. Got $type";
         }
-        eval { YAML::Tiny::Load($text) };
-    };
-    croak $@ =~ s/ at .*$//rs if $@;
+    } else {
+        my $fh = IO::File->new($from) or confess "Cannot open $from";
+        $from = $fh;
+    }
+
+    # Header starts with a valid YAML document (including the leading
+    # /^---$/ string) and ends with another /^---$/ string.
+    my $text = <$from>;
+    local $_;
+    while (<$from>) {
+        last if ($_ =~ /^---$/);
+        $text .= $_;
+    }
+
+    my $hdr = eval { YAML::Tiny::Load($text) };
+    $hdr or confess 'Loading heaer: ' . $@ =~ s/ at .*$//rs;
 
     my $enc = $hdr->{Encoding} || $DEFAULT_ENC;
 
