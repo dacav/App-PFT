@@ -123,7 +123,11 @@ sub entry {
 
     my $basedir;
     if (defined(my $d = $hdr->date)) {
-        $basedir = File::Spec->catdir($self->dir_blog, $d->y .'-'. $d->m);
+        confess 'Needs complete date' unless $d->complete;
+        $basedir = File::Spec->catdir(
+            $self->dir_blog,
+            sprintf('%04d-%02d', $d->y, $d->m),
+        );
         $fname = $d->d .'-'. $fname
     } else {
         $basedir = $self->dir_pages
