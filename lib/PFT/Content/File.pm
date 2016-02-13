@@ -29,6 +29,9 @@ PFT::Content::File - On disk content file.
 use File::Path qw/make_path/;
 use File::Basename qw/basename dirname/;
 use File::Spec;
+
+use IO::File;
+
 use Carp;
 
 use parent 'PFT::Content::Base';
@@ -92,13 +95,24 @@ Open a file descriptor for the file:
     $f->open        # Read file descriptor
     $f->open($mode) # Open with r|w|a mode
 
+If C<protect_unlink> was previously called, returns the protected file
+descriptor, which could be positioned anywhere, depending on previous
+actions on it. The mode parameter is ignored.
+
 =cut
 
 sub open {
-    my $path = shift->path;
-    my $mode = shift;
-    make_path dirname $path if $mode =~ /w|a/;
-    IO::File->new($path, $mode) or confess "Cannot open $path: $!"
+    my $self = shift;
+
+    if (exists $self->{unlinked}) {
+        $self->{unlinked}
+    } else {
+        # Regular behavior
+        my $path = $self->path;
+        my $mode = shift;
+        make_path dirname $path if $mode =~ /w|a/;
+        IO::File->new($path, $mode) or confess "Cannot open $path: $!"
+    }
 }
 
 =item touch
@@ -119,6 +133,22 @@ Verify if the file exists
 
 sub exists {
     -e shift->path
+}
+
+=item protect_unlink
+
+Protect the file by unlinking it, keep it alive with a read file
+descriptor.
+
+=cut
+
+sub protect_unlink {
+    my $self = shift;
+
+    my $out = $self->{unlinked} = $self->open('r+');
+    unlink $self->{path} or confess "Cannot unlink $!";
+
+    return $out;
 }
 
 =back

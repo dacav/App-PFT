@@ -46,4 +46,21 @@ eval {
 };
 isnt($@, undef, 'Error also if reading');
 
+# Not taking a ref, but I could do that.
+$page->protect_unlink;
+
+ok(!$page->exists, 'Not existing after unlink');
+do {
+    my $f = $page->open();
+    print $f 'hello';
+};
+
+do {
+    my $f = $page->open();
+    seek $f, 0, 0;  # reach EOF - 5 bytes
+    my $n = read $f, my $text, 5;
+    is($n, 5, 'Could read from it');
+    is($text, 'hello', 'And it was ok too');
+};
+
 done_testing()
