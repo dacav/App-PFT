@@ -41,7 +41,12 @@ use overload
 
 sub new {
     my $cls = shift;
-    bless [map { defined and int or undef } @_[0 .. 2]], $cls;
+    my $self = bless [map { defined and int or undef } @_[0 .. 2]], $cls;
+
+    $self->[1] > 0 && $self->[1] < 13 or confess "Month $self->[1]";
+    $self->[2] > 0 && $self->[2] < 32 or confess "Day $self->[2]";
+
+    $self
 }
 
 my %MONTHS = (
