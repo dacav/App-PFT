@@ -55,4 +55,15 @@ is_deeply(
 eval { PFT::Date->from_string('09-08-02')->to_hash };
 isnt($@, undef, 'parse error');
 
+my $date = PFT::Date->new(5, 5, 5);
+cmp_ok($date, '<', PFT::Date->new(6, 4, 9), 'Date cmp y');
+cmp_ok($date, '<', PFT::Date->new(5, 6, 9), 'Date cmp m');
+cmp_ok($date, '<', PFT::Date->new(5, 5, 6), 'Date cmp d');
+cmp_ok($date, '>', PFT::Date->new(5, 5, 4), 'Date cmp >');
+
+cmp_ok($date, '<=', PFT::Date->new(6, 4, 9), 'Date cmp y=');
+cmp_ok($date, '<=', PFT::Date->new(5, 6, 9), 'Date cmp m=');
+cmp_ok($date, '<=', PFT::Date->new(5, 5, 6), 'Date cmp d=');
+cmp_ok($date, '>=', PFT::Date->new(5, 5, 4), 'Date cmp >=');
+
 done_testing()

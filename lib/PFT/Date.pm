@@ -36,7 +36,18 @@ the year, the second is the month, the third is the day.
 use Carp;
 
 use overload 
-    '""' => sub { shift->repr('-') }
+    '""'  => sub { shift->repr('-') },
+    '<=>' => sub {
+        my($self, $other, $swap) = @_;
+
+        ref($other) eq 'PFT::Date' or
+            confess "Assumed date-to-date comparison";
+
+        my $out = $self->[0] <=> $other->[0];
+        $out != 0 or $out = $self->[1] <=> $other->[1];
+        $out != 0 or $out = $self->[2] <=> $other->[2];
+        $swap ? -$out : $out;
+    }
 ;
 
 sub new {
