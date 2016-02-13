@@ -84,6 +84,7 @@ sub load {
         my $type = ref $from;
         if ($type eq 'GLOB' || $type eq 'IO::File') {
             $text = <$from>;
+            local $_;
             while (<$from>) {
                 last if ($_ =~ /^---$/);
                 $text .= $_;
