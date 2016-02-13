@@ -40,8 +40,11 @@ header is broken returns undef and sets $@.
 =cut
 
 use parent 'PFT::Content::File';
-use PFT::Text::Header;
 
+use PFT::Text::Header;
+use PFT::Date;
+
+use File::Spec;
 use Carp;
 
 sub header {
@@ -100,6 +103,33 @@ sub set_header {
     my $fh = $self->open('w');
     $hdr->dump($fh);
     print $fh $_ foreach @lines;
+}
+
+=item make_consistent
+
+Make page consistent with the filesystem tree
+
+=cut
+
+sub make_consistent {
+    my $self = shift;
+
+    my $hdr = $self->header;
+    my $done;
+
+    unless (defined $hdr->date) {
+        # Not declaring date, updating it w r t filesystem.
+        my($ym, $dt) = (File::Spec->splitdir($self->path))[-2, -1];
+        $hdr->set_date(PFT::Date->new(
+            substr($ym, 0, 4),
+            substr($ym, 5, 2),
+            substr($dt, 0, 2),
+        ));
+        $self->set_header($hdr);
+        $done = 1;
+    }
+
+    $done
 }
 
 =back
