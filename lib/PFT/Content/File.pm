@@ -164,6 +164,20 @@ sub unlink {
     unlink $self->path or confess 'Cannot unlink ' . $self->path
 }
 
+=item rename_as
+
+Move the file in the filesystem, update internal data.
+
+=cut
+
+sub rename_as {
+    my $self = shift;
+    my $new_path = shift;
+
+    rename $self->{path}, $new_path or confess "Cannot rename: $!";
+    $self->{path} = $new_path;
+}
+
 =item protect_unlink
 
 Protect the file by unlinking it, keep it alive with a read file
@@ -175,7 +189,7 @@ sub protect_unlink {
     my $self = shift;
 
     my $out = $self->{unlinked} = $self->open('r+');
-    CORE::unlink($self->{path}) or confess "Cannot unlink $!";
+    CORE::unlink($self->{path}) or confess "Cannot unlink: $!";
 
     return $out;
 }

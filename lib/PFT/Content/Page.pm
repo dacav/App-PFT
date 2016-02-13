@@ -117,16 +117,18 @@ sub make_consistent {
     my $hdr = $self->header;
     my $done;
 
-    unless (defined $hdr->date) {
+    my $pdate = $self->tree->path_to_date($self->path);
+    if (defined(my $hdate = $hdr->date)) {
+        if ($hdate <=> $pdate) {
+            my $new_self = $self->tree->entry($hdr);
+            $self->rename_as($new_self->path);
+            $done ++;
+        }
+    } else {
         # Not declaring date, updating it w r t filesystem.
-        my($ym, $dt) = (File::Spec->splitdir($self->path))[-2, -1];
-        $hdr->set_date(PFT::Date->new(
-            substr($ym, 0, 4),
-            substr($ym, 5, 2),
-            substr($dt, 0, 2),
-        ));
+        $hdr->set_date($pdate);
         $self->set_header($hdr);
-        $done = 1;
+        $done ++;
     }
 
     $done
