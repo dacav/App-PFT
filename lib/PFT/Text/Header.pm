@@ -156,6 +156,18 @@ sub opts { shift->{opts} }
 
 =over
 
+=item set_date
+
+=cut
+
+sub set_date {
+    my $self = shift;
+    my $date = pop;
+
+    ref($date) eq 'PFT::Date' or confess 'Must be PFT::Date';
+    $self->{date} = $date;
+}
+
 =item dump
 
 Dump the header on a file. A GLOB or IO::File is expected as argument.
