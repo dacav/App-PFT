@@ -36,6 +36,14 @@ use Carp;
 
 use parent 'PFT::Content::Base';
 
+use overload
+    '""' => sub {
+        my $self = shift;
+        my($name, $path) = @{$self}{'name', 'path'};
+        ref($self) . "({name => \"$name\", path => \"$path\"})"
+    },
+;
+
 sub new {
     my $cls = shift;
     my $params = shift;
@@ -151,18 +159,8 @@ sub protect_unlink {
     return $out;
 }
 
-use overload
-    '""' => sub {
-        my $self = shift;
-        my($name, $path) = @{$self}{'name', 'path'};
-        ref($self) . "({name => \"$name\", path => \"$path\"})"
-    },
-;
-
 =back
 
 =cut
 
 1;
-
-
