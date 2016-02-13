@@ -37,6 +37,7 @@ The structure is the following:
 
 use File::Spec;
 use File::Path qw/make_path/;
+use File::Basename qw/dirname/;
 use Carp;
 
 use PFT::Content::Page;
@@ -201,6 +202,24 @@ sub path_to_date {
         substr($ym, 5, 2),
         substr($dt, 0, 2),
     );
+}
+
+=item was_renamed
+
+Notify a renaming of a inner file. First parameter is the original name,
+second parameter is the new name.
+
+=cut
+
+sub was_renamed {
+    my $self = shift;
+    my $d = dirname shift;
+
+    # $ignored = shift
+
+    opendir(my $dh, $d) or return;
+    rmdir $d unless File::Spec->no_upwards(readdir $dh);
+    close $dh;
 }
 
 =back
