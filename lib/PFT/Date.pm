@@ -43,8 +43,13 @@ sub new {
     my $cls = shift;
     my $self = bless [map { defined and int or undef } @_[0 .. 2]], $cls;
 
-    $self->[1] > 0 && $self->[1] < 13 or confess "Month $self->[1]";
-    $self->[2] > 0 && $self->[2] < 32 or confess "Day $self->[2]";
+    defined $self->[1] and do {
+        $self->[1] > 0 && $self->[1] < 13 or confess "Month $self->[1]"
+    };
+
+    defined $self->[2] and do {
+        $self->[2] > 0 && $self->[2] < 32 or confess "Day $self->[2]"
+    };
 
     $self
 }
