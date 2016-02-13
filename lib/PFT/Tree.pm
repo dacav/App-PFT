@@ -63,7 +63,7 @@ sub _init {
         dir_inject
         dir_templates
     /), {
-        verbose => 1,
+        #verbose => 1,
         mode => 0711,
     }
 }
