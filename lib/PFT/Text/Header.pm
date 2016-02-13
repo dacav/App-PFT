@@ -95,7 +95,7 @@ sub load {
     }
 
     my $hdr = eval { YAML::Tiny::Load($text) };
-    $hdr or confess 'Loading heaer: ' . $@ =~ s/ at .*$//rs;
+    $hdr or confess 'Loading header: ' . $@ =~ s/ at .*$//rs;
 
     my $enc = $hdr->{Encoding} || $DEFAULT_ENC;
 
