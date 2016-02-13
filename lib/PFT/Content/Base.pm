@@ -63,14 +63,21 @@ Path object
 
 Name of the object
 
-=back
-
 =cut
 
 sub tree { shift->{tree} }
 
 sub name { shift->{name} }
 
+use overload
+    '""' => sub {
+        my $self = shift;
+        ref($self) . '({name => "' . $self->{name} . '"})'
+    },
+;
+
+=back
+
+=cut
+
 1;
-
-

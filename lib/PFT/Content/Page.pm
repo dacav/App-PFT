@@ -77,8 +77,6 @@ sub read {
     wantarray ? ($h, $fh) : $fh;
 }
 
-=pod
-
 =back
 
 =cut

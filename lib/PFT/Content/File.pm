@@ -151,6 +151,14 @@ sub protect_unlink {
     return $out;
 }
 
+use overload
+    '""' => sub {
+        my $self = shift;
+        my($name, $path) = @{$self}{'name', 'path'};
+        ref($self) . "({name => \"$name\", path => \"$path\"})"
+    },
+;
+
 =back
 
 =cut
