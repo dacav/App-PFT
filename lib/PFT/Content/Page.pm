@@ -77,6 +77,31 @@ sub read {
     wantarray ? ($h, $fh) : $fh;
 }
 
+=item set_header
+
+Sets a new header, passed by parameter. This will rewrite the file.
+
+=cut
+
+sub set_header {
+    my $self = shift;
+    my $hdr = shift;
+
+    ref($hdr) eq 'PFT::Text::Header'
+        or confess 'Must be PFT::Text::Header';
+
+    my @lines;
+    if ($self->exists && !$self->empty) {
+        my($old_hdr, $fh) = $self->read;
+        @lines = <$fh>;
+        close $fh;
+    }
+
+    my $fh = $self->open('w');
+    $hdr->dump($fh);
+    print $fh $_ foreach @lines;
+}
+
 =back
 
 =cut

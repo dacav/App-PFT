@@ -9,6 +9,7 @@ use utf8;
 use feature qw/say/;
 
 use PFT::Content::Page;
+use PFT::Text::Header;
 
 use Test::More;
 use File::Temp;
@@ -39,19 +40,52 @@ do {
 
 is($page->header, undef, 'Arbitrary text has no header');
 isnt($@, undef, 'Error instead');
-diag('Error was: ', $@);
+#diag('Error was: ', $@);
 
 eval {
-    my($h, $text) = $page->read();
+    my($h, $fh) = $page->read();
 };
 isnt($@, undef, 'Error also if reading');
+
+# Header placement (on unlinked file)
+my $header = PFT::Text::Header->new(title => 'foo');
+
+do {
+    $page->unlink;
+    $page->set_header($header);
+
+    my $h2 = PFT::Content::Page->new({
+        tree => undef,
+        path => $page->path
+    })->header;
+
+    is_deeply($header, $h2, 'Placing header');
+};
+
+# Header replacement (on file having header)
+do {
+    my $fh = $page->open('a');
+    print $fh 'Some random text';
+    close $fh;
+};
+do {
+    my $h_alt = PFT::Text::Header->new(title => 'bar');
+    $page->set_header($h_alt);
+
+    my($h_got, $fh) = $page->read();
+
+    my @lines = <$fh>;
+    is(scalar @lines, 1, 'One line read');
+    is($lines[0], 'Some random text', 'Line is correct');
+    is_deeply($h_got, $h_alt, 'Header was placed');
+};
 
 # Not taking a ref, but I could do that.
 $page->protect_unlink;
 
 ok(!$page->exists, 'Not existing after unlink');
 do {
-    my $f = $page->open();
+    my $f = $page->open();  # ignored mode after protect_unlink
     print $f 'hello';
 };
 
