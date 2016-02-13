@@ -52,7 +52,7 @@ use overload
 
 sub new {
     my $cls = shift;
-    my $self = bless [map { defined and int or undef } @_[0 .. 2]], $cls;
+    my $self = bless [map defined ? int : undef, @_[0 .. 2]], $cls;
 
     defined $self->[1] and do {
         $self->[1] > 0 && $self->[1] < 13 or confess "Month $self->[1]"
