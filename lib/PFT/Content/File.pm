@@ -188,8 +188,8 @@ descriptor.
 sub protect_unlink {
     my $self = shift;
 
-    my $out = $self->{unlinked} = $self->open('r+');
     CORE::unlink($self->{path}) or confess "Cannot unlink: $!";
+    my $out = $self->{unlinked} = $self->open('r+');
 
     return $out;
 }
