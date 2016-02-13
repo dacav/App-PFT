@@ -101,9 +101,11 @@ sub dir_templates { File::Spec->catdir(shift->{base}, 'templates') }
 
 =over
 
-=item page
+=item entry
 
-Get a page
+Getter for a page. A header is required as argument. If the page does not
+exist it gets created according to the header. If the header contains a
+date, the page is considered to be a blog entry (and positioned as such).
 
 =cut
 
@@ -111,17 +113,24 @@ my $slugify = sub {
     $_[0]
 };
 
-sub page {
+sub entry {
     my $self = shift;
     my $hdr = shift;
     confess 'Not a header' if ref $hdr ne 'PFT::Text::Header';
 
+    my $fname = $slugify->($hdr->title);
+
+    my $basedir;
+    if (defined(my $d = $hdr->date)) {
+        $basedir = File::Spec->catdir($self->dir_blog, $d->y .'-'. $d->m);
+        $fname = $d->d .'-'. $fname
+    } else {
+        $basedir = $self->dir_pages
+    }
+
     my $p = PFT::Content::Page->new({
         tree => $self,
-        path => File::Spec->catfile(
-            $self->dir_pages,
-            $slugify->($hdr->title)
-        ),
+        path => File::Spec->catfile($basedir, $fname),
         name => $hdr->title,
     });
 
