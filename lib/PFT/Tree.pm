@@ -148,6 +148,14 @@ sub entry {
     return $p
 }
 
+=item tag
+
+Getter for a tag page. A header is required as argument. This works as the
+C<entry> method, but the returned item will be placed in the tags
+directory.
+
+=cut
+
 sub tag {
     my $self = shift;
     my $hdr = shift;
@@ -200,6 +208,17 @@ List all pages
 sub pages_ls {
     my $self = shift;
     $self->_ls(File::Spec->catfile($self->dir_pages, '*'))
+}
+
+=item tags_ls
+
+List all tags
+
+=cut
+
+sub tags_ls {
+    my $self = shift;
+    $self->_ls(File::Spec->catfile($self->dir_tags, '*'))
 }
 
 =item path_to_date
