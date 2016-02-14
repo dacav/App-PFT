@@ -119,8 +119,9 @@ sub make_consistent {
 
     my $pdate = $self->tree->path_to_date($self->path);
     if (defined $pdate) {
-        if (defined(my $hdate = $hdr->date)) {
-            if ($hdate <=> $pdate) {
+        my $hdt = $hdr->date;
+        if (defined($hdt) and defined($hdt->y) and defined($hdt->m)) {
+            if ($hdt <=> $pdate) {
                 my $new_self = $self->tree->entry($hdr);
                 $self->rename_as($new_self->path);
                 $done ++;
@@ -131,7 +132,7 @@ sub make_consistent {
             $self->set_header($hdr);
             $done ++;
         }
-    }
+    } # else not in blog.
 
     $done
 }
