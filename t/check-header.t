@@ -54,4 +54,11 @@ do {
     is_deeply($hl, $h, 'reload from path');
 };
 
+do {
+    my $ts = ['One tag', 'Two ~ tags'];
+    my $h = PFT::Text::Header->new(title => 'x', tags => $ts);
+    is_deeply($h->tags, $ts, 'Full tags');
+    is_deeply([$h->slug_tags], ['one-tag', 'two-tags'], 'Slug tags');
+};
+
 done_testing()

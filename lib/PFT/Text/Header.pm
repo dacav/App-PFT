@@ -142,6 +142,7 @@ sub load {
     $hdr->date
     $hdr->opts
     $hdr->slug
+    $hdr->slug_tags
 
 =cut
 
@@ -153,13 +154,20 @@ sub tags { shift->{tags} }
 sub date { shift->{date} }
 sub opts { shift->{opts} }
 
-sub slug {
-    my $out = shift->{title};
-
+my $slugify = sub {
+    my $out = shift;
     $out =~ s/[\W_]/-/g;
     $out =~ s/--+/-/g;
     $out =~ s/-$//;
     lc $out
+};
+
+sub slug {
+    $slugify->(shift->{title})
+}
+
+sub slug_tags {
+    map{ $slugify->($_) } @{shift->tags || []}
 }
 
 =head2 Methods
