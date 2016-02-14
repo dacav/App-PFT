@@ -129,7 +129,7 @@ sub entry {
             $self->dir_blog,
             sprintf('%04d-%02d', $d->y, $d->m),
         );
-        $fname = $d->d .'-'. $fname
+        $fname = sprintf('%02d-%s', $d->d, $fname)
     } else {
         $basedir = $self->dir_pages
     }
