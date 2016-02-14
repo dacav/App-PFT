@@ -34,8 +34,8 @@ PFT::Content::Page - Content edited by user.
 =item header
 
 Returns a PFT::Text::Header object representing the header of the file.
-If the file is empty returns undef. If the file is not empty, but the
-header is broken returns undef and sets $@.
+If the file is empty returns undef. Croaks if the file is not empty, but
+the header is broken.
 
 =cut
 
@@ -52,7 +52,7 @@ sub header {
     return undef unless $self->exists;
     my $fh = $self->open('r');
     my $h = eval { PFT::Text::Header->load($fh) };
-    $@ =~ s/ at .*$// if $@;
+    $h or croak $@ =~ s/ at .*$//rs;
     $h;
 }
 
