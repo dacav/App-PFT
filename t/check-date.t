@@ -72,4 +72,8 @@ cmp_ok($date, '<=', PFT::Date->new(5, 6, 9), 'Date cmp m=');
 cmp_ok($date, '<=', PFT::Date->new(5, 5, 6), 'Date cmp d=');
 cmp_ok($date, '>=', PFT::Date->new(5, 5, 4), 'Date cmp >=');
 
+cmp_ok($date, '>', PFT::Date->new(5, 5), 'Date cmp incomplete 1');
+cmp_ok($date, '>', PFT::Date->new(5), 'Date cmp incomplete 2');
+cmp_ok($date, '>', PFT::Date->new, 'Date cmp incomplete 3');
+
 done_testing()

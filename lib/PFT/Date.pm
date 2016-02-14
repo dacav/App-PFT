@@ -38,14 +38,21 @@ use Carp;
 use overload 
     '""'  => sub { shift->repr('-') },
     '<=>' => sub {
-        my($self, $other, $swap) = @_;
+        my($self, $othr, $swap) = @_;
 
-        ref($other) eq 'PFT::Date' or
+        ref($othr) eq 'PFT::Date' or
             confess "Assumed date-to-date comparison";
 
-        my $out = $self->[0] <=> $other->[0];
-        $out != 0 or $out = $self->[1] <=> $other->[1];
-        $out != 0 or $out = $self->[2] <=> $other->[2];
+        my $out = (defined $self->[0] ? $self->[0] : 0)
+              <=> (defined $othr->[0] ? $othr->[0] : 0);
+        if ($out == 0) {
+            $out = (defined $self->[1] ? $self->[1] : 1)
+               <=> (defined $othr->[1] ? $othr->[1] : 1)
+        }
+        if ($out == 0) {
+            $out = (defined $self->[2] ? $self->[2] : 1)
+               <=> (defined $othr->[2] ? $othr->[2] : 1)
+        }
         $swap ? -$out : $out;
     }
 ;
