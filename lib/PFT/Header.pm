@@ -213,8 +213,6 @@ sub dump {
     }), "---\n"
 }
 
-=pod
-
 =back
 
 =cut
