@@ -158,6 +158,7 @@ sub slug {
 
     $out =~ s/[\W_]/-/g;
     $out =~ s/--+/-/g;
+    $out =~ s/-$//;
     lc $out
 }
 
