@@ -11,13 +11,13 @@ use Test::More;
 use Encode qw/encode decode/;
 use File::Temp qw/tempfile tempdir/;
 
-use PFT::Text::Header;
+use PFT::Header;
 use PFT::Date;
 
 my $dir = tempdir(CLEANUP => 1);
 
 for my $date (undef, PFT::Date->from_string('2014-12-16')) {
-    my $h = PFT::Text::Header->new(
+    my $h = PFT::Header->new(
         title => 'Rådmansgatan',
         encoding => 'iso8859-15',
         date => $date,
@@ -28,7 +28,7 @@ for my $date (undef, PFT::Date->from_string('2014-12-16')) {
     $h->dump($fh);
     say $fh $_ for qw/Hello world/;
     seek $fh, 0, 0;
-    my $hl = PFT::Text::Header->load($fh);
+    my $hl = PFT::Header->load($fh);
     chomp(my @text = <$fh>);
     is_deeply(\@text, ['Hello', 'world'], 'text is ok');
     close $fh;
@@ -36,13 +36,13 @@ for my $date (undef, PFT::Date->from_string('2014-12-16')) {
     is_deeply($hl, $h, 'dump and reload, ' . ($date ? $date : 'no date'));
 }
 
-my $h = eval { PFT::Text::Header->new(
+my $h = eval { PFT::Header->new(
     title => 'X', date => 0
 )};
 isnt(undef, $@, 'date must be PFT::Date');
 
 do {
-    my $h = PFT::Text::Header->new(
+    my $h = PFT::Header->new(
         title => 'Rådmansgatan',
         encoding => 'iso8859-15',
     );
@@ -50,13 +50,13 @@ do {
     my($fh, $filename) = tempfile(DIR => $dir);
     $h->dump($fh);
     close $fh;
-    my $hl = PFT::Text::Header->load($filename);
+    my $hl = PFT::Header->load($filename);
     is_deeply($hl, $h, 'reload from path');
 };
 
 do {
     my $ts = ['One tag', 'Two ~ tags'];
-    my $h = PFT::Text::Header->new(title => 'x', tags => $ts);
+    my $h = PFT::Header->new(title => 'x', tags => $ts);
     is_deeply($h->tags, $ts, 'Full tags');
     is_deeply([$h->slug_tags], ['one-tag', 'two-tags'], 'Slug tags');
 };

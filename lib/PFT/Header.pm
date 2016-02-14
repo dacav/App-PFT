@@ -1,4 +1,4 @@
-package PFT::Text::Header v0.0.1;
+package PFT::Header v0.0.1;
 
 use strict;
 use warnings;
@@ -10,13 +10,13 @@ use utf8;
 
 =head1 NAME
 
-PFT::Text::Header - Header for PFT content textfiles
+PFT::Header - Header for PFT content textfiles
 
 =head1 SYNOPSIS
 
-    use PFT::Text::Header;
+    use PFT::Header;
 
-    my $hdr = PFT::Text::Header->new(
+    my $hdr = PFT::Header->new(
         title => $title,        # mandatory
         author => $author,
         template => $template,
@@ -25,9 +25,9 @@ PFT::Text::Header - Header for PFT content textfiles
         opts => $opts,          # defaults {}
     );
 
-    my $hdr = PFT::Text::Header->load(STDIN);
+    my $hdr = PFT::Header->load(STDIN);
 
-    my $hdr = PFT::Text::Header->load('/path/to/file');
+    my $hdr = PFT::Header->load('/path/to/file');
 
 =head1 DESCRIPTION
 

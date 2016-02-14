@@ -33,7 +33,7 @@ PFT::Content::Page - Content edited by user.
 
 =item header
 
-Returns a PFT::Text::Header object representing the header of the file.
+Returns a PFT::Header object representing the header of the file.
 If the file is empty returns undef. Croaks if the file is not empty, but
 the header is broken.
 
@@ -41,7 +41,7 @@ the header is broken.
 
 use parent 'PFT::Content::File';
 
-use PFT::Text::Header;
+use PFT::Header;
 use PFT::Date;
 
 use File::Spec;
@@ -51,7 +51,7 @@ sub header {
     my $self = shift;
     return undef unless $self->exists;
     my $fh = $self->open('r');
-    my $h = eval { PFT::Text::Header->load($fh) };
+    my $h = eval { PFT::Header->load($fh) };
     $h or croak $@ =~ s/ at .*$//rs;
     $h;
 }
@@ -73,7 +73,7 @@ sub read {
 
     return undef unless $self->exists;
     my $fh = $self->open('r');
-    my $h = eval { PFT::Text::Header->load($fh) };
+    my $h = eval { PFT::Header->load($fh) };
     croak $@ =~ s/ at .*$//rs if $@;
     binmode $fh, ':encoding(' . $h->encoding . ')';
 
@@ -90,8 +90,8 @@ sub set_header {
     my $self = shift;
     my $hdr = shift;
 
-    ref($hdr) eq 'PFT::Text::Header'
-        or confess 'Must be PFT::Text::Header';
+    ref($hdr) eq 'PFT::Header'
+        or confess 'Must be PFT::Header';
 
     my @lines;
     if ($self->exists && !$self->empty) {

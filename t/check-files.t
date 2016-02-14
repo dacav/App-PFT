@@ -9,7 +9,7 @@ use utf8;
 use feature qw/say/;
 
 use PFT::Content::Page;
-use PFT::Text::Header;
+use PFT::Header;
 
 use Test::More;
 use File::Temp;
@@ -48,7 +48,7 @@ eval {
 isnt($@, undef, 'Error also if reading');
 
 # Header placement (on unlinked file)
-my $header = PFT::Text::Header->new(title => 'foo');
+my $header = PFT::Header->new(title => 'foo');
 
 do {
     $page->unlink;
@@ -69,7 +69,7 @@ do {
     close $fh;
 };
 do {
-    my $h_alt = PFT::Text::Header->new(title => 'bar');
+    my $h_alt = PFT::Header->new(title => 'bar');
     $page->set_header($h_alt);
 
     my($h_got, $fh) = $page->read();

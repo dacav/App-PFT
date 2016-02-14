@@ -114,7 +114,7 @@ date, the page is considered to be a blog entry (and positioned as such).
 sub entry {
     my $self = shift;
     my $hdr = shift;
-    confess 'Not a header' if ref $hdr ne 'PFT::Text::Header';
+    confess 'Not a header' if ref $hdr ne 'PFT::Header';
 
     my $fname = $hdr->slug;
 
@@ -159,7 +159,7 @@ directory.
 sub tag {
     my $self = shift;
     my $hdr = shift;
-    confess 'Not a header' if ref $hdr ne 'PFT::Text::Header';
+    confess 'Not a header' if ref $hdr ne 'PFT::Header';
 
     my $p = PFT::Content::Page->new({
         tree => $self,
@@ -176,7 +176,7 @@ sub _ls {
 
     my @out;
     for my $path (map glob, @_) {
-        my $h = eval { PFT::Text::Header->load($path) };
+        my $h = eval { PFT::Header->load($path) };
         $h or croak "Loading $path: " . $@ =~ s/ at .*$//rs;
 
         push @out, PFT::Content::Page->new({
@@ -243,7 +243,7 @@ sub blog_back {
 
     my $path = (sort { $b cmp $a } @globs)[$back];
 
-    my $h = eval { PFT::Text::Header->load($path) };
+    my $h = eval { PFT::Header->load($path) };
     $h or croak "Loading $path: " . $@ =~ s/ at .*$//rs;
 
     PFT::Content::Page->new({

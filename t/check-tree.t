@@ -7,7 +7,7 @@ use warnings;
 use utf8;
 
 use PFT::Tree;
-use PFT::Text::Header;
+use PFT::Header;
 use PFT::Date;
 
 use Test::More;
@@ -20,27 +20,27 @@ my $tree = PFT::Tree->new("$dir");
 
 do {
     my $date = PFT::Date->new(0, 12, 25);
-    my $p = $tree->entry(PFT::Text::Header->new(
+    my $p = $tree->entry(PFT::Header->new(
         title => 'foo-bar-baz',
         date => $date,
     ));
     is_deeply($tree->path_to_date($p->path), $date, 'Path-to-date')
 };
 do {
-    my $p = $tree->entry(PFT::Text::Header->new(
+    my $p = $tree->entry(PFT::Header->new(
         title => 'foo-bar-baz',
     ));
     is($tree->path_to_date($p->path), undef, 'Path-to-date, no date')
 };
 
 do {
-    my $p = $tree->entry(PFT::Text::Header->new(
+    my $p = $tree->entry(PFT::Header->new(
         title => 'foo-bar-baz',
     ));
     is($tree->path_to_slug($p->path), 'foo-bar-baz', 'Path-to-slug 1')
 };
 do {
-    my $p = $tree->entry(PFT::Text::Header->new(
+    my $p = $tree->entry(PFT::Header->new(
         title => 'foo-bar-baz',
         date => PFT::Date->new(0, 12, 25),
     ));
@@ -49,13 +49,13 @@ do {
 
 # Testing make_consistent function
 do {
-    my $hdr = PFT::Text::Header->new(
+    my $hdr = PFT::Header->new(
         title => 'one',
         date => PFT::Date->new(10, 11, 12),
     );
 
     my $e = $tree->entry($hdr);
-    $e->set_header(PFT::Text::Header->new(
+    $e->set_header(PFT::Header->new(
         title => 'two',
         date => PFT::Date->new(10, 12, 14),
     ));
