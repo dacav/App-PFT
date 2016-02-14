@@ -24,13 +24,32 @@ do {
         title => 'foo-bar-baz',
         date => $date,
     ));
-    is_deeply($tree->path_to_date($p->path), $date, 'Path-to-date if')
+    is_deeply($tree->path_to_date($p->path), $date, 'Path-to-date')
 };
 do {
     my $p = $tree->entry(PFT::Text::Header->new(
         title => 'foo-bar-baz',
     ));
-    is($tree->path_to_date($p->path), undef, 'Path-to-date unless')
+    is($tree->path_to_date($p->path), undef, 'Path-to-date, no date')
+};
+
+# Testing make_consistent function
+do {
+    my $hdr = PFT::Text::Header->new(
+        title => 'one',
+        date => PFT::Date->new(10, 11, 12),
+    );
+
+    my $e = $tree->entry($hdr);
+    $e->set_header(PFT::Text::Header->new(
+        title => 'two',
+        date => PFT::Date->new(10, 12, 14),
+    ));
+
+    ok($e->path =~ /0010-11.*12-one/, 'original path');
+    $e->make_consistent;
+    ok($e->path !~ /0010-11.*12-one/, 'not original path');
+    ok($e->path =~ /0010-12.*14-two/, 'new path');
 };
 
 done_testing()
