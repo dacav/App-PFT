@@ -145,31 +145,11 @@ sub entry {
     return $p
 }
 
-=item pages
-
-List all pages
-
-=cut
-
-sub pages {
-    my $self = shift;
-
-    for my $path (glob File::Spec->catfile($self->dir_pages, '*')) {
-    }
-}
-
-=item blog_ls
-
-List all blog pages
-
-=cut
-
-sub blog_ls {
+sub _ls {
     my $self = shift;
 
     my @out;
-    my $glob = File::Spec->catfile($self->dir_blog, '*', '*');
-    for my $path (glob $glob) {
+    for my $path (map glob, @_) {
         my $h = eval { PFT::Text::Header->load($path) };
         $h or croak "Loading $path: " . $@ =~ s/ at .*$//rs;
 
@@ -180,6 +160,28 @@ sub blog_ls {
         });
     }
     @out
+}
+
+=item blog_ls
+
+List all blog entries
+
+=cut
+
+sub blog_ls {
+    my $self = shift;
+    $self->_ls(File::Spec->catfile($self->dir_blog, '*', '*'))
+}
+
+=item pages_ls
+
+List all pages
+
+=cut
+
+sub pages_ls {
+    my $self = shift;
+    $self->_ls(File::Spec->catfile($self->dir_pages, '*'))
 }
 
 =item path_to_date
