@@ -112,7 +112,12 @@ date, the page is considered to be a blog entry (and positioned as such).
 =cut
 
 my $slugify = sub {
-    $_[0]
+    my $out = shift;
+
+    $out =~ s/\W/-/g;
+    $out =~ s/--+/-/g;
+
+    lc $out
 };
 
 sub entry {
