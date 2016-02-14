@@ -105,24 +105,16 @@ Open a file descriptor for the file:
 
 This method does automatic error checking (confessing on error).
 
-If C<protect_unlink> was previously called, returns the protected file
-descriptor, which could be positioned anywhere, depending on previous
-actions on it. The mode parameter is ignored.
-
 =cut
 
 sub open {
     my $self = shift;
 
-    if (exists $self->{unlinked}) {
-        $self->{unlinked}
-    } else {
-        # Regular behavior
-        my $path = $self->path;
-        my $mode = shift;
-        make_path dirname $path if $mode =~ /w|a/;
-        IO::File->new($path, $mode) or confess "Cannot open $path: $!"
-    }
+    # Regular behavior
+    my $path = $self->path;
+    my $mode = shift;
+    make_path dirname $path if $mode =~ /w|a/;
+    IO::File->new($path, $mode) or confess "Cannot open $path: $!"
 }
 
 =item touch
@@ -177,22 +169,6 @@ sub rename_as {
     rename $self->{path}, $new_path or confess "Cannot rename: $!";
     $self->tree->was_renamed($self->{path}, $new_path);
     $self->{path} = $new_path;
-}
-
-=item protect_unlink
-
-Protect the file by unlinking it, keep it alive with a read file
-descriptor.
-
-=cut
-
-sub protect_unlink {
-    my $self = shift;
-
-    CORE::unlink($self->{path}) or confess "Cannot unlink: $!";
-    my $out = $self->{unlinked} = $self->open('r+');
-
-    return $out;
 }
 
 =back
