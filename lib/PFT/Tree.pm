@@ -42,6 +42,7 @@ use Carp;
 
 use PFT::Content::Page;
 use PFT::Date;
+use PFT::Header;
 
 sub new {
     my $cls = shift;
