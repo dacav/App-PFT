@@ -148,6 +148,21 @@ sub entry {
     return $p
 }
 
+sub tag {
+    my $self = shift;
+    my $hdr = shift;
+    confess 'Not a header' if ref $hdr ne 'PFT::Text::Header';
+
+    my $p = PFT::Content::Page->new({
+        tree => $self,
+        path => File::Spec->catfile($self->dir_tags, $hdr->slug),
+        name => $hdr->title,
+    });
+    $hdr->dump($p->open('w')) unless $p->exists;
+
+    return $p
+}
+
 sub _ls {
     my $self = shift;
 
