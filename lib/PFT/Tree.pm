@@ -111,20 +111,12 @@ date, the page is considered to be a blog entry (and positioned as such).
 
 =cut
 
-my $slugify = sub {
-    my $out = shift;
-
-    $out =~ s/[\W_]/-/g;
-    $out =~ s/--+/-/g;
-    lc $out
-};
-
 sub entry {
     my $self = shift;
     my $hdr = shift;
     confess 'Not a header' if ref $hdr ne 'PFT::Text::Header';
 
-    my $fname = $slugify->($hdr->title);
+    my $fname = $hdr->slug;
 
     my $basedir;
     if (defined(my $d = $hdr->date)) {

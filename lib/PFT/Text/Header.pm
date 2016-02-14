@@ -141,6 +141,7 @@ sub load {
     $hdr->tags
     $hdr->date
     $hdr->opts
+    $hdr->slug
 
 =cut
 
@@ -151,6 +152,14 @@ sub encoding { shift->{encoding} }
 sub tags { shift->{tags} }
 sub date { shift->{date} }
 sub opts { shift->{opts} }
+
+sub slug {
+    my $out = shift->{title};
+
+    $out =~ s/[\W_]/-/g;
+    $out =~ s/--+/-/g;
+    lc $out
+}
 
 =head2 Methods
 
