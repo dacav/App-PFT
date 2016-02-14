@@ -187,17 +187,6 @@ sub pages_ls {
     $self->_ls(File::Spec->catfile($self->dir_pages, '*'))
 }
 
-=item tags_ls
-
-List all tags
-
-=cut
-
-sub tags_ls {
-    my $self = shift;
-    $self->_ls(File::Spec->catfile($self->dir_tags, '*'))
-}
-
 =item blog_back
 
 Go back in blog history. Expects one optional argument as the number of
