@@ -221,6 +221,38 @@ sub tags_ls {
     $self->_ls(File::Spec->catfile($self->dir_tags, '*'))
 }
 
+=item blog_back
+
+Go back in blog history. Expects one optional argument as the number of
+steps backward in history. If such argument is not provided, it defaults
+to 0, returning the most recent entry. Returns a PFT::Content::Page
+object.
+
+=cut
+
+sub blog_back {
+    my $self = shift;
+    my $back = shift || 0;
+
+    confess 'Negative back?' if $back < 0;
+
+    my $glob = File::Spec->catfile($self->dir_blog, '*', '*');
+    my @globs = glob $glob;
+
+    return undef if $back > scalar(@globs) - 1;
+
+    my $path = (sort { $b cmp $a } @globs)[$back];
+
+    my $h = eval { PFT::Text::Header->load($path) };
+    $h or croak "Loading $path: " . $@ =~ s/ at .*$//rs;
+
+    PFT::Content::Page->new({
+        tree => $self,
+        path => $path,
+        name => $h->title,
+    })
+}
+
 =item path_to_date
 
 Given a path (of a page) determine the corresponding date. Returns a
