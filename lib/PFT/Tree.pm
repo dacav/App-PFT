@@ -158,13 +158,13 @@ sub pages {
     }
 }
 
-=item blog
+=item blog_ls
 
 List all blog pages
 
 =cut
 
-sub blog {
+sub blog_ls {
     my $self = shift;
 
     my @out;
