@@ -114,10 +114,14 @@ sub from_string {
     my $cls = shift;
     my $text = shift;
 
-    my ($y, $m, $d) = $text =~ m/^(\d{4})-(\d{2})-(\d{2})$/
+    my ($y, $m, $d) = $text =~ m/^(\d{4}|\*)-(\d{2}|\*)-(\d{2}|\*)$/
         or croak "Date \"$text\" not in YYYY-MM-DD format";
 
-    $cls->new(int($y), int($m), int($d))
+    $cls->new(
+        $y ne '*' ? int($y) : undef,
+        $m ne '*' ? int($m) : undef,
+        $d ne '*' ? int($d) : undef
+    )
 }
 
 =head2 Properties
