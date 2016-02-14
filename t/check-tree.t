@@ -46,10 +46,12 @@ do {
         date => PFT::Date->new(10, 12, 14),
     ));
 
-    ok($e->path =~ /0010-11.*12-one/, 'original path');
+    ok($e->path =~ /0010-11.*12-one/, 'Original path');
+    my $orig_path = $e->path;
     $e->make_consistent;
-    ok($e->path !~ /0010-11.*12-one/, 'not original path');
-    ok($e->path =~ /0010-12.*14-two/, 'new path');
+    ok($e->path !~ /0010-11.*12-one/, 'Not original path');
+    ok(!-e $orig_path && -e $e->path, 'Actually moved');
+    ok($e->path =~ /0010-12.*14-two/, 'New path');
 };
 
 done_testing()
