@@ -206,11 +206,15 @@ sub path_to_date {
     return undef unless -1 == index $rel, File::Spec->updir;
 
     my($ym, $dt) = File::Spec->splitdir($rel);
+
     PFT::Date->new(
         substr($ym, 0, 4),
         substr($ym, 5, 2),
-        substr($dt, 0, 2),
-    );
+        defined($dt) ? substr($dt, 0, 2) : do {
+            $ym =~ /^\d{4}-\d{2}.month$/ or confess "Unexpected $ym";
+            undef
+        }
+    )
 }
 
 =item was_renamed
