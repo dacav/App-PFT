@@ -33,6 +33,20 @@ do {
     is($tree->path_to_date($p->path), undef, 'Path-to-date, no date')
 };
 
+do {
+    my $p = $tree->entry(PFT::Text::Header->new(
+        title => 'foo-bar-baz',
+    ));
+    is($tree->path_to_slug($p->path), 'foo-bar-baz', 'Path-to-slug 1')
+};
+do {
+    my $p = $tree->entry(PFT::Text::Header->new(
+        title => 'foo-bar-baz',
+        date => PFT::Date->new(0, 12, 25),
+    ));
+    is($tree->path_to_slug($p->path), 'foo-bar-baz', 'Path-to-slug 2')
+};
+
 # Testing make_consistent function
 do {
     my $hdr = PFT::Text::Header->new(

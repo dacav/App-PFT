@@ -37,7 +37,7 @@ The structure is the following:
 
 use File::Spec;
 use File::Path qw/make_path/;
-use File::Basename qw/dirname/;
+use File::Basename qw/dirname basename/;
 use Carp;
 
 use PFT::Content::Page;
@@ -114,9 +114,8 @@ date, the page is considered to be a blog entry (and positioned as such).
 my $slugify = sub {
     my $out = shift;
 
-    $out =~ s/\W/-/g;
+    $out =~ s/[\W_]/-/g;
     $out =~ s/--+/-/g;
-
     lc $out
 };
 
@@ -208,7 +207,7 @@ sub path_to_date {
     my $path = shift;
 
     my $rel = File::Spec->abs2rel($path, $self->dir_blog);
-    return undef unless -1 == index $rel, File::Spec->updir;
+    return undef unless index($rel, File::Spec->updir) < 0;
 
     my($ym, $dt) = File::Spec->splitdir($rel);
 
@@ -220,6 +219,24 @@ sub path_to_date {
             undef
         }
     )
+}
+
+=item path_to_slug
+
+Given a path (of a page) determine the corresponding slug string.
+
+=cut
+
+sub path_to_slug {
+    my $self = shift;
+    my $path = shift;
+
+    my $fname = basename $path;
+
+    my $rel = File::Spec->abs2rel($path, $self->dir_blog);
+    $fname =~ s/^\d{2}-// if index($rel, File::Spec->updir) < 0;
+
+    $fname
 }
 
 =item was_renamed
