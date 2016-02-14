@@ -148,29 +148,6 @@ sub entry {
     return $p
 }
 
-=item tag
-
-Getter for a tag page. A header is required as argument. This works as the
-C<entry> method, but the returned item will be placed in the tags
-directory.
-
-=cut
-
-sub tag {
-    my $self = shift;
-    my $hdr = shift;
-    confess 'Not a header' if ref $hdr ne 'PFT::Header';
-
-    my $p = PFT::Content::Page->new({
-        tree => $self,
-        path => File::Spec->catfile($self->dir_tags, $hdr->slug),
-        name => $hdr->title,
-    });
-    $hdr->dump($p->open('w')) unless $p->exists;
-
-    return $p
-}
-
 sub _ls {
     my $self = shift;
 
