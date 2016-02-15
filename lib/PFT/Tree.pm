@@ -119,7 +119,7 @@ sub entry {
     my $p = PFT::Content::Page->new({
         tree => $self,
         path => $self->hdr_to_path($hdr),
-        name => $hdr->title
+        name => $hdr->title,
     });
 
     $hdr->dump($p->open('w')) unless $p->exists;
@@ -168,13 +168,13 @@ sub _ls {
 
     my @out;
     for my $path (map glob, @_) {
-        my $h = eval { PFT::Header->load($path) };
-        $h or croak "Loading $path: " . $@ =~ s/ at .*$//rs;
+        my $hdr = eval { PFT::Header->load($path) }
+            or croak "Loading $path: " . $@ =~ s/ at .*$//rs;
 
         push @out, PFT::Content::Page->new({
             tree => $self,
             path => $path,
-            name => $h->title,
+            name => $hdr->title,
         });
     }
     @out
