@@ -174,6 +174,32 @@ sub slug_tags {
 
 =over
 
+=item enc
+
+Encode a string with the encoding defined by the header
+
+=cut
+
+sub enc {
+    my $enc = shift->{encoding};
+    wantarray
+        ? map { encode($enc, $_) } @_
+        : encode($enc, shift)
+}
+
+=item dec
+
+Decode a byte string with the encoding defined by the header
+
+=cut
+
+sub dec {
+    my $enc = shift->{encoding};
+    wantarray
+        ? map { decode($enc, $_) } @_
+        : decode($enc, shift)
+}
+
 =item set_date
 
 =cut
