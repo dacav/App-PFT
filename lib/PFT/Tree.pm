@@ -115,6 +115,28 @@ date, the page is considered to be a blog entry (and positioned as such).
 sub entry {
     my $self = shift;
     my $hdr = shift;
+
+    my $p = PFT::Content::Page->new({
+        tree => $self,
+        path => $self->hdr_to_path($hdr),
+        name => $hdr->title
+    });
+
+    $hdr->dump($p->open('w')) unless $p->exists;
+
+    return $p
+}
+
+=item hdr_to_path
+
+Given a PFT::Header object, returns the path of a page or blog page within
+the tree.
+
+=cut
+
+sub hdr_to_path {
+    my $self = shift;
+    my $hdr = shift;
     confess 'Not a header' if ref $hdr ne 'PFT::Header';
 
     my $fname = $hdr->slug;
@@ -138,15 +160,7 @@ sub entry {
         $basedir = $self->dir_pages
     }
 
-    my $p = PFT::Content::Page->new({
-        tree => $self,
-        path => File::Spec->catfile($basedir, $fname),
-        name => $hdr->title,
-    });
-
-    $hdr->dump($p->open('w')) unless $p->exists;
-
-    return $p
+    File::Spec->catfile($basedir, $fname)
 }
 
 sub _ls {
