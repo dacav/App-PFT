@@ -135,7 +135,7 @@ sub make_consistent {
     }
 
     if ($rename) {
-        $self->rename_as($self->tree->entry($hdr)->path);
+        $self->rename_as($self->tree->hdr_to_path($hdr));
         $done ++;
     }
 

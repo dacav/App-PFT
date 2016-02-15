@@ -166,7 +166,10 @@ sub rename_as {
     my $self = shift;
     my $new_path = shift;
 
-    rename $self->{path}, $new_path or confess "Cannot rename: $!";
+    make_path dirname $new_path;
+    rename $self->{path}, $new_path
+        or confess "Cannot rename '$self->{path}' -> '$new_path': $!";
+
     $self->tree->was_renamed($self->{path}, $new_path);
     $self->{path} = $new_path;
 }
