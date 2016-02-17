@@ -48,7 +48,10 @@ sub _mknod {
     my($p, $h) = ref($_) eq 'PFT::Header'
         ? (undef, $_)
         : ($_, $_->header);
-    { id => ++ $$idref, p => $p, h => $h, d => $h->date }
+    my %out = ( id => $$idref ++, h => $h );
+    $out{p} = $p if defined $p;
+    $out{d} = $h->date if defined $h->date;
+    \%out;
 }
 
 sub _scan_pages {
@@ -106,21 +109,21 @@ sub _scan_blog {
 sub dump {
     my $node_dump = sub {
         my $node = shift;
-        {
+        grep defined, (
             id  => $node->{id},
-            '<' => exists $node->{'<'} ? $node->{'<'}->{id} : undef,
-            '>' => exists $node->{'>'} ? $node->{'>'}->{id} : undef,
-            '^' => exists $node->{'^'} ? $node->{'^'}->{id} : undef,
-            t   => $node->{h}->title,
-            d   => "$node->{d}",
-            'v' => exists $node->{'v'}
-                   ? join ', ', map{ $_->{id} } @{$node->{'v'}}
-                   : undef
-        }
+            t   => $node->{h}->title || '<month>',
+            exists $node->{'<'} ? ('<' => $node->{'<'}->{id}) : undef,
+            exists $node->{'>'} ? ('>' => $node->{'>'}->{id}) : undef,
+            exists $node->{'^'} ? ('^' => $node->{'^'}->{id}) : undef,
+            exists $node->{d}   ? ('d' => "$node->{d}")       : undef,
+            exists $node->{'v'}
+                ? ('v' => [map{ $_->{id} } @{$node->{'v'}}])
+                : undef
+        )
     };
 
     my $self = shift;
-    map { $node_dump->($_) } @{$self->{pages}};
+    map {{ $node_dump->($_) }} @{$self->{pages}};
 }
 
 =back
