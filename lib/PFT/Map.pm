@@ -64,8 +64,10 @@ sub _scan_blog {
 
     my($prev, $prev_month);
     foreach (sort { $a->{d} <=> $b->{d} } @blog) {
-        weaken($_->{'<'} = $prev);
-        defined($prev) and weaken($prev->{'>'} = $_);
+        if (defined $prev) {
+            weaken($_->{'<'} = $prev);
+            weaken($prev->{'>'} = $_);
+        }
 
         my $m_node = do {
             my $m_date = $_->{d}->derive(d => undef);
@@ -74,6 +76,10 @@ sub _scan_blog {
                 my $m_hdr = PFT::Header->new(date => $m_date);
                 my $m_page = $tree->entry($m_hdr);
                 my $n = $self->_mknod($m_page->exists ? $m_page : $m_hdr);
+                if (@months) {
+                    weaken($n->{'<'} = $months[-1]);
+                    weaken($months[-1]->{'>'} = $n);
+                }
                 push @months, $n;
             }
             $months[-1]
@@ -82,9 +88,6 @@ sub _scan_blog {
         weaken($_->{'^'} = $m_node);
         $#{$m_node->{'v'}} ++;
         weaken($m_node->{'v'}->[-1] = $_);
-        if (defined($m_node->{'<'} = $months[$#months])) {
-            weaken($months[$#months]->{'>'} = $m_node)
-        }
 
         $prev = $_;
     }
