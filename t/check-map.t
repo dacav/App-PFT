@@ -26,6 +26,11 @@ for (1 .. 5) {
         date => PFT::Date->new(2014, $_, $_ * $_),
     ))
 }
+for (4 .. 8) {
+    $tree->new_entry(PFT::Header->new(title => 'Month nr.'.$_,
+        date => PFT::Date->new(2014, $_),
+    ))
+}
 
 use Data::Dumper;
 
