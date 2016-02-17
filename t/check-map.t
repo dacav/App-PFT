@@ -85,13 +85,13 @@ my @expected = (
     }
 );
 
-is_deeply(\@dumped, \@expected);
+is_deeply(\@dumped, \@expected, 'Deeply equal');
 
 while (my($i, $node) = each @dumped) {
-    ok(!exists $node->{'>'} || $expected[$node->{'>'}]->{'<'} == $i,
+    exists $node->{'>'} and ok(($expected[$node->{'>'}]->{'<'} == $i),
         'Next refers Prev for ' . $i
     );
-    ok(!exists $node->{'<'} || $expected[$node->{'<'}]->{'>'} == $i,
+    exists $node->{'<'} and ok(($expected[$node->{'<'}]->{'>'} == $i),
         'Prev refers Next for ' . $i
     );
     if (defined(my $down = $node->{'v'})) {
