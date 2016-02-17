@@ -20,27 +20,27 @@ my $tree = PFT::Tree->new("$dir");
 
 do {
     my $date = PFT::Date->new(0, 12, 25);
-    my $p = $tree->entry(PFT::Header->new(
+    my $p = $tree->new_entry(PFT::Header->new(
         title => 'foo-bar-baz',
         date => $date,
     ));
     is_deeply($tree->path_to_date($p->path), $date, 'Path-to-date')
 };
 do {
-    my $p = $tree->entry(PFT::Header->new(
+    my $p = $tree->new_entry(PFT::Header->new(
         title => 'foo-bar-baz',
     ));
     is($tree->path_to_date($p->path), undef, 'Path-to-date, no date')
 };
 
 do {
-    my $p = $tree->entry(PFT::Header->new(
+    my $p = $tree->new_entry(PFT::Header->new(
         title => 'foo-bar-baz',
     ));
     is($tree->path_to_slug($p->path), 'foo-bar-baz', 'Path-to-slug 1')
 };
 do {
-    my $p = $tree->entry(PFT::Header->new(
+    my $p = $tree->new_entry(PFT::Header->new(
         title => 'foo-bar-baz',
         date => PFT::Date->new(0, 12, 25),
     ));
@@ -54,7 +54,7 @@ do {
         date => PFT::Date->new(10, 11, 12),
     );
 
-    my $e = $tree->entry($hdr);
+    my $e = $tree->new_entry($hdr);
     $e->set_header(PFT::Header->new(
         title => 'two',
         date => PFT::Date->new(10, 12, 14),

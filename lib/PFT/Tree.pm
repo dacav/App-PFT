@@ -104,15 +104,16 @@ sub dir_templates { File::Spec->catdir(shift->{base}, 'templates') }
 
 =over
 
-=item entry
+=item new_entry
 
-Getter for a page. A header is required as argument. If the page does not
-exist it gets created according to the header. If the header contains a
-date, the page is considered to be a blog entry (and positioned as such).
+Create and return a page. A header is required as argument. If the page
+does not exist it gets created according to the header. If the header
+contains a date, the page is considered to be a blog entry (and positioned
+as such).
 
 =cut
 
-sub entry {
+sub new_entry {
     my $self = shift;
     my $hdr = shift;
 
