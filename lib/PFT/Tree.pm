@@ -152,10 +152,8 @@ sub hdr_to_path {
     my $hdr = shift;
     confess 'Not a header' if ref $hdr ne 'PFT::Header';
 
-    my $fname = $hdr->slug;
-
-    my $basedir;
     if (defined(my $d = $hdr->date)) {
+        my($basedir, $fname);
 
         defined $d->y && defined $d->m
             or confess 'Year and month are required';
@@ -163,17 +161,16 @@ sub hdr_to_path {
         my $ym = sprintf('%04d-%02d', $d->y, $d->m);
         if (defined $d->d) {
             $basedir = File::Spec->catdir($self->dir_blog, $ym);
-            $fname = sprintf('%02d-%s', $d->d, $fname);
+            $fname = sprintf('%02d-%s', $d->d, $hdr->slug);
         } else {
             $basedir = $self->dir_blog;
             $fname = $ym . '.month';
         }
 
+        File::Spec->catfile($basedir, $fname)
     } else {
-        $basedir = $self->dir_pages
+        File::Spec->catfile($self->dir_pages, $hdr->slug)
     }
-
-    File::Spec->catfile($basedir, $fname)
 }
 
 sub _ls {
