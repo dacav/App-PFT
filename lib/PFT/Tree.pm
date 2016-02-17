@@ -116,16 +116,28 @@ as such).
 sub new_entry {
     my $self = shift;
     my $hdr = shift;
+    $self->entry($hdr);
+    my $p = $self->entry($hdr);
+    $hdr->dump($p->open('w')) unless $p->exists;
+    return $p
+}
 
-    my $p = PFT::Content::Page->new({
+=item entry
+
+Similar to C<new_entry>, but does not create the content file if it
+doesn't exist already.
+
+=cut
+
+sub entry {
+    my $self = shift;
+    my $hdr = shift;
+
+    PFT::Content::Page->new({
         tree => $self,
         path => $self->hdr_to_path($hdr),
         name => $hdr->title,
-    });
-
-    $hdr->dump($p->open('w')) unless $p->exists;
-
-    return $p
+    })
 }
 
 =item hdr_to_path
