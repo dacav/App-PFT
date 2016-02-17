@@ -38,7 +38,7 @@ do {
     print $fh 'Hello';
 };
 
-is($page->header, undef, 'Arbitrary text has no header');
+is(eval{ $page->header }, undef, 'Arbitrary text has no header');
 isnt($@, undef, 'Error instead');
 #diag('Error was: ', $@);
 
