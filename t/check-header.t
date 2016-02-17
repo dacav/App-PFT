@@ -36,10 +36,25 @@ for my $date (undef, PFT::Date->from_string('2014-12-16')) {
     is_deeply($hl, $h, 'dump and reload, ' . ($date ? $date : 'no date'));
 }
 
-my $h = eval { PFT::Header->new(
-    title => 'X', date => 0
-)};
+is(eval { PFT::Header->new( title => 'X', date => 0)}, undef, 'broken because...');
 isnt(undef, $@, 'date must be PFT::Date');
+diag($@);
+
+is(eval { PFT::Header->new(date => PFT::Date->new(1,2,3))}, undef,
+    'broken because...'
+);
+isnt(undef, $@, 'full date but no title');
+diag($@);
+
+isnt(PFT::Header->new(date => PFT::Date->new(1, 2)), undef,
+    'not broken because day is missing'
+);
+
+is(eval { PFT::Header->new(date => PFT::Date->new(1)) }, undef,
+    'broken because...'
+);
+isnt(undef, $@, 'date missing year or month');
+diag($@);
 
 do {
     my $h = PFT::Header->new(

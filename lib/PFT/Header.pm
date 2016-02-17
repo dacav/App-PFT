@@ -50,16 +50,31 @@ use PFT::Date;
 
 our $DEFAULT_ENC = 'utf-8';
 
+my $params_check = sub {
+    my $params = shift;
+
+    if (exists $params->{date} and defined(my $d = $params->{date})) {
+        ref($d) eq 'PFT::Date'
+            or confess 'date parameter must be PFT::Date';
+
+        if ($d->complete) {
+            exists $params->{title}
+                or croak 'Title is mandatory headers having complete date';
+        } elsif (!defined $d->y or !defined $d->m) {
+            croak 'Year and month are mandatory for headers with date';
+        }
+    } else {
+        exists $params->{title}
+            or croak 'Title is mandatory for headers not having dates';
+    }
+};
+
 sub new {
     my $cls = shift;
     my %opts = @_;
 
-    exists $opts{title} or die 'title is mandatory';
-
     my $enc = $opts{encoding} || $DEFAULT_ENC;
-
-    defined $opts{date} and ref $opts{date} eq 'PFT::Date'
-        || confess 'date parameter must be PFT::Date';
+    $params_check->(\%opts);
 
     bless {
         title => $opts{title},
@@ -112,7 +127,7 @@ sub load {
     };
     croak $@ =~ s/ at .*$//rs if $@;
 
-    bless {
+    my $self = {
         title => $decode->(Title => 1),
         author => $decode->(Author => 0),
         template => exists $hdr->{Template}
@@ -129,7 +144,10 @@ sub load {
         opts => exists $hdr->{Options}
             ? $hdr->{Options}
             : undef,
-    }, $cls;
+    };
+    $params_check->($self);
+
+    bless $self, $cls;
 }
 
 =head2 Properties
