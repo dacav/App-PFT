@@ -21,15 +21,18 @@ my $tree = PFT::Tree->new("$root");
 
 $tree->new_entry(PFT::Header->new(title => 'A page'));
 $tree->new_entry(PFT::Header->new(title => 'Another page'));
-for (1 .. 5) {
+for (1 .. 2) {
     $tree->new_entry(PFT::Header->new(title => 'Blog post nr.'.$_,
         date => PFT::Date->new(2014, $_, $_ * $_),
-    ))
+    ));
+    $tree->new_entry(PFT::Header->new(title => 'Blog post nr.'.($_ + 10),
+        date => PFT::Date->new(2014, $_, $_ * $_ + 1),
+    ));
 }
-for (4 .. 8) {
+for (2 .. 3) {
     $tree->new_entry(PFT::Header->new(title => 'Month nr.'.$_,
         date => PFT::Date->new(2014, $_),
-    ))
+    ));
 }
 
 use Data::Dumper;

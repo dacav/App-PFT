@@ -66,22 +66,27 @@ sub _scan_blog {
     foreach (sort { $a->{d} <=> $b->{d} } @blog) {
         weaken($_->{'<'} = $prev);
         defined($prev) and weaken($prev->{'>'} = $_);
-        $prev = $_;
 
         my $m_node = do {
-            my $m_hdr = PFT::Header->new(
-                date => $_->{d}->derive(d => undef)
-            );
-            my $m_page = $tree->entry($m_hdr);
-            $self->_mknod($m_page->exists ? $m_page : $m_hdr)
+            my $m_date = $_->{d}->derive(d => undef);
+
+            if (@months == 0 or $months[-1]->{d} <=> $m_date) {
+                my $m_hdr = PFT::Header->new(date => $m_date);
+                my $m_page = $tree->entry($m_hdr);
+                my $n = $self->_mknod($m_page->exists ? $m_page : $m_hdr);
+                push @months, $n;
+            }
+            $months[-1]
         };
 
         weaken($_->{'^'} = $m_node);
+        $#{$m_node->{'v'}} ++;
+        weaken($m_node->{'v'}->[-1] = $_);
         if (defined($m_node->{'<'} = $months[$#months])) {
             weaken($months[$#months]->{'>'} = $m_node)
         }
 
-        push @months, $m_node;
+        $prev = $_;
     }
 
     push @{$self->{pages}}, @blog, @months;
@@ -105,6 +110,9 @@ sub dump {
             '^' => exists $node->{'^'} ? $node->{'^'}->{id} : undef,
             t   => $node->{h}->title,
             d   => "$node->{d}",
+            'v' => exists $node->{'v'}
+                   ? join ', ', map{ $_->{id} } @{$node->{'v'}}
+                   : undef
         }
     };
 
