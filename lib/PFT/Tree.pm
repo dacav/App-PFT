@@ -116,7 +116,7 @@ as such).
 sub new_entry {
     my $self = shift;
     my $hdr = shift;
-    $self->entry($hdr);
+
     my $p = $self->entry($hdr);
     $hdr->dump($p->open('w')) unless $p->exists;
     return $p
