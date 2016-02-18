@@ -109,16 +109,18 @@ sub _scan_tags {
             my $t_node = exists $tags{$_} ? $tags{$_} : do {
                 my $t_hdr = PFT::Header->new(title => $_);
                 my $t_page = $tree->tag($t_hdr);
-                $tags{$_} = $self->_mknod($t_page->exists ? $t_page : $t_hdr);
+                $tags{$_} = $self->_mknod(
+                    $t_page->exists ? $t_page : $t_hdr
+                );
             };
-            $#{$t_node->{'v'}} ++;
-            weaken($t_node->{'v'}->[-1] = $node);
+            $#{$t_node->{'.'}} ++;
+            weaken($t_node->{'.'}->[-1] = $node);
             $#{$node->{t}} ++;
             weaken($node->{t}->[-1] = $t_node);
         }
     }
 
-    push @{$self->{pages}}, values %tags;
+    push @{$self->{pages}}, sort { $a->{id} <=> $b->{id} } values %tags;
 }
 
 =head2 Methods
@@ -144,6 +146,9 @@ sub dump {
                 : undef,
             exists $node->{t}
                 ? (t => [map{ $_->{id} } @{$node->{t}}])
+                : undef,
+            exists $node->{'.'}
+                ? ('.' => [map{ $_->{id} } @{$node->{'.'}}])
                 : undef,
         )
     };
