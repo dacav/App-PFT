@@ -40,7 +40,7 @@ use overload
     '<=>' => sub {
         my($self, $othr, $swap) = @_;
 
-        ref($othr) eq 'PFT::Date' or
+        $othr->isa('PFT::Date') or
             confess "Assumed date-to-date comparison";
 
         my $out = (defined $self->[0] ? $self->[0] : 0)

@@ -90,7 +90,7 @@ sub set_header {
     my $self = shift;
     my $hdr = shift;
 
-    ref($hdr) eq 'PFT::Header'
+    $hdr->isa('PFT::Header')
         or confess 'Must be PFT::Header';
 
     my @lines;

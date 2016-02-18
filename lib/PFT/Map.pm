@@ -46,7 +46,7 @@ sub new {
 sub _mknod {
     my $idref = \(shift->{next});
     local $_ = shift if @_;
-    my($p, $h) = ref($_) eq 'PFT::Header'
+    my($p, $h) = $_->isa('PFT::Header')
         ? (undef, $_)
         : ($_, $_->header);
     my %out = ( id => $$idref ++, h => $h );

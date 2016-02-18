@@ -54,7 +54,7 @@ my $params_check = sub {
     my $params = shift;
 
     if (exists $params->{date} and defined(my $d = $params->{date})) {
-        ref($d) eq 'PFT::Date'
+        $d->isa('PFT::Date')
             or confess 'date parameter must be PFT::Date';
 
         if ($d->complete) {
@@ -226,7 +226,7 @@ sub set_date {
     my $self = shift;
     my $date = pop;
 
-    ref($date) eq 'PFT::Date' or confess 'Must be PFT::Date';
+    $date->isa('PFT::Date') or confess 'Must be PFT::Date';
     $self->{date} = $date;
 }
 

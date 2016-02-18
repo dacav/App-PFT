@@ -150,7 +150,7 @@ the tree.
 sub hdr_to_path {
     my $self = shift;
     my $hdr = shift;
-    confess 'Not a header' if ref $hdr ne 'PFT::Header';
+    confess 'Not a header' unless $hdr->isa('PFT::Header');
 
     if (defined(my $d = $hdr->date)) {
         my($basedir, $fname);
