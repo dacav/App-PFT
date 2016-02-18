@@ -39,6 +39,7 @@ sub new {
 
     $self->_scan_pages;
     $self->_scan_blog;
+    $self->_scan_tags;
     $self;
 }
 
@@ -98,6 +99,28 @@ sub _scan_blog {
     push @{$self->{pages}}, @blog, @months;
 }
 
+sub _scan_tags {
+    my $self = shift;
+    my $tree = $self->{tree};
+    my %tags;
+
+    for my $node (@{$self->{pages}}) {
+        foreach (@{$node->{h}->tags}) {
+            my $t_node = exists $tags{$_} ? $tags{$_} : do {
+                my $t_hdr = PFT::Header->new(title => $_);
+                my $t_page = $tree->tag($t_hdr);
+                $tags{$_} = $self->_mknod($t_page->exists ? $t_page : $t_hdr);
+            };
+            $#{$t_node->{'v'}} ++;
+            weaken($t_node->{'v'}->[-1] = $node);
+            $#{$node->{t}} ++;
+            weaken($node->{t}->[-1] = $t_node);
+        }
+    }
+
+    push @{$self->{pages}}, values %tags;
+}
+
 =head2 Methods
 
 =over
@@ -111,14 +134,17 @@ sub dump {
         my $node = shift;
         grep defined, (
             id  => $node->{id},
-            t   => $node->{h}->title || '<month>',
+            tt  => $node->{h}->title || '<month>',
             exists $node->{'<'} ? ('<' => $node->{'<'}->{id}) : undef,
             exists $node->{'>'} ? ('>' => $node->{'>'}->{id}) : undef,
             exists $node->{'^'} ? ('^' => $node->{'^'}->{id}) : undef,
             exists $node->{d}   ? ('d' => "$node->{d}")       : undef,
             exists $node->{'v'}
                 ? ('v' => [map{ $_->{id} } @{$node->{'v'}}])
-                : undef
+                : undef,
+            exists $node->{t}
+                ? (t => [map{ $_->{id} } @{$node->{t}}])
+                : undef,
         )
     };
 

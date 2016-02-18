@@ -20,78 +20,46 @@ my $tree = PFT::Tree->new("$root");
 # Populating
 
 $tree->new_entry(PFT::Header->new(title => 'A page'));
-$tree->new_entry(PFT::Header->new(title => 'Another page'));
+$tree->new_entry(PFT::Header->new(
+    title => 'Another page',
+    tags => ['foo', 'bar'],
+));
+$tree->new_entry(PFT::Header->new(
+    title => 'Blog post nr.3',
+    date => PFT::Date->new(2014, 1, 3),
+    tags => ['bar'],
+));
 for (1 .. 2) {
-    $tree->new_entry(PFT::Header->new(title => 'Blog post nr.'.$_,
+    $tree->new_entry(PFT::Header->new(
+        title => 'Blog post nr.'.$_,
         date => PFT::Date->new(2014, $_, $_ * $_),
     ));
     $tree->new_entry(PFT::Header->new(title => 'Blog post nr.'.($_ + 10),
         date => PFT::Date->new(2014, $_, $_ * $_ + 1),
+        tags => ['foo'],
     ));
 }
-for (2 .. 3) {
-    $tree->new_entry(PFT::Header->new(title => 'Month nr.'.$_,
-        date => PFT::Date->new(2014, $_),
-    ));
-}
+$tree->new_entry(PFT::Header->new(title => 'Month nr.2',
+    date => PFT::Date->new(2014, 2),
+));
+$tree->new_entry(PFT::Header->new(title => 'Month nr.3',
+    date => PFT::Date->new(2014, 3),
+    tags => ['bar'],
+));
+$tree->new_tag(PFT::Header->new(title => 'Bar'));
 
 my @dumped = PFT::Map->new($tree)->dump;
 
-my @expected = (
-    {
-        'id' => 0,
-        't' => 'A page',
-    }, {
-        'id' => 1,
-        't' => 'Another page',
-    }, {
-        'id' => 2,
-        't' => 'Blog post nr.1',
-        'd' => '2014-01-01',
-        '>' => 3,
-        '^' => 6,
-    }, {
-        'id' => 3,
-        't' => 'Blog post nr.11',
-        'd' => '2014-01-02',
-        '<' => 2,
-        '>' => 4,
-        '^' => 6,
-    }, {
-        'id' => 4,
-        't' => 'Blog post nr.2',
-        'd' => '2014-02-04',
-        '<' => 3,
-        '>' => 5,
-        '^' => 7,
-    }, {
-        'id' => 5,
-        't' => 'Blog post nr.12',
-        'd' => '2014-02-05',
-        '<' => 4,
-        '^' => 7,
-    }, {
-        'id' => 6,
-        't' => '<month>',
-        'd' => '2014-01-*',
-        '>' => 7,
-        'v' => [2, 3],
-    }, {
-        'id' => 7,
-        't' => 'Month nr.2',
-        'd' => '2014-02-*',
-        '<' => 6,
-        'v' => [4, 5],
-    }
-);
+use Data::Dumper;
+die Dumper \@dumped;
 
-is_deeply(\@dumped, \@expected, 'Deeply equal');
+#is_deeply(\@dumped, \@expected, 'Deeply equal');
 
 while (my($i, $node) = each @dumped) {
-    exists $node->{'>'} and ok(($expected[$node->{'>'}]->{'<'} == $i),
+    exists $node->{'>'} and ok(($dumped[$node->{'>'}]->{'<'} == $i),
         'Next refers Prev for ' . $i
     );
-    exists $node->{'<'} and ok(($expected[$node->{'<'}]->{'>'} == $i),
+    exists $node->{'<'} and ok(($dumped[$node->{'<'}]->{'>'} == $i),
         'Prev refers Next for ' . $i
     );
     if (defined(my $down = $node->{'v'})) {

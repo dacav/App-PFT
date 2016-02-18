@@ -173,6 +173,39 @@ sub hdr_to_path {
     }
 }
 
+=item new_tag
+
+Create and return a tag page. A header is required as argument. If the
+tag page does not exist it gets created according to the header.
+
+=cut
+
+sub new_tag {
+    my $self = shift;
+    my $hdr = shift;
+
+    my $p = $self->tag($hdr);
+    $hdr->dump($p->open('w')) unless $p->exists;
+    return $p;
+}
+
+=item tag
+
+Similar to C<new_tag>, but does not create the content file if it doesn't
+exist already.
+
+=cut
+
+sub tag {
+    my $self = shift;
+    my $hdr = shift;
+    PFT::Content::Page->new({
+        tree => $self,
+        path => File::Spec->catfile($self->dir_tags, $hdr->slug),
+        name => $hdr->title,
+    })
+}
+
 sub _ls {
     my $self = shift;
 
