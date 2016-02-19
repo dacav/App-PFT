@@ -51,7 +51,7 @@ $tree->new_tag(PFT::Header->new(title => 'Bar'));
 my @dumped = PFT::Map->new($tree)->dump;
 
 # main::expected is declared down in the file.
-is_deeply(\@dumped, \@main::expected, 'Deeply equal');
+is_deeply(\@main::expected, \@dumped, 'Deeply equal');
 
 while (my($i, $node) = each @dumped) {
     exists $node->{'>'} and ok(($dumped[$node->{'>'}]->{'<'} == $i),
