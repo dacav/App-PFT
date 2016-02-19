@@ -81,9 +81,9 @@ Non-existing directories are created by the constructor.
 =cut
 
 sub dir_root { shift->{base} }
-sub dir_blog { File::Spec->catdir(shift->{base}, 'content', 'blog') }
-sub dir_pages { File::Spec->catdir(shift->{base}, 'content', 'pages') }
-sub dir_tags { File::Spec->catdir(shift->{base}, 'content', 'tags') }
+sub dir_blog { File::Spec->catdir(shift->{base}, 'blog') }
+sub dir_pages { File::Spec->catdir(shift->{base}, 'pages') }
+sub dir_tags { File::Spec->catdir(shift->{base}, 'tags') }
 
 =head2 Methods
 
