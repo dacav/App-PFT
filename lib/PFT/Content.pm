@@ -1,4 +1,4 @@
-package PFT::Tree v0.0.1;
+package PFT::Content v0.0.1;
 
 use strict;
 use warnings;
@@ -10,13 +10,13 @@ use utf8;
 
 =head1 NAME
 
-PFT::Tree - Create a new structure mapping a filesystem tree.
+PFT::Content - Filesytem tree mapping content
 
 =head1 SYNOPSIS
 
-    use PFT::Tree;
+    use PFT::Content;
 
-    my $tree = PFT::Tree->new($basedir);
+    my $tree = PFT::Content->new($basedir);
 
 =head1 DESCRIPTION
 

@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use utf8;
 
-use PFT::Tree;
+use PFT::Content;
 use PFT::Header;
 use PFT::Date;
 
@@ -16,7 +16,7 @@ use File::Spec;
 
 my $dir = tempdir(CLEANUP => 1);
 
-my $tree = PFT::Tree->new("$dir");
+my $tree = PFT::Content->new("$dir");
 
 do {
     my $date = PFT::Date->new(0, 12, 25);

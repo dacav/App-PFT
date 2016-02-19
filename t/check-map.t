@@ -8,14 +8,14 @@ use utf8;
 
 use Test::More; # tests => 1;
 
-use PFT::Tree;
+use PFT::Content;
 use PFT::Header;
 use PFT::Map;
 
 use File::Temp;
 
 my $root = File::Temp->newdir();
-my $tree = PFT::Tree->new("$root");
+my $tree = PFT::Content->new("$root");
 
 # Populating
 

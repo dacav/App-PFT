@@ -16,7 +16,7 @@ PFT::Map - Map of a PFT site
 
 =head1 SYNOPSIS
 
-    my $tree = PFT::Tree->new($basedir);
+    my $tree = PFT::Content->new($basedir);
     PFT::Map->new($tree);
 
 =head1 DESCRIPTION
