@@ -25,6 +25,8 @@ PFT::Tree - Filesystem tree mapping a PFT site
 use File::Spec;
 use File::Path qw/make_path/;
 
+use PFT::Content;
+
 use Carp;
 
 sub new {
@@ -41,7 +43,8 @@ sub _init {
     my $self = shift;
     make_path map({ $self->$_ } qw/
         dir_content
-        dir_backends
+        dir_templates
+        dir_inject
     /), {
         #verbose => 1,
         mode => 0711,
@@ -56,10 +59,9 @@ sub _init {
 
 =cut
 
-sub dir_root { base }
 sub dir_content { File::Spec->catdir(shift->{base}, 'content') }
-sub dir_backends { File::Spec->catdir(shift->{base}, 'templates') }
-sub dir_inject { File::Spec->catdir(shift->{base}, 'templates') }
+sub dir_templates { File::Spec->catdir(shift->{base}, 'templates') }
+sub dir_inject { File::Spec->catdir(shift->{base}, 'inject') }
 
 =item content
 
