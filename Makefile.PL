@@ -4,9 +4,9 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME             => 'App::PFT',
+    NAME             => 'PFT',
     AUTHOR           => q{Giovanni Simoni (dacav at openmailbox)},
-    VERSION_FROM     => 'lib/App/PFT.pm',
+    VERSION_FROM     => 'lib/PFT.pm',
     ABSTRACT         => 'Hacker friendly static blog generator',
     LICENSE          => 'GNU GPL v3',
     PL_FILES         => {},
@@ -41,5 +41,5 @@ WriteMakefile(
         'Template::Alloy'       => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES => 'App-PFT-*' },
+    clean => { FILES => 'PFT-*' },
 );

@@ -52,4 +52,6 @@ PFT::Backends::HTML->new($tree, {
     map { $_ => '' } qw/title home base_url encoding default_template/
 });
 
+ok(1);
+
 done_testing();
