@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
+=encoding utf8
+
 =head1 NAME
 
 pft make - Build the website
@@ -43,76 +45,104 @@ Build the website into the build directory.
 
 =cut
 
+use v5.10;
+
 use strict;
 use warnings;
+use utf8;
 
-use Pod::Usage;
-use Pod::Find qw/pod_where/;
-use File::Spec::Functions qw/catdir catfile no_upwards/;
+use Carp;
+use Encode;
+use Template::Alloy;
+
+use File::Spec;
+use File::Basename qw/dirname/;
 use File::Path qw/make_path/;
 
-use Getopt::Long;
-Getopt::Long::Configure ("bundling");
+use PFT::Map;
+use PFT::Text;
+use PFT::Tree;
 
-use App::PFT::Struct::Conf qw/
-    cfg_load
-    $ROOT
-    $SITE_TITLE
-    $SITE_URL
-    $HOME_PAGE
-    $OUTPUT_ENC
-    $TEMPLATE
-/;
-
-use App::PFT;
-use App::PFT::Struct::Tree;
-use App::PFT::Output::HTML;
-use App::PFT::Util;
-
-sub inject {
-    my $tree = shift;
-    my $inject = $tree->dir_inject;
-    App::PFT::Util::ln
-            catfile($inject, $_),
-            catfile($tree->dir_build, $_),
-            1
-        foreach
-            no_upwards
-            map { substr($_, 1 + length $inject) }
-        (
-            glob(catfile $inject, '*'),
-            glob(catfile $inject, '.*'),
-        )
+sub node_to_rel {
+    my $node = shift;
+    my $hdr = $node->header;
+    if ((my $k = substr($node->id, 0, 1)) eq 'b') {(
+        'blog',
+        sprintf('%04d-%02d', $hdr->date->y, $hdr->date->m),
+        sprintf('%02d-%s.html', $hdr->date->d, $hdr->slug),
+    )} elsif ($k eq 'm') {(
+        'blog',
+        sprintf('%04d-%02d.html', $hdr->date->y, $hdr->date->m),
+    )} elsif ($k eq 'p') {(
+        'pages',
+        $hdr->slug . '.html',
+    )} elsif ($k eq 't') {(
+        'tags',
+        $hdr->slug . '.html',
+    )} elsif ($k eq 'i') {(
+        'pics',
+        $node->content->relpath
+    )} elsif ($k eq 'a') {(
+        'attachments',
+        $node->content->relpath
+    )} else { die $k };
 }
 
-my($preview, %build_opts);
-GetOptions(
-    'preview|p!' => \$preview,
-    'fast|f!'    => \$build_opts{fast},
-    'help|h'     => sub {
-        pod2usage
-            -exitval => 1,
-            -verbose => 2,
-            -input => App::PFT::help_of 'make',
+sub build {
+    my $tree = shift;
+    my $conf = $tree->conf;
+
+    my $out_enc = $conf->{output_enc};
+    my $template = Template::Alloy->new(
+        INCLUDE_PATH => $tree->dir_templates
+    );
+    my $dir_build = $tree->dir_build;
+    my $map = PFT::Map->new($tree->content);
+    my %entry_info = (
+        site => {
+            encoding => $out_enc,
+            title => $conf->{site_title},
+        },
+    );
+
+    for my $node ($map->nodes) {
+        my $path_rel = File::Spec->catfile(
+            map encode($out_enc, $_),
+            node_to_rel $node
+        );
+        my $out_path = File::Spec->catfile($dir_build, $path_rel);
+
+        print 'Processing ', encode($out_enc, $node), "\n";
+        print "-> File: $out_path\n";
+
+        my $content = $node->content;
+        if ($content->isa('PFT::Content::Entry')) {
+            my $hdr = $node->header;
+
+            $entry_info{content} = {
+                title => $content->isa('PFT::Content::Month')
+                    ? sprintf("%04d / %02d", @{$hdr->date})
+                    : $hdr->title,
+            };
+
+            my $out_data;
+            $template->process(
+                ($hdr->template || $conf->{template}) . '.html',
+                \%entry_info,
+                \$out_data,
+            ) || croak 'Template expansion issue: ', $template->error;
+
+            make_path dirname $out_path;
+            open my $fh, ">:encoding($out_enc)", $out_path or croak "Opening $out_path: $!";
+            print $fh $out_data;
+            close $fh;
+        }
+
+        print "\n";
     }
-) or exit 1;
+}
 
-cfg_load App::PFT::findroot -die => 1;
+my $tree = PFT::Tree->new;
+build($tree);
 
-my $tree = App::PFT::Struct::Tree->new(
-    basepath => $ROOT
-);
-
-App::PFT::Output::HTML->new(
-    title => $SITE_TITLE,
-    home => $HOME_PAGE,
-    # site_footer => $ENV{SITE_FOOTER},
-    base_url => $preview ? $tree->dir_build : $SITE_URL,
-    encoding => $OUTPUT_ENC || 'utf-8',
-
-    default_template => $TEMPLATE,
-    tree => $tree,
-    build_opts => \%build_opts,
-)->build;
-
-inject $tree;
+1;
