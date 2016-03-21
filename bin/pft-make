@@ -51,6 +51,8 @@ use strict;
 use warnings;
 use utf8;
 
+use feature qw/say state/;
+
 use Carp;
 use Encode;
 use Template::Alloy;
@@ -63,86 +65,125 @@ use PFT::Map;
 use PFT::Text;
 use PFT::Tree;
 
+my $tree = PFT::Tree->new;
+my $conf = $tree->conf;
+
+my $out_enc = $conf->{output_enc};
+my $template = Template::Alloy->new(
+    INCLUDE_PATH => $tree->dir_templates
+);
+my $dir_build = $tree->dir_build;
+my $map = PFT::Map->new($tree->content);
+
+my $site_root = $dir_build; # TODO: decide preview
+
 sub node_to_rel {
     my $node = shift;
+    confess unless $node;
     my $hdr = $node->header;
-    if ((my $k = substr($node->id, 0, 1)) eq 'b') {(
+    my $k = $node->content_type;
+    if ($k =~ /::Blog$/) {(
         'blog',
         sprintf('%04d-%02d', $hdr->date->y, $hdr->date->m),
         sprintf('%02d-%s.html', $hdr->date->d, $hdr->slug),
-    )} elsif ($k eq 'm') {(
+    )} elsif ($k =~ /::Month$/) {(
         'blog',
         sprintf('%04d-%02d.html', $hdr->date->y, $hdr->date->m),
-    )} elsif ($k eq 'p') {(
+    )} elsif ($k =~ /::Page$/) {(
         'pages',
         $hdr->slug . '.html',
-    )} elsif ($k eq 't') {(
+    )} elsif ($k =~ /::Tag$/) {(
         'tags',
         $hdr->slug . '.html',
-    )} elsif ($k eq 'i') {(
+    )} elsif ($k =~ /::Picture$/) {(
         'pics',
         $node->content->relpath
-    )} elsif ($k eq 'a') {(
+    )} elsif ($k =~ /::Attachment$/) {(
         'attachments',
         $node->content->relpath
     )} else { die $k };
 }
 
-sub build {
-    my $tree = shift;
-    my $conf = $tree->conf;
-
-    my $out_enc = $conf->{output_enc};
-    my $template = Template::Alloy->new(
-        INCLUDE_PATH => $tree->dir_templates
-    );
-    my $dir_build = $tree->dir_build;
-    my $map = PFT::Map->new($tree->content);
-    my %entry_info = (
-        site => {
-            encoding => $out_enc,
-            title => $conf->{site_title},
+sub node_to_anchor {
+    if (my $node = shift) {{
+        href => join('/', $site_root, node_to_rel($node)),
+        slug => $node->title,
+        date => do {
+            my $d = $node->date;
+            defined $d ? $d->to_hash : undef
         },
-    );
-
-    for my $node ($map->nodes) {
-        my $path_rel = File::Spec->catfile(
-            map encode($out_enc, $_),
-            node_to_rel $node
-        );
-        my $out_path = File::Spec->catfile($dir_build, $path_rel);
-
-        print 'Processing ', encode($out_enc, $node), "\n";
-        print "-> File: $out_path\n";
-
-        my $content = $node->content;
-        if ($content->isa('PFT::Content::Entry')) {
-            my $hdr = $node->header;
-
-            $entry_info{content} = {
-                title => $content->isa('PFT::Content::Month')
-                    ? sprintf("%04d / %02d", @{$hdr->date})
-                    : $hdr->title,
-            };
-
-            my $out_data;
-            $template->process(
-                ($hdr->template || $conf->{template}) . '.html',
-                \%entry_info,
-                \$out_data,
-            ) || croak 'Template expansion issue: ', $template->error;
-
-            make_path dirname $out_path;
-            open my $fh, ">:encoding($out_enc)", $out_path or croak "Opening $out_path: $!";
-            print $fh $out_data;
-            close $fh;
-        }
-
-        print "\n";
+    }} else {
+        undef
     }
 }
 
-my $tree = PFT::Tree->new;
-build($tree);
+sub node_to_html {
+    my $node = shift;
+    $node->virtual ? undef : PFT::Text->new($node->content)->html
+}
 
-1;
+my %site_info = (
+    encoding => $out_enc,
+    title => $conf->{site_title},
+);
+
+my @site_links = (
+    pages => [ map node_to_anchor($_), $map->pages ],
+    tags => [ map node_to_anchor($_), $map->tags ],
+    backlog => sub {
+        [map node_to_anchor($_), $map->recent_blog(5)]
+    },
+    months_backlog => sub {
+        [map node_to_anchor($_), $map->recent_months(5)]
+    },
+);
+
+for my $node ($map->nodes) {
+    my $path_rel = File::Spec->catfile(
+        map encode($out_enc, $_),
+        node_to_rel $node
+    );
+    my $out_path = File::Spec->catfile($dir_build, $path_rel);
+
+    print 'Processing ', encode($out_enc, $node), "\n";
+    print "-> File: $out_path\n";
+
+    my $content = $node->content;
+    if ($content->isa('PFT::Content::Entry')) {
+        my $hdr = $node->header;
+
+        my %entry_info = (
+            site => \%site_info,
+            content => {
+                title => $node->title,
+                date  => do {
+                    my $d = $node->date;
+                    defined $d ? $d->to_hash : undef
+                },
+                html  => node_to_html($node),
+            },
+            links => {
+                @site_links,
+                prev     => node_to_anchor($node->prev),
+                next     => node_to_anchor($node->next),
+                parent   => node_to_anchor($node->parent),
+                children => [map node_to_anchor($_), $node->children],
+            }
+        );
+
+        my $out_data;
+        $template->process(
+            ($hdr->template || $conf->{template}) . '.html',
+            \%entry_info,
+            \$out_data,
+        ) || croak 'Template expansion issue: ', $template->error;
+
+        make_path dirname $out_path;
+        open(my $fh, ">:encoding($out_enc)", $out_path)
+            or croak "Opening $out_path: $!";
+        print $fh $out_data;
+        close $fh;
+    }
+
+    print "\n";
+}
