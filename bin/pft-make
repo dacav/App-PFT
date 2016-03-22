@@ -117,6 +117,11 @@ sub node_to_anchor {
     }
 }
 
+sub nodes_to_anchors {
+    return undef unless (@_);
+    [map node_to_anchor($_), @_]
+}
+
 sub node_to_html {
     my $node = shift;
     $node->virtual ? undef : PFT::Text->new($node->content)->html
@@ -128,13 +133,13 @@ my %site_info = (
 );
 
 my @site_links = (
-    pages => [ map node_to_anchor($_), $map->pages ],
-    tags => [ map node_to_anchor($_), $map->tags ],
+    pages => nodes_to_anchors($map->pages),
+    tags => nodes_to_anchors($map->tags),
     backlog => sub {
-        [map node_to_anchor($_), $map->recent_blog(5)]
+        nodes_to_anchors($map->recent_blog(5))
     },
     months_backlog => sub {
-        [map node_to_anchor($_), $map->recent_months(5)]
+        nodes_to_anchors($map->recent_months(5))
     },
 );
 
@@ -156,18 +161,19 @@ for my $node ($map->nodes) {
             site => \%site_info,
             content => {
                 title => $node->title,
+                html  => node_to_html($node),
+                tags  => nodes_to_anchors($node->tags),
                 date  => do {
                     my $d = $node->date;
                     defined $d ? $d->to_hash : undef
                 },
-                html  => node_to_html($node),
             },
             links => {
                 @site_links,
                 prev     => node_to_anchor($node->prev),
                 next     => node_to_anchor($node->next),
-                parent   => node_to_anchor($node->parent),
-                children => [map node_to_anchor($_), $node->children],
+                parent   => node_to_anchor($node->month),
+                children => nodes_to_anchors($node->children),
             }
         );
 
