@@ -127,6 +127,20 @@ sub node_to_html {
     $node->virtual ? undef : PFT::Text->new($node->content)->html
 }
 
+sub print_issues {
+    my($node, $issues) = @_;
+
+    return unless keys %$issues;
+
+    print 'Processing ', encode($out_enc, $node), ":\n";
+    for (sort keys %$issues) {
+        print "  Unresolved symbols:\n  - ", join("\n  - ",
+            map{ $_->keyword . '(' . join(', ', $_->args) . ')' }
+            $node->unresolved
+        ), "\n";
+    }
+}
+
 my %site_info = (
     encoding => $out_enc,
     title => $conf->{site_title},
@@ -144,14 +158,16 @@ my @site_links = (
 );
 
 for my $node ($map->nodes) {
+    my %issues;
     my $path_rel = File::Spec->catfile(
         map encode($out_enc, $_),
         node_to_rel $node
     );
     my $out_path = File::Spec->catfile($dir_build, $path_rel);
 
-    print 'Processing ', encode($out_enc, $node), "\n";
-    print "-> File: $out_path\n";
+    if (my @unres = $node->unresolved) {
+        $issues{'Unresolved'} = \@unres
+    }
 
     my $content = $node->content;
     if ($content->isa('PFT::Content::Entry')) {
@@ -191,5 +207,5 @@ for my $node ($map->nodes) {
         close $fh;
     }
 
-    print "\n";
+    print_issues($node, \%issues);
 }
