@@ -104,9 +104,11 @@ sub node_to_rel {
     )} else { die $k };
 }
 
+sub node_to_href { join('/', $site_root, node_to_rel(shift)) }
+
 sub node_to_anchor {
     if (my $node = shift) {{
-        href => join('/', $site_root, node_to_rel($node)),
+        href => node_to_href($node),
         slug => $node->title,
         date => do {
             my $d = $node->date;
@@ -120,11 +122,6 @@ sub node_to_anchor {
 sub nodes_to_anchors {
     return undef unless (@_);
     [map node_to_anchor($_), @_]
-}
-
-sub node_to_html {
-    my $node = shift;
-    $node->virtual ? undef : PFT::Text->new($node->content)->html
 }
 
 sub print_issues {
@@ -177,7 +174,7 @@ for my $node ($map->nodes) {
             site => \%site_info,
             content => {
                 title => $node->title,
-                html  => node_to_html($node),
+                html  => $node->html(\&node_to_href),
                 tags  => nodes_to_anchors($node->tags),
                 date  => do {
                     my $d = $node->date;
