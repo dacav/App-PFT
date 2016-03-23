@@ -69,8 +69,6 @@ my $template = Template::Alloy->new(
 my $dir_build = $tree->dir_build;
 my $map = PFT::Map->new($tree->content);
 
-my $site_root = $dir_build; # TODO: decide preview
-
 sub node_to_rel {
     my $node = shift;
     confess unless $node;
