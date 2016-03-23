@@ -55,7 +55,6 @@ use File::Spec;
 use File::Basename qw/dirname/;
 use File::Path qw/make_path/;
 
-use PFT::Map;
 use PFT::Text;
 use PFT::Tree;
 
@@ -67,7 +66,7 @@ my $template = Template::Alloy->new(
     INCLUDE_PATH => $tree->dir_templates
 );
 my $dir_build = $tree->dir_build;
-my $map = PFT::Map->new($tree->content);
+my $map = $tree->content_map;
 
 sub node_to_rel {
     my $node = shift;

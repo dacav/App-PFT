@@ -90,7 +90,7 @@ GetOptions(
 
 cfg_load App::PFT::findroot -die => 1;
 
-my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+my $tree = PFT::Tree->new;
 my $entry;
 
 if (defined $opts{back}) {
