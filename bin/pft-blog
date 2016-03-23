@@ -57,10 +57,8 @@ Edit a blog entry
 use strict;
 use warnings;
 
-use App::PFT;
-use App::PFT::Struct::Tree;
-use App::PFT::Data::Date;
-use App::PFT::Struct::Conf qw/cfg_load $ROOT $AUTHOR/;
+use PFT::Tree;
+use PFT::Date;
 
 use Pod::Usage;
 use FindBin;
@@ -79,7 +77,7 @@ GetOptions(
     'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
     'resume|r!'     => sub { $opts{back} = 0 },
     'back=i'        => sub { $opts{back} = int($_[1]) },
-    'editor=s'      => \$opts{editor},
+    'editor=s'      => sub { $opts{editor} = $_[1] },
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -88,15 +86,13 @@ GetOptions(
     },
 ) or exit 1;
 
-cfg_load App::PFT::findroot -die => 1;
-
 my $tree = PFT::Tree->new;
+my $conf = $tree->conf;
 my $entry;
 
 if (defined $opts{back}) {
-    $entry = eval {
-        $tree->latest_entry($opts{back});
-    } or $@ && do {
+    $entry = $tree->content->blog_back($opts{back});
+    unless (defined $entry) {
         say STDERR 'Cannot go back by ', $opts{back}, ': ', $@ =~ s/ at .*$//rs;
         exit 1;
     }
@@ -106,25 +102,35 @@ if (defined $opts{back}) {
         exit 1;
     }
 
-    $entry = $tree->entry(
-        title => join(' ', @ARGV),
-        date => App::PFT::Data::Date->new(
-            %datespec,
-            -fill => 'now',
-        ),
-
-        # defaults
-        author => $AUTHOR,
-        tags => [],
-
-        # override
-        %opts,
+    $entry = $tree->content->new_entry(
+        PFT::Header->new(
+            title => join(' ', @ARGV),
+            date => PFT::Date->from_spec(%datespec),
+            # defaults
+            author => $conf->{author},
+            tags => [],
+            # overrides
+            %opts,
+        )
     );
 }
 
-$entry->open('a');
+
+my $editor = $opts{editor} || $conf->{system}{editor} || $ENV{EDITOR} || do {
+    say STDERR "Cannot edit: no editor selected";
+    say STDERR "Try setting env EDITOR or to define it in configuration file";
+    say STDERR "(System -> Editor)";
+    exit 1
+};
+
 eval {
-    $entry->edit($opts{editor}); 1
+    my $path = $entry->path;
+    if ($editor =~ s/(?<!%)%s/$path/g) {
+        system($editor)
+    } else {
+        system($editor, $entry->path)
+    }
+    $entry->exists and $entry->make_consistent;
 } or $@ && do {
     say STDERR "After editing: ", $@ =~ s/at .*$//sr;
     exit 1;
