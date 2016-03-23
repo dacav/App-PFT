@@ -35,12 +35,6 @@ Build the website into the build directory.
 
 =over
 
-=item --preview | -p
-
-=item --fast | -f
-
-=item --help | -h
-
 =back
 
 =cut
