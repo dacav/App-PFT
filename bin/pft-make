@@ -133,7 +133,7 @@ sub print_issues {
     for (sort keys %$issues) {
         print "  Unresolved symbols:\n  - ", join("\n  - ",
             map{ $_->keyword . '(' . join(', ', $_->args) . ')' }
-            $node->unresolved
+            $node->symbols_unres
         ), "\n";
     }
 }
@@ -162,7 +162,7 @@ for my $node ($map->nodes) {
     );
     my $out_path = File::Spec->catfile($dir_build, $path_rel);
 
-    if (my @unres = $node->unresolved) {
+    if (my @unres = $node->symbols_unres) {
         $issues{'Unresolved'} = \@unres
     }
 
