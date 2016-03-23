@@ -104,14 +104,29 @@ sub node_to_rel {
     )} else { die $k };
 }
 
-sub node_to_href { join('/', $site_root, node_to_rel(shift)) }
+sub node_to_root {
+    my $k = shift->content_type;
+    if ($k =~ /::Blog$/) {(
+        '..', '..'
+    )} elsif ($k =~ /::(Month|Page|Tag)$/n) {(
+        '..',
+    )} else {
+         die "Why going back from $k?"
+    };
+}
+
+sub node_to_href {
+    my($cur_node, $other_node) = @_;
+    join('/', node_to_root($cur_node), node_to_rel($other_node))
+}
 
 sub node_to_anchor {
-    if (my $node = shift) {{
-        href => node_to_href($node),
-        slug => $node->title,
+    my($cur_node, $other_node) = @_;
+    if (defined $other_node) {{
+        href => node_to_href(@_),
+        slug => $other_node->title,
         date => do {
-            my $d = $node->date;
+            my $d = $other_node->date;
             defined $d ? $d->to_hash : undef
         },
     }} else {
@@ -120,8 +135,9 @@ sub node_to_anchor {
 }
 
 sub nodes_to_anchors {
+    my $cur_node = shift;
     return undef unless (@_);
-    [map node_to_anchor($_), @_]
+    [map node_to_anchor($cur_node, $_), @_]
 }
 
 sub print_issues {
@@ -143,16 +159,17 @@ my %site_info = (
     title => $conf->{site_title},
 );
 
-my @site_links = (
-    pages => nodes_to_anchors($map->pages),
-    tags => nodes_to_anchors($map->tags),
+sub site_links {
+    my $cur_node = shift;
+    pages => nodes_to_anchors($cur_node, $map->pages),
+    tags => nodes_to_anchors($cur_node, $map->tags),
     backlog => sub {
-        nodes_to_anchors($map->recent_blog(5))
+        nodes_to_anchors($cur_node, $map->recent_blog(5))
     },
     months_backlog => sub {
-        nodes_to_anchors($map->recent_months(5))
+        nodes_to_anchors($cur_node, $map->recent_months(5))
     },
-);
+}
 
 for my $node ($map->nodes) {
     my %issues;
@@ -174,19 +191,19 @@ for my $node ($map->nodes) {
             site => \%site_info,
             content => {
                 title => $node->title,
-                html  => $node->html(\&node_to_href),
-                tags  => nodes_to_anchors($node->tags),
+                html  => $node->html(sub { node_to_href($node, shift) }),
+                tags  => nodes_to_anchors($node, $node->tags),
                 date  => do {
                     my $d = $node->date;
                     defined $d ? $d->to_hash : undef
                 },
             },
             links => {
-                @site_links,
-                prev     => node_to_anchor($node->prev),
-                next     => node_to_anchor($node->next),
-                parent   => node_to_anchor($node->month),
-                children => nodes_to_anchors($node->children),
+                site_links($node),
+                prev     => node_to_anchor($node, $node->prev),
+                next     => node_to_anchor($node, $node->next),
+                parent   => node_to_anchor($node, $node->month),
+                children => nodes_to_anchors($node, $node->children),
             }
         );
 
