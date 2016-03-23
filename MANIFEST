@@ -7,6 +7,7 @@ bin/pft-month
 bin/pft-page
 bin/pft-pub
 bin/pft-tag
+lib/App/PFT.pm
 Changes
 COPYING
 ignore.txt
