@@ -19,15 +19,15 @@
 #
 =head1 NAME
 
-pft blog - Edit a blog entry
+pft entry - Edit a entry
 
 =head1 SYNOPSYS
 
-pft blog [options] <Title...>
+pft entry [options] <Title...>
 
 =head1 DESCRIPTION
 
-Edit a blog entry
+Edit a entry entry
 
 =head1 OPTIONS
 
@@ -79,9 +79,10 @@ my %opts;
 my %datespec;
 
 GetOptions(
-    'year|y=i'      => \$datespec{year},
-    'month|m=s'     => \$datespec{month},
-    'day|d=i'       => \$datespec{day},
+    'year|y=i'      => sub { $datespec{year}  = $_[1] },
+    'month|m=s'     => sub { $datespec{month} = $_[1] },
+    'day|d=i'       => sub { $datespec{day}   = $_[1] },
+    'today|T'       => \$opts{blog},
     'author|a=s'    => sub { $opts{author} = $_[1] },
     'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
     'resume|r!'     => sub { $opts{back} = 0 },
@@ -92,7 +93,7 @@ GetOptions(
         pod2usage
             -exitval => 1,
             -verbose => 2,
-            -input => App::PFT::help_of 'blog',
+            -input => App::PFT::help_of 'entry',
     },
 ) or exit 1;
 
@@ -112,18 +113,19 @@ if (defined $opts{back}) {
         exit 1;
     }
 
-    $entry = $tree->content->new_entry(
-        PFT::Header->new(
-            title => decode($conf->{input_enc}, join(' ', @ARGV)),
-            date => PFT::Date->from_spec(%datespec),
-            encoding => $opts{encoding} || $conf->{input_enc},
-            # defaults
-            author => $conf->{author},
-            tags => [],
-            # overrides
-            %opts,
-        )
+    my @params = (
+        title => decode($conf->{input_enc}, join(' ', @ARGV)),
+        encoding => $opts{encoding} || $conf->{input_enc},
+        # defaults
+        author => $conf->{author},
+        tags => $opts{tags} || [],
+        date => do {
+            ($opts{blog} || keys %datespec)
+                ? PFT::Date->from_spec(%datespec)
+                : undef
+        },
     );
+    $entry = $tree->content->new_entry(PFT::Header->new(@params));
 }
 
 
