@@ -47,6 +47,15 @@ Edit a blog entry
 
 =item --back=<count> | -b <count>
 
+=item --editor <command>
+
+The editor can be specified by name or as a simple shell script, where
+C<%s> is replaced with the file name.
+
+=item --encoding <enc>
+
+Specify alternate encoding.
+
 =item --help | -h
 
 =back
@@ -78,6 +87,7 @@ GetOptions(
     'resume|r!'     => sub { $opts{back} = 0 },
     'back=i'        => sub { $opts{back} = int($_[1]) },
     'editor=s'      => sub { $opts{editor} = $_[1] },
+    'encoding=s'    => \$opts{encoding},
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -106,7 +116,7 @@ if (defined $opts{back}) {
         PFT::Header->new(
             title => decode($conf->{input_enc}, join(' ', @ARGV)),
             date => PFT::Date->from_spec(%datespec),
-            encoding => $conf->{input_enc},
+            encoding => $opts{encoding} || $conf->{input_enc},
             # defaults
             author => $conf->{author},
             tags => [],
