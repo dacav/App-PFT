@@ -29,6 +29,7 @@ WriteMakefile(
         'Getopt::Long'      => 0,
         'IO::File'          => 0,
         'PFT'               => 0,
+        'LWP::Simple'       => 0,
         'Template::Alloy'   => 0,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

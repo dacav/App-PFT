@@ -87,11 +87,7 @@ use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
 use App::PFT;
-use App::PFT::Data::Date;
-use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
-use App::PFT::Struct::Tree;
-
-use App::PFT::Util qw/slugify/;
+use PFT::Tree;
 
 use URI;
 use LWP::Simple;
@@ -128,24 +124,19 @@ GetOptions(
     exit 1;
 };
 
-cfg_load App::PFT::findroot -die => 1;
-
-my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+my $content = PFT::Tree->new->content;
 
 my $dst_base = do {
     my $o = $opts{dst};
 
-    $o eq 'a' ? $tree->dir_attach :
-    $o eq 'p' ? $tree->dir_pics :
+    $o eq 'a' ? $content->dir_attachments :
+    $o eq 'p' ? $content->dir_pics :
     die;
 };
 
 my $dst_dir = do {
     if ($opts{date_prefix} || grep defined @date{qw/year month day/}) {
-        catdir(
-            $dst_base,
-            App::PFT::Data::Date->new(%date, -fill => 'now')->repr('-'),
-        )
+        catdir($dst_base, PFT::Date->from_spec(%date)->repr('-'))
     } else {
         $dst_base
     }
