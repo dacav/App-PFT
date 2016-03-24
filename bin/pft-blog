@@ -61,7 +61,7 @@ use PFT::Tree;
 use PFT::Date;
 
 use Pod::Usage;
-use FindBin;
+use Encode;
 
 use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
@@ -104,7 +104,7 @@ if (defined $opts{back}) {
 
     $entry = $tree->content->new_entry(
         PFT::Header->new(
-            title => join(' ', @ARGV),
+            title => decode($conf->{input_enc}, join(' ', @ARGV)),
             date => PFT::Date->from_spec(%datespec),
             # defaults
             author => $conf->{author},
