@@ -106,6 +106,7 @@ if (defined $opts{back}) {
         PFT::Header->new(
             title => decode($conf->{input_enc}, join(' ', @ARGV)),
             date => PFT::Date->from_spec(%datespec),
+            encoding => $conf->{input_enc},
             # defaults
             author => $conf->{author},
             tags => [],
