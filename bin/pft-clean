@@ -52,9 +52,7 @@ use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
 use App::PFT;
-use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
-use App::PFT::Struct::Tree;
-use App::PFT::Util qw/findroot ln/;
+use PFT::Tree;
 
 my $verbose = 0;
 GetOptions(
@@ -67,11 +65,7 @@ GetOptions(
     }
 ) or exit 1;
 
-cfg_load App::PFT::findroot -die => 1;
-
-my $tree = App::PFT::Struct::Tree->new(
-    basepath => $ROOT
-);
+my $tree = PFT::Tree->new;
 
 File::Path::rmtree
     $tree->dir_build,
