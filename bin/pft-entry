@@ -109,7 +109,7 @@ if (defined $opts{back}) {
     }
 } else {
     unless (@ARGV) {
-        say STDERR "Usage: $App::PFT::Name blog [options] <title>";
+        say STDERR "Usage: $App::PFT::Name entry [options] <title>";
         exit 1;
     }
 
