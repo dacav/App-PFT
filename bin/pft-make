@@ -61,9 +61,9 @@ use PFT::Tree;
 my $tree = PFT::Tree->new;
 my $conf = $tree->conf;
 
-my $out_enc = $conf->{output_enc};
+my($input_enc, $output_enc) = @{$conf}{qw/input_enc output_enc/};
 my $template = Template::Alloy->new(
-    INCLUDE_PATH => $tree->dir_templates
+    INCLUDE_PATH => $tree->dir_templates,
 );
 my $dir_build = $tree->dir_build;
 my $map = $tree->content_map;
@@ -73,6 +73,7 @@ sub node_to_rel {
     confess unless $node;
     my $hdr = $node->header;
     my $k = $node->content_type;
+
     if ($k =~ /::Blog$/) {(
         'blog',
         sprintf('%04d-%02d', $hdr->date->y, $hdr->date->m),
@@ -88,10 +89,10 @@ sub node_to_rel {
         $hdr->slug . '.html',
     )} elsif ($k =~ /::Picture$/) {(
         'pics',
-        $node->content->relpath
+        map decode($input_enc, $_), $node->content->relpath
     )} elsif ($k =~ /::Attachment$/) {(
         'attachments',
-        $node->content->relpath
+        map decode($input_enc, $_), $node->content->relpath
     )} else { die $k };
 }
 
@@ -136,17 +137,21 @@ sub print_issues {
 
     return unless keys %$issues;
 
-    print 'Processing ', encode($out_enc, $node), ":\n";
+    my $input_enc = $conf->{input_enc};
+    # Input-enc, since we are communicating with user.
+    print 'Processing ', encode($input_enc, $node), ":\n";
     for (sort keys %$issues) {
         print "  Unresolved symbols:\n  - ", join("\n  - ",
-            map{ $_->keyword . '(' . join(', ', $_->args) . ')' }
+            map encode(
+                $input_enc, $_->keyword . '(' . join(', ', $_->args) . ')'
+            ),
             $node->symbols_unres
         ), "\n";
     }
 }
 
 my %site_info = (
-    encoding => $out_enc,
+    encoding => $output_enc,
     title => $conf->{site_title},
 );
 
@@ -164,11 +169,6 @@ sub site_links {
 
 for my $node ($map->nodes) {
     my %issues;
-    my $path_rel = File::Spec->catfile(
-        map encode($out_enc, $_),
-        node_to_rel $node
-    );
-    my $out_path = File::Spec->catfile($dir_build, $path_rel);
 
     if (my @unres = $node->symbols_unres) {
         $issues{'Unresolved'} = \@unres
@@ -205,8 +205,9 @@ for my $node ($map->nodes) {
             \$out_data,
         ) || croak 'Template expansion issue: ', $template->error;
 
+        my $out_path = File::Spec->catfile($dir_build, map encode($output_enc, $_), node_to_rel($node));
         make_path dirname $out_path;
-        open(my $fh, ">:encoding($out_enc)", $out_path)
+        open(my $fh, ">:encoding($output_enc)", $out_path)
             or croak "Opening $out_path: $!";
         print $fh $out_data;
         close $fh;
