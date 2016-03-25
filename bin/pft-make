@@ -222,3 +222,16 @@ for my $node ($map->nodes) {
 
     print_issues($node, \%issues);
 }
+
+use App::PFT::Util qw/ln/;
+my $inject = $tree->dir_inject;
+foreach (
+    File::Spec->no_upwards(
+        map substr($_, 1 + length $inject) => (
+            glob(File::Spec->catfile($inject, '*')),
+            glob(File::Spec->catfile($inject, '.*')),
+        )
+    )
+) {
+    ln(File::Spec->catfile($inject, $_), catfile($tree->dir_build, $_))
+}
