@@ -64,6 +64,7 @@ my $conf = $tree->conf;
 my($input_enc, $output_enc) = @{$conf}{qw/input_enc output_enc/};
 my $template = Template::Alloy->new(
     INCLUDE_PATH => $tree->dir_templates,
+    ENCODING => $output_enc,
 );
 my $dir_build = $tree->dir_build;
 my $map = $tree->content_map;
@@ -142,9 +143,12 @@ sub print_issues {
     print 'Processing ', encode($input_enc, $node), ":\n";
     for (sort keys %$issues) {
         print "  Unresolved symbols:\n  - ", join("\n  - ",
-            map encode(
-                $input_enc, $_->keyword . '(' . join(', ', $_->args) . ')'
-            ),
+            map {
+                $_->[0]->keyword
+                    . '(' . join(', ', $_->[0]->args)
+                    . '): '
+                    . (defined $_->[1] ? $_->[1] : "Lookup failed")
+            }
             $node->symbols_unres
         ), "\n";
     }
@@ -205,7 +209,10 @@ for my $node ($map->nodes) {
             \$out_data,
         ) || croak 'Template expansion issue: ', $template->error;
 
-        my $out_path = File::Spec->catfile($dir_build, map encode($output_enc, $_), node_to_rel($node));
+        my $out_path = File::Spec->catfile(
+            $dir_build,
+            map encode($output_enc, $_) => node_to_rel($node)
+        );
         make_path dirname $out_path;
         open(my $fh, ">:encoding($output_enc)", $out_path)
             or croak "Opening $out_path: $!";

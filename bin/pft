@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -CSDL
 #
 # Copyright 2014 - Giovanni Simoni
 #
