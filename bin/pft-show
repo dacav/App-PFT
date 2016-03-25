@@ -47,18 +47,15 @@ use warnings;
 use feature qw/say/;
 
 use Pod::Usage;
-use File::Spec::Functions qw/catfile/;
+use File::Spec;
 
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-use App::PFT;
-use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
-use App::PFT::Struct::Tree;
-use App::PFT::Launcher;
+use PFT::Tree;
 
+my $browser = $ENV{BROWSER};
 my $verbose = 0;
-my $browser;
 GetOptions(
     'browser=s' => \$browser,
     'help|h' => sub {
@@ -69,21 +66,11 @@ GetOptions(
     }
 ) or exit 1;
 
-cfg_load App::PFT::findroot -die => 1;
-
-$browser = App::PFT::Launcher::browser $browser;
-unless($browser) {
-    say STDERR
-        'define env $BROWSER or config key System.Browser';
-    exit 1;
-}
-
-my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
-my $index = catfile $tree->dir_build, 'index.html';
+my $index = File::Spec->catfile(PFT::Tree->new->dir_build, 'index.html');
 
 unless ($index) {
     say STDERR 'Need to build first, use pft make';
     exit 1;
 }
 
-$browser->($index);
+system($browser, $index);

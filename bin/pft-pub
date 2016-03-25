@@ -107,16 +107,7 @@ sub install {
     my $tree = shift;
     check qw/path/;
 
-    state $relstep = do {
-        my $sup = File::Spec::Functions::updir;
-        my $cur = File::Spec::Functions::curdir;
-        qr/^(?:\Q$sup\E|\Q$cur\E)$/;
-    };
-
-    my $dst = (File::Spec->splitdir($conf->{path}))[0] =~ $relstep
-        ? File::Spec->catdir($tree->basepath, $conf->{path})
-        : $conf->{path}
-        ;
+    my $dst = File::Spec->rel2abs($conf->{remote}{path}, $tree->dir_base);
 
     remove_tree $dst;
     make_path $dst, { verbose => 1 };
