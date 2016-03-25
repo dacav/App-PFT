@@ -36,18 +36,11 @@ use warnings;
 
 use feature qw/say state/;
 
-use App::PFT;
-use App::PFT::Struct::Tree;
-use App::PFT::Struct::Conf qw/
-    cfg_load
-    $ROOT
-    %REMOTE
-/;
+use PFT::Tree;
 
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
 
-use File::Spec::Functions qw/catfile catdir splitdir/;
 use File::Path qw/make_path remove_tree/;
 use File::Copy::Recursive;
 
@@ -56,25 +49,45 @@ use Carp;
 use Getopt::Long;
 Getopt::Long::Configure 'bundling';
 
+GetOptions(
+    'help|h' => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'pub',
+    }
+) or exit 1;
+
+my $tree = PFT::Tree->new;
+my $conf = $tree->conf;
+my $method = {
+    'rsync+ssh' => \&rsync_ssh,
+    'install'   => \&install,
+}->{$conf->{remote}{method}};
+die 'Unknown method ', $conf->{remote}{method} unless $method;
+
+$method->($tree);
+
 sub check {
     foreach (@_) {
-        croak "Cannot use $REMOTE{Method}: missing Remote.$_ in pft.yaml"
-            unless defined $REMOTE{$_}
+        croak "Cannot use $conf->{remote}{$_}: ",
+            "missing Remote.$_ in pft.yaml"
+            unless defined $conf->{remote}{$_}
     }
 }
 
 sub rsync_ssh {
     my $tree = shift;
 
-    check qw/User Host Path/;
+    check qw/user host path/;
 
-    my $src = catfile($tree->dir_build, '');
-    my $dst = "$REMOTE{User}\@$REMOTE{Host}:$REMOTE{Path}";
-    my $port = $REMOTE{Port} || 22;
+    my $src = File::Spec->catfile($tree->dir_build, '');
+    my $remote = $conf->{remote};
+    my $dst = "$remote->{user}\@$remote->{host}:$remote->{path}";
+    my $port = $remote->{port} || 22;
 
     local $, = "\n\t";
     say STDERR 'Sending with RSync', "from $src", "to $dst";
-
 
     system('rsync',
         '-e', "ssh -p $port",
@@ -91,7 +104,7 @@ sub rsync_ssh {
 
 sub install {
     my $tree = shift;
-    check qw/Path/;
+    check qw/path/;
 
     state $relstep = do {
         my $sup = File::Spec::Functions::updir;
@@ -99,9 +112,9 @@ sub install {
         qr/^(?:\Q$sup\E|\Q$cur\E)$/;
     };
 
-    my $dst = (splitdir $REMOTE{Path})[0] =~ $relstep
-        ? catdir($tree->basepath, $REMOTE{Path})
-        : $REMOTE{Path}
+    my $dst = (File::Spec->splitdir($conf->{path}))[0] =~ $relstep
+        ? File::Spec->catdir($tree->basepath, $conf->{path})
+        : $conf->{path}
         ;
 
     remove_tree $dst;
@@ -109,27 +122,7 @@ sub install {
 
     local $File::Copy::Recursive::CopyLink = 0;
     File::Copy::Recursive::rcopy_glob(
-        catfile($tree->dir_build, '*'),
+        File::Spec->catfile($tree->dir_build, '*'),
         $dst,
     );
 }
-
-GetOptions(
-    'help|h' => sub {
-        pod2usage
-            -exitval => 1,
-            -verbose => 2,
-            -input => App::PFT::help_of 'pub',
-    }
-) or exit 1;
-
-cfg_load App::PFT::findroot -die => 1;
-
-my $method = {
-    'rsync+ssh' => \&rsync_ssh,
-    'install'   => \&install,
-}->{$REMOTE{Method}};
-die 'Unknown method ', $REMOTE{Method} unless $method;
-
-my $tree = App::PFT::Struct::Tree->new( basepath => $ROOT);
-$method->($tree);
