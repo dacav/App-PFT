@@ -171,6 +171,10 @@ sub site_links {
     },
 }
 
+
+my $home_node_slug = PFT::Header::slugify($conf->{home_page});
+my $home_node;
+
 for my $node ($map->nodes) {
     my %issues;
 
@@ -181,6 +185,11 @@ for my $node ($map->nodes) {
     my $content = $node->content;
     if ($content->isa('PFT::Content::Entry')) {
         my $hdr = $node->header;
+
+        if (!$node->virtual && $hdr->slug eq $home_node_slug) {
+            die "There should be no doubles" if defined $home_node;
+            $home_node = $node;
+        }
 
         my %entry_info = (
             site => \%site_info,
@@ -233,5 +242,22 @@ foreach (
         )
     )
 ) {
-    ln(File::Spec->catfile($inject, $_), catfile($tree->dir_build, $_))
+    ln(File::Spec->catfile($inject, $_), catfile($dir_build, $_))
+}
+
+if (defined $home_node) {
+    my $fn = File::Spec->catfile($dir_build, 'index.html');
+    open my $f, ">:encoding($output_enc)", $fn
+        or croak "Unable to open $fn: $!";
+    my $href = join '/', node_to_rel($home_node);
+    my $title = $home_node->title;
+    print $f
+        "<!--\n",
+        "    This file is generated automatically. Do not edit, it will be\n",
+        "    overwritten. It points browsers to $title\n",
+        "-->\n",
+        "<meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=$href\">"
+    ;
+} else {
+    print STDERR "Warning: I was not able to find any $home_node_slug page";
 }
