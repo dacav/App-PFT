@@ -27,6 +27,9 @@ our @EXPORT_OK = qw/
 
 use Carp;
 
+use Encode;
+use Encode::Locale;
+
 use File::Copy::Recursive qw/dircopy/;
 use File::Path qw/remove_tree/;
 use File::Spec::Functions qw/updir catfile catdir rootdir/;
@@ -38,10 +41,11 @@ sub ln {
     }
     # Not clear which modern system doesn't support symlinks. I think even
     # Windows does that. ...anyway....
-    eval { symlink $_[0], $_[1]; 1 } or do {
+    my($from, $to) = map encode(locale_fs => $_) => @_;
+    eval { symlink $from, $to; 1 } or do {
         print STDERR "Cannot symlink $_[0] to $_[1]: $@. Hard-copying it\n";
-        remove_tree $_[1], {verbose => 1};
-        dircopy @_;
+        remove_tree $to, {verbose => 1};
+        dircopy $from, $to;
     }
 }
 

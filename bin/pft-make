@@ -57,6 +57,7 @@ use File::Path qw/make_path/;
 
 use PFT::Text;
 use PFT::Tree;
+use PFT::Util;
 
 my $tree = PFT::Tree->new;
 my $conf = $tree->conf;
@@ -90,10 +91,10 @@ sub node_to_rel {
         $hdr->slug . '.html',
     )} elsif ($k =~ /::Picture$/) {(
         'pics',
-        map decode($input_enc, $_), $node->content->relpath
+        $node->content->relpath
     )} elsif ($k =~ /::Attachment$/) {(
         'attachments',
-        map decode($input_enc, $_), $node->content->relpath
+        $node->content->relpath
     )} else { die $k };
 }
 
@@ -110,7 +111,7 @@ sub node_to_root {
 
 sub node_to_href {
     my($cur_node, $other_node) = @_;
-    join('/', node_to_root($cur_node), node_to_rel($other_node))
+    join('/', node_to_root($cur_node), node_to_rel($other_node));
 }
 
 sub node_to_anchor {
@@ -164,6 +165,7 @@ sub site_links {
     pages => nodes_to_anchors($cur_node, $map->pages),
     tags => nodes_to_anchors($cur_node, $map->tags),
     backlog => sub {
+        # FIXME: why can't I read param? Need to put 5 manually
         nodes_to_anchors($cur_node, $map->recent_blog(5))
     },
     months_backlog => sub {
@@ -237,8 +239,8 @@ my $inject = $tree->dir_inject;
 foreach (
     File::Spec->no_upwards(
         map substr($_, 1 + length $inject) => (
-            glob(File::Spec->catfile($inject, '*')),
-            glob(File::Spec->catfile($inject, '.*')),
+            PFT::Util::glob(File::Spec->catfile($inject, '*')),
+            PFT::Util::glob(File::Spec->catfile($inject, '.*')),
         )
     )
 ) {
