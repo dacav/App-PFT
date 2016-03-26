@@ -31,22 +31,29 @@ use Encode;
 use Encode::Locale;
 
 use File::Copy::Recursive qw/dircopy/;
-use File::Path qw/remove_tree/;
+use File::Path qw/remove_tree make_path/;
 use File::Spec::Functions qw/updir catfile catdir rootdir/;
+use File::Basename qw/dirname/;
 use Cwd qw/abs_path cwd/;
 
 sub ln {
-    if ($_[2]) {
-        print STDERR "Linking $_[1] -> $_[0]\n";
-    }
-    # Not clear which modern system doesn't support symlinks. I think even
-    # Windows does that. ...anyway....
-    my($from, $to) = map encode(locale_fs => $_) => @_;
-    eval { symlink $from, $to; 1 } or do {
-        print STDERR "Cannot symlink $_[0] to $_[1]: $@. Hard-copying it\n";
-        remove_tree $to, {verbose => 1};
-        dircopy $from, $to;
-    }
+    my($from, $to, $verbose) = @_;
+    my $ok;
+
+    -e $to && remove_tree $to, {verbose => $verbose};
+    make_path dirname $to;
+    $verbose and say STDERR "Linking $from to $to";
+    $ok = link($from, $to);
+    $ok and return 1;
+    $verbose and say STDERR "Could not hardlink: $!. Symlinking";
+    $ok = eval { symlink($from, $to) };
+    $ok and return 1;
+    $verbose and say STDERR "Could not symlink: $@$!. Copying";
+    remove_tree $to, {verbose => $verbose};
+    $ok = dircopy $from, $to;
+    $ok and return 1;
+    $verbose and say STDERR "Everything failed";
+    return '';
 }
 
 1;
