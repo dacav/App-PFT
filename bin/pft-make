@@ -282,10 +282,7 @@ sub compile_entry {
 sub install_blob {
     my($node, $content, $issues) = @_;
 
-    my $out_path = File::Spec->catfile(
-        $dir_build,
-        map encode($output_enc, $_) => node_to_rel($node)
-    );
+    my $out_path = File::Spec->catfile($dir_build, node_to_rel($node));
 
     ln(encode(locale_fs => $content->path) => encode($output_enc, $out_path));
 }
