@@ -83,6 +83,9 @@ use File::Path qw/make_path/;
 use File::Basename qw/basename/;
 use File::Copy;
 
+use Encode;
+use Encode::Locale;
+
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
@@ -142,13 +145,9 @@ my $dst_dir = do {
     }
 };
 
-make_path $dst_dir;
+make_path encode(locale_fs => $dst_dir);
 
 ITEM: for my $orig_path (@ARGV) {
-
-    # TODO: probably decode $orig_path with the encoding defined in the
-    # configuration file.
-
     my $uri = URI->new($orig_path);
     my $fn = basename $uri->path . ($uri->query || '');
 

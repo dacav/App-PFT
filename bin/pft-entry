@@ -70,7 +70,6 @@ use PFT::Tree;
 use PFT::Date;
 
 use Pod::Usage;
-use Encode;
 
 use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
@@ -114,7 +113,8 @@ if (defined $opts{back}) {
     }
 
     my @params = (
-        title => decode($conf->{input_enc}, join(' ', @ARGV)),
+                 # Note: pft main script fixes encoding of @ARGV
+        title => join(' ', @ARGV),
         encoding => $opts{encoding} || $conf->{input_enc},
         # defaults
         author => $conf->{author},

@@ -44,6 +44,8 @@ Clean the build directory
 use strict;
 use warnings;
 
+use Encode;
+use Encode::Locale;
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
 use File::Path;
@@ -68,6 +70,6 @@ GetOptions(
 my $tree = PFT::Tree->new;
 
 File::Path::rmtree
-    $tree->dir_build,
+    encode(locale_fs => $tree->dir_build),
     { verbose => $verbose }
 ;
