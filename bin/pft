@@ -1,4 +1,4 @@
-#!/usr/bin/perl -CSDL
+#!/usr/bin/perl
 #
 # Copyright 2014 - Giovanni Simoni
 #
@@ -375,6 +375,8 @@ directory upon compilation.
 
 use strict;
 use warnings;
+use warnings qw(FATAL utf8);
+use v5.16;
 
 use App::PFT;
 
@@ -382,6 +384,14 @@ use FindBin;
 use File::Spec::Functions;
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
+
+use Encode;
+use Encode::Locale;
+
+$_ = decode(locale => $_) foreach @ARGV;
+binmode STDIN, ':encoding(console_in)';
+binmode STDOUT, ':encoding(console_out)';
+binmode STDERR, ':encoding(console_out)';
 
 my $subcmd = shift @ARGV;
 unless (defined $subcmd) {
