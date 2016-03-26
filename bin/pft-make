@@ -49,6 +49,7 @@ use feature qw/say state/;
 
 use Carp;
 use Encode;
+use Encode::Locale;
 use Template::Alloy;
 
 use File::Spec;
@@ -182,7 +183,10 @@ for my $node ($map->nodes) {
     my $content = $node->content;
 
     if ($content->isa('PFT::Content::Entry')) {
-        compile_entry($node, $content, \%issues);
+        compile_entry($node, $content, \%issues)
+    }
+    elsif ($content->isa('PFT::Content::Blob')) {
+        install_blob($node, $content, \%issues)
     }
 
     print_issues($node, \%issues);
@@ -198,7 +202,9 @@ foreach (
         )
     )
 ) {
-    ln(File::Spec->catfile($inject, $_), catfile($dir_build, $_))
+    my $orig = File::Spec->catfile($inject, $_);
+    my $dst = File::Spec->catfile($dir_build, $_);
+    ln(encode(locale_fs => $orig) => encode($output_enc, $dst));
 }
 
 if (defined $home_node) {
@@ -271,4 +277,15 @@ sub compile_entry {
         or croak "Opening $out_path: $!";
     print $fh $out_data;
     close $fh;
+}
+
+sub install_blob {
+    my($node, $content, $issues) = @_;
+
+    my $out_path = File::Spec->catfile(
+        $dir_build,
+        map encode($output_enc, $_) => node_to_rel($node)
+    );
+
+    ln(encode(locale_fs => $content->path) => encode($output_enc, $out_path));
 }
