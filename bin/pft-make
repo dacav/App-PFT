@@ -179,56 +179,10 @@ my $home_node;
 
 for my $node ($map->nodes) {
     my %issues;
-
-    if (my @unres = $node->symbols_unres) {
-        $issues{'Unresolved'} = \@unres
-    }
-
     my $content = $node->content;
+
     if ($content->isa('PFT::Content::Entry')) {
-        my $hdr = $node->header;
-
-        if (!$node->virtual && $hdr->slug eq $home_node_slug) {
-            die "There should be no doubles" if defined $home_node;
-            $home_node = $node;
-        }
-
-        my %entry_info = (
-            site => \%site_info,
-            content => {
-                title => $node->title,
-                html  => $node->html(sub { node_to_href($node, shift) }),
-                tags  => nodes_to_anchors($node, $node->tags),
-                date  => do {
-                    my $d = $node->date;
-                    defined $d ? $d->to_hash : undef
-                },
-            },
-            links => {
-                site_links($node),
-                prev     => node_to_anchor($node, $node->prev),
-                next     => node_to_anchor($node, $node->next),
-                parent   => node_to_anchor($node, $node->month),
-                children => nodes_to_anchors($node, $node->children),
-            }
-        );
-
-        my $out_data;
-        $template->process(
-            ($hdr->template || $conf->{template}) . '.html',
-            \%entry_info,
-            \$out_data,
-        ) || croak 'Template expansion issue: ', $template->error;
-
-        my $out_path = File::Spec->catfile(
-            $dir_build,
-            map encode($output_enc, $_) => node_to_rel($node)
-        );
-        make_path dirname $out_path;
-        open(my $fh, ">:encoding($output_enc)", $out_path)
-            or croak "Opening $out_path: $!";
-        print $fh $out_data;
-        close $fh;
+        compile_entry($node, $content, \%issues);
     }
 
     print_issues($node, \%issues);
@@ -262,4 +216,59 @@ if (defined $home_node) {
     ;
 } else {
     print STDERR "Warning: I was not able to find any $home_node_slug page";
+}
+
+sub compile_entry {
+    my($node, $content, $issues) = @_;
+
+    my $hdr = $node->header;
+    if (my @unres = $node->symbols_unres) {
+        $issues->{'Unresolved'} = \@unres
+    }
+
+    if (!$node->virtual && $hdr->slug eq $home_node_slug) {
+        die "There should be no doubles" if defined $home_node;
+        $home_node = $node;
+    }
+
+    if ($hdr->opts->{hide}) {
+        print "Node $node should be hidden\n";
+    }
+
+    my %entry_info = (
+        site => \%site_info,
+        content => {
+            title => $node->title,
+            html  => $node->html(sub { node_to_href($node, shift) }),
+            tags  => nodes_to_anchors($node, $node->tags),
+            date  => do {
+                my $d = $node->date;
+                defined $d ? $d->to_hash : undef
+            },
+        },
+        links => {
+            site_links($node),
+            prev     => node_to_anchor($node, $node->prev),
+            next     => node_to_anchor($node, $node->next),
+            parent   => node_to_anchor($node, $node->month),
+            children => nodes_to_anchors($node, $node->children),
+        }
+    );
+
+    my $out_data;
+    $template->process(
+        ($hdr->template || $conf->{template}) . '.html',
+        \%entry_info,
+        \$out_data,
+    ) || croak 'Template expansion issue: ', $template->error;
+
+    my $out_path = File::Spec->catfile(
+        $dir_build,
+        map encode($output_enc, $_) => node_to_rel($node)
+    );
+    make_path dirname $out_path;
+    open(my $fh, ">:encoding($output_enc)", $out_path)
+        or croak "Opening $out_path: $!";
+    print $fh $out_data;
+    close $fh;
 }
