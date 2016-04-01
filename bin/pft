@@ -376,6 +376,8 @@ directory upon compilation.
 use strict;
 use warnings;
 use warnings qw(FATAL utf8);
+
+use utf8;
 use v5.16;
 
 use App::PFT;
@@ -408,4 +410,5 @@ my $return = do catfile $FindBin::RealBin, $App::PFT::Name . '-' . $subcmd;
 unless (defined $return) {
     print STDERR 'pft: ', $@, "\n" if $@;
     print STDERR 'pft: cannot run command ', $subcmd, ': ', $!, "\n" if $!;
+    exit 1
 }
