@@ -61,12 +61,14 @@ use PFT::Tree;
 use PFT::Util;
 
 my $tree = PFT::Tree->new;
-my $conf = $tree->conf;
+my $conf = eval{ $tree->conf } || do {
+    say STDERR 'Configuration error: ', $@ =~ s/ at.*$//rs;
+    exit 1;
+};
 
-my($input_enc, $output_enc) = @{$conf}{qw/input_enc output_enc/};
 my $template = Template::Alloy->new(
     INCLUDE_PATH => $tree->dir_templates,
-    ENCODING => $output_enc,
+    ENCODING => $conf->{site}{encoding},
 );
 my $dir_build = $tree->dir_build;
 my $map = $tree->content_map;
@@ -152,13 +154,13 @@ sub print_issues {
                     . (defined $_->[1] ? $_->[1] : "Lookup failed")
             }
             $node->symbols_unres
-        ), "\n";
+        )
     }
 }
 
 my %site_info = (
-    encoding => $output_enc,
-    title => $conf->{site_title},
+    encoding => $conf->{site}{encoding},
+    title => $conf->{site}{title},
 );
 
 sub site_links {
@@ -175,7 +177,7 @@ sub site_links {
 }
 
 
-my $home_node_slug = PFT::Header::slugify($conf->{home_page});
+my $home_node_slug = PFT::Header::slugify($conf->{site}{home});
 my $home_node;
 
 for my $node ($map->nodes) {
@@ -204,12 +206,13 @@ foreach (
 ) {
     my $orig = File::Spec->catfile($inject, $_);
     my $dst = File::Spec->catfile($dir_build, $_);
-    ln(encode(locale_fs => $orig) => encode($output_enc, $dst));
+    ln encode(locale_fs => $orig),
+       encode($conf->{site}{encoding}, $dst)
 }
 
 if (defined $home_node) {
     my $fn = File::Spec->catfile($dir_build, 'index.html');
-    open my $f, ">:encoding($output_enc)", $fn
+    open my $f, ">:encoding($conf->{site}{encoding})", $fn
         or croak "Unable to open $fn: $!";
     my $href = join '/', node_to_rel($home_node);
     my $title = $home_node->title;
@@ -264,17 +267,18 @@ sub compile_entry {
 
     my $out_data;
     $template->process(
-        ($hdr->template || $conf->{template}) . '.html',
+        # Encoding alert!
+        ($hdr->template || $conf->{site}{template}) . '.html',
         \%entry_info,
         \$out_data,
     ) || croak 'Template expansion issue: ', $template->error;
 
     my $out_path = File::Spec->catfile(
         $dir_build,
-        map encode($output_enc, $_) => node_to_rel($node)
+        map encode($conf->{site}{encoding}, $_) => node_to_rel($node)
     );
     make_path dirname $out_path;
-    open(my $fh, ">:encoding($output_enc)", $out_path)
+    open(my $fh, ">:encoding($conf->{site}{encoding})", $out_path)
         or croak "Opening $out_path: $!";
     print $fh $out_data;
     close $fh;
@@ -285,5 +289,6 @@ sub install_blob {
 
     my $out_path = File::Spec->catfile($dir_build, node_to_rel($node));
 
-    ln(encode(locale_fs => $content->path) => encode($output_enc, $out_path));
+    ln encode(locale_fs => $content->path),
+       encode($conf->{site}{encoding}, $out_path)
 }
