@@ -197,8 +197,8 @@ my $inject = $tree->dir_inject;
 foreach (
     File::Spec->no_upwards(
         map substr($_, 1 + length $inject) => (
-            PFT::Util::glob(File::Spec->catfile($inject, '*')),
-            PFT::Util::glob(File::Spec->catfile($inject, '.*')),
+            PFT::Util::locale_glob(File::Spec->catfile($inject, '*')),
+            PFT::Util::locale_glob(File::Spec->catfile($inject, '.*')),
         )
     )
 ) {
