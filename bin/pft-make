@@ -238,7 +238,8 @@ sub compile_entry {
     }
 
     if ($hdr->opts->{hide}) {
-        print "Node $node should be hidden\n";
+        print "Node $node will be hidden\n";
+        return;
     }
 
     my %entry_info = (
