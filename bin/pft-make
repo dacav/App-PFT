@@ -142,11 +142,9 @@ sub print_issues {
 
     return unless keys %$issues;
 
-    my $input_enc = $conf->{input_enc};
-    # Input-enc, since we are communicating with user.
-    print 'Processing ', encode($input_enc, $node), ":\n";
+    say "Processing $node:";
     for (sort keys %$issues) {
-        print "  Unresolved symbols:\n  - ", join("\n  - ",
+        say "  Unresolved symbols:\n  - ", join("\n  - ",
             map {
                 $_->[0]->keyword
                     . '(' . join(', ', $_->[0]->args)
