@@ -166,7 +166,13 @@ eval {
     } else {
         system($editor, $entry->path)
     }
-    $entry->exists and $entry->make_consistent;
+    if ($entry->exists) {
+        if ($entry->empty) {
+            $entry->unlink;
+        } else {
+            $entry->make_consistent;
+        }
+    }
 } or $@ && do {
     say STDERR "After editing: ", $@ =~ s/at .*$//sr;
     exit 7
