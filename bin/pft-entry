@@ -94,7 +94,7 @@ GetOptions(
     },
 ) or exit 1;
 
-$opts{B} = 1 if $opts{back} || grep defined($datespec{$_}), qw(y m d);
+$opts{B} = 1 if grep defined, $opts{back}, map $datespec{$_}, qw(y m d);
 
 do {
     my @sel = grep $opts{$_}, qw(B M T P);
