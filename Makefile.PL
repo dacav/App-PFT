@@ -6,7 +6,7 @@ use utf8;
 use ExtUtils::MakeMaker;
 use File::ShareDir::Install;
 
-install_share 'share';
+install_share module => 'App::PFT', 'share';
 
 WriteMakefile(
     NAME             => 'PFT',

@@ -166,7 +166,13 @@ use PFT::Conf;
 use PFT::Tree;
 use PFT::Header;
 
+use Encode;
+use Encode::Locale;
+
 use File::Spec;
+use File::Copy;
+use File::ShareDir;
+use File::Basename qw/basename/;
 use Cwd;
 
 use Getopt::Long;
@@ -202,29 +208,19 @@ if ($opts{home}) {
     $home->open('a') unless $home->exists;
 }
 
-__DATA__
+my $i;
+say ++$i, " ", glob File::Spec->catfile(File::ShareDir::module_dir('App::PFT'), '*');
 
-my $default = catfile($tree->dir_templates, "$TEMPLATE.html");
-unless (-e $default) {
-    say STDERR 'Creating template ', $default;
-    my $fd = IO::File->new($default, 'w');
-    say $fd $TEMPLATE_TEXT;
-}
+my @shared_templates = map decode(locale_fs => $_), glob(
+    encode(locale_fs => File::Spec->catdir(
+        File::ShareDir::module_dir('App::PFT'),
+        'templates', '*'
+    ))
+);
 
-my $readme = catfile($tree->dir_templates, 'README.md');
-unless (-e $readme) {
-    my $rf = IO::File->new($readme, 'w');
-    print $rf $TEMPLATE_HELP;
-}
-
-my $home = $tree->page(title => $HOME_PAGE);
-unless ($home->exists) {
-    if ($opts{home}) {
-        say STDERR "Creating default site home: $HOME_PAGE";
-        my $hf = $home->open('w');
-        print $hf $HOME_TEXT;
-    } else {
-        say STDERR 'Skipping creation of page "', $HOME_PAGE,
-                   '" as requested';
-    }
+foreach (@shared_templates) {
+    my $dst = File::Spec->catfile($tree->dir_templates, basename($_));
+    File::Copy::copy
+        encode(locale_fs => $_),
+        encode(locale_fs => $dst)
 }
