@@ -158,45 +158,23 @@ configuration will be used as user for SSH login.
 
 use strict;
 use warnings;
+use utf8;
+use v5.16;
+use feature 'say';
 
-use App::PFT qw/$Name $ConfName/;
-use App::PFT::Cmd::Init qw/$HOME_TEXT $TEMPLATE_HELP $TEMPLATE_TEXT/;
-use App::PFT::Struct::Tree;
-use App::PFT::Struct::Conf qw/
-    cfg_load
-    cfg_default
-    cfg_dump
-    $ROOT
-    $TEMPLATE
-    $HOME_PAGE
-/;
+use PFT::Conf;
+use PFT::Tree;
+use PFT::Header;
 
-use IO::File;
-use File::Spec::Functions qw/catfile/;
+use File::Spec;
+use Cwd;
 
-use Pod::Usage;
-use Pod::Find qw/pod_where/;
-
-use Getopt::Long qw/GetOptionsFromArray/;
+use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
 
-my %opts = (
-    home => 1,
-);
-
+my %opts = (home => 1);
 GetOptions(
-    'author=s' => \$App::PFT::Struct::Conf::AUTHOR,
-    'site-title=s' => \$App::PFT::Struct::Conf::SITE_TITLE,
-    'site-url=s' => \$App::PFT::Struct::Conf::SITE_URL,
-    'home-page=s' => \$App::PFT::Struct::Conf::HOME_PAGE,
-    'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
-    'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
-    'template=s' => \$App::PFT::Struct::Conf::TEMPLATE,
-    'remote-method=s' => \$App::PFT::Struct::Conf::REMOTE{Method},
-    'remote-host=s' => \$App::PFT::Struct::Conf::REMOTE{Host},
-    'remote-user=s' => \$App::PFT::Struct::Conf::REMOTE{User},
-    'remote-path=s' => \$App::PFT::Struct::Conf::REMOTE{Path},
-    'remote-port=i' => \$App::PFT::Struct::Conf::REMOTE{Port},
+    PFT::Conf::wire_getopt(\my %conf_opts),
 
     'home!' => \$opts{home},
     'help|h!' => sub {
@@ -207,17 +185,25 @@ GetOptions(
     },
 ) or exit 1;
 
-if (my $root = App::PFT::findroot) {
-    say STDERR 'Caressing configuration in ', $root;
-    cfg_load $root;
-    cfg_dump $root;
-} else {
-    say STDERR 'Creating configuration';
-    cfg_default;
-    cfg_dump '.';
+if (my $root = PFT::Conf::locate) {
+    say STDERR 'Configuration exists: ', $root;
+    exit 1;
 }
 
-my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
+my $conf = PFT::Conf->new_getopt(\%conf_opts);
+$conf->save_to(my $root = Cwd::cwd);
+my $tree = PFT::Tree->new($root, {create => 1});
+
+if ($opts{home}) {
+    my $home = $tree->content->new_entry(PFT::Header->new(
+        title => $conf->{site}{home},
+        author => $conf->{site}{author},
+    ));
+    $home->open('a') unless $home->exists;
+}
+
+__DATA__
+
 my $default = catfile($tree->dir_templates, "$TEMPLATE.html");
 unless (-e $default) {
     say STDERR 'Creating template ', $default;
