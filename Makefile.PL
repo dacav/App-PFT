@@ -1,7 +1,12 @@
-use 5.006;
+use v5.16;
 use strict;
 use warnings;
+use utf8;
+
 use ExtUtils::MakeMaker;
+use File::ShareDir::Install;
+
+install_share 'share';
 
 WriteMakefile(
     NAME             => 'PFT',
@@ -26,6 +31,8 @@ WriteMakefile(
         'File::Copy'        => 0,
         'File::Path'        => 0,
         'File::Spec'        => 0,
+        'File::ShareDir'    => 0,
+        'File::Share'       => 0,
         'Getopt::Long'      => 0,
         'IO::File'          => 0,
         'PFT'               => 0,
@@ -35,3 +42,6 @@ WriteMakefile(
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'PFT-*' },
 );
+
+package MY;
+use File::ShareDir::Install qw/postamble/;
