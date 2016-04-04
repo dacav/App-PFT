@@ -1,12 +1,12 @@
 bin/pft
-bin/pft-blog
 bin/pft-clean
+bin/pft-entry
+bin/pft-grab
 bin/pft-init
+bin/pft-ls
 bin/pft-make
-bin/pft-month
-bin/pft-page
 bin/pft-pub
-bin/pft-tag
+bin/pft-show
 lib/App/PFT.pm
 Changes
 COPYING
