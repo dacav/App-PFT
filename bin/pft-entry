@@ -52,10 +52,6 @@ Edit a entry entry
 The editor can be specified by name or as a simple shell script, where
 C<%s> is replaced with the file name.
 
-=item --encoding <enc>
-
-Specify alternate encoding.
-
 =item --help | -h
 
 =back
@@ -78,16 +74,18 @@ my %opts;
 my %datespec;
 
 GetOptions(
-    'year|y=i'      => sub { $datespec{year}  = $_[1] },
-    'month|m=s'     => sub { $datespec{month} = $_[1] },
-    'day|d=i'       => sub { $datespec{day}   = $_[1] },
-    'today|T'       => \$opts{blog},
+    'year|y=i'      => sub { $datespec{y}  = $_[1] },
+    'month|m=s'     => sub { $datespec{m} = $_[1] },
+    'day|d=i'       => sub { $datespec{d}  = $_[1] },
+    'B!'            => \$opts{B},
+    'M!'            => \$opts{M},
+    'T!'            => \$opts{T},
+    'P!'            => \$opts{P},
     'author|a=s'    => sub { $opts{author} = $_[1] },
     'tag|t=s@'      => sub { push @{$opts{tags}}, $_[1] },
     'resume|r!'     => sub { $opts{back} = 0 },
     'back=i'        => sub { $opts{back} = int($_[1]) },
     'editor=s'      => sub { $opts{editor} = $_[1] },
-    'encoding=s'    => \$opts{encoding},
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -96,44 +94,69 @@ GetOptions(
     },
 ) or exit 1;
 
-my $tree = PFT::Tree->new;
-my $conf = $tree->conf;
-my $entry;
+$opts{B} = 1 if $opts{back} || grep defined($datespec{$_}), qw(y m d);
 
-if (defined $opts{back}) {
-    $entry = $tree->content->blog_back($opts{back});
-    unless (defined $entry) {
-        say STDERR 'Cannot go back by ', $opts{back}, ': ', $@ =~ s/ at .*$//rs;
-        exit 1;
+do {
+    my @sel = grep $opts{$_}, qw(B M T P);
+    if (@sel != 1) {
+        local $, = ' -';
+        say STDERR 'Select exactly one mode: -B -M -T -P. Currently:', @sel;
+        exit 2
     }
-} else {
-    unless (@ARGV) {
-        say STDERR "Usage: $App::PFT::Name entry [options] <title>";
-        exit 1;
-    }
+};
 
-    my @params = (
-                 # Note: pft main script fixes encoding of @ARGV
-        title => join(' ', @ARGV),
-        encoding => $opts{encoding} || $conf->{input_enc},
-        # defaults
-        author => $conf->{author},
-        tags => $opts{tags} || [],
-        date => do {
-            ($opts{blog} || keys %datespec)
-                ? PFT::Date->from_spec(%datespec)
-                : undef
-        },
-    );
-    $entry = $tree->content->new_entry(PFT::Header->new(@params));
-}
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 3
+};
 
+my $conf = eval{ $tree->conf } || do {
+    say STDERR 'Configuration error: ', $@ =~ s/ at.*$//rs;
+    exit 4
+};
 
 my $editor = $opts{editor} || $conf->{system}{editor} || $ENV{EDITOR} || do {
     say STDERR "Cannot edit: no editor selected";
     say STDERR "Try setting env EDITOR or to define it in configuration file";
-    say STDERR "(System -> Editor)";
-    exit 1
+    say STDERR "(system -> editor)";
+    exit 5
+};
+
+my $entry = eval {;
+    if (defined $opts{back}) {
+        my $entry = $tree->content->blog_back($opts{back});
+        defined $entry and $entry or
+            die 'Cannot go back by ', $opts{back}, ': ', $@ =~ s/ at .*$//rs;
+    } elsif ($opts{M}) {
+        $tree->content->new_entry(PFT::Header->new(
+            author => $conf->{site}{author},
+            date => PFT::Date->from_spec(%datespec)->derive(d => undef),
+        ))
+    } elsif ($opts{B}) {
+        $tree->content->new_entry(PFT::Header->new(
+            title => join(' ', @ARGV),
+            author => $conf->{site}{author},
+            tags => $opts{tags} || [],
+            date => eval{ PFT::Date->from_spec(%datespec) } || do {
+                say STDERR 'Invalid date: ', $@ =~ s/ at.*$//rs;
+            },
+        ))
+    } elsif ($opts{T}) {
+        $tree->content->new_tag(PFT::Header->new(
+            title => join(' ', @ARGV),
+            author => $conf->{site}{author},
+        ))
+    } elsif ($opts{P}) {
+        $tree->content->new_entry(PFT::Header->new(
+            title => join(' ', @ARGV),
+            author => $conf->{site}{author},
+            tags => $opts{tags} || [],
+        ))
+    } else { die "Unhandled?" }
+}
+or do {
+    say STDERR 'Cannot edit entry: ', $@ =~ s/ at.*$//rs;
+    exit 6
 };
 
 eval {
@@ -146,5 +169,5 @@ eval {
     $entry->exists and $entry->make_consistent;
 } or $@ && do {
     say STDERR "After editing: ", $@ =~ s/at .*$//sr;
-    exit 1;
+    exit 7
 }
