@@ -39,11 +39,10 @@ Build the website into the build directory.
 
 =cut
 
-use v5.10;
-
 use strict;
 use warnings;
 use utf8;
+use v5.16;
 
 use feature qw/say state/;
 
