@@ -31,6 +31,7 @@ Publish content
 
 =cut
 
+use v5.16;
 use strict;
 use warnings;
 use utf8;
@@ -38,6 +39,7 @@ use utf8;
 use feature qw/say state/;
 
 use PFT::Tree;
+use PFT::Conf;
 
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
@@ -59,21 +61,35 @@ GetOptions(
     }
 ) or exit 1;
 
-my $tree = PFT::Tree->new;
-my $conf = $tree->conf;
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 3
+};
+
+my $conf = eval{ $tree->conf } || do {
+    say STDERR 'Configuration error: ', $@ =~ s/ at.*$//rs;
+    exit 4
+};
+
 my $method = {
     'rsync+ssh' => \&rsync_ssh,
     'install'   => \&install,
-}->{$conf->{remote}{method}};
-die 'Unknown method ', $conf->{remote}{method} unless $method;
+}->{$conf->{remote}{method}} || do {
+    say STDERR 'Unknown method ', $conf->{remote}{method};
+    exit 5;
+};
 
 $method->($tree);
+exit 0;
 
 sub check {
     foreach (@_) {
-        croak "Cannot use $conf->{remote}{$_}: ",
-            "missing Remote.$_ in pft.yaml"
-            unless defined $conf->{remote}{$_}
+        unless(defined $conf->{remote}{$_}) {
+            say STDERR 'Cannot use remote.', $_,
+                ': missing remote.', $_, ' in ',
+                $PFT::Conf::CONF_NAME;
+            exit 6
+        }
     }
 }
 
