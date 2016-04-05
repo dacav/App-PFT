@@ -162,8 +162,12 @@ my %site_info = (
 
 sub site_links {
     my $cur_node = shift;
-    pages => nodes_to_anchors($cur_node, $map->pages),
-    tags => nodes_to_anchors($cur_node, $map->tags),
+    pages => sub {
+        nodes_to_anchors($cur_node, $map->pages)
+    },
+    tags => sub {
+        nodes_to_anchors($cur_node, $map->tags)
+    },
     backlog => sub {
         nodes_to_anchors($cur_node, $map->recent_blog(shift))
     },
