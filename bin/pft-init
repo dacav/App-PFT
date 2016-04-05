@@ -208,9 +208,6 @@ if ($opts{home}) {
     $home->open('a') unless $home->exists;
 }
 
-my $i;
-say ++$i, " ", glob File::Spec->catfile(File::ShareDir::module_dir('App::PFT'), '*');
-
 my @shared_templates = map decode(locale_fs => $_), glob(
     encode(locale_fs => File::Spec->catdir(
         File::ShareDir::module_dir('App::PFT'),
