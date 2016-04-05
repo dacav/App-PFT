@@ -41,13 +41,13 @@ Clean the build directory
 
 =cut
 
+use v5.16;
 use strict;
 use warnings;
+use utf8;
 
 use Encode;
 use Encode::Locale;
-use Pod::Usage;
-use Pod::Find qw/pod_where/;
 use File::Path;
 
 use Getopt::Long;
@@ -67,7 +67,10 @@ GetOptions(
     }
 ) or exit 1;
 
-my $tree = PFT::Tree->new;
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 1
+};
 
 File::Path::rmtree
     encode(locale_fs => $tree->dir_build),

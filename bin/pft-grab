@@ -77,7 +77,6 @@ use strict;
 use warnings;
 use feature qw/say/;
 
-use Pod::Usage;
 use File::Spec::Functions qw/catfile catdir abs2rel/;
 use File::Path qw/make_path/;
 use File::Basename qw/basename/;
@@ -89,7 +88,6 @@ use Encode::Locale;
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-use App::PFT;
 use PFT::Tree;
 
 use URI;
@@ -127,7 +125,10 @@ GetOptions(
     exit 1;
 };
 
-my $content = PFT::Tree->new->content;
+my $content = eval{ PFT::Tree->new->content } or do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 1
+};
 
 my $dst_base = do {
     my $o = $opts{dst};
@@ -161,7 +162,10 @@ ITEM: for my $orig_path (@ARGV) {
         }
     }
     else {
-        File::Copy::copy($orig_path, $dst_path) or die "Copy failed: $!";
+        File::Copy::copy($orig_path, $dst_path) or do {
+            say STDERR "Copy failed: $!";
+            exit 2
+        }
     }
 
     my $relative = abs2rel($dst_path, $dst_base);
