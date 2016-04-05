@@ -165,11 +165,10 @@ sub site_links {
     pages => nodes_to_anchors($cur_node, $map->pages),
     tags => nodes_to_anchors($cur_node, $map->tags),
     backlog => sub {
-        # FIXME: why can't I read param? Need to put 5 manually
-        nodes_to_anchors($cur_node, $map->recent_blog(5))
+        nodes_to_anchors($cur_node, $map->recent_blog(shift))
     },
     months_backlog => sub {
-        nodes_to_anchors($cur_node, $map->recent_months(5))
+        nodes_to_anchors($cur_node, $map->recent_months(shift))
     },
 }
 
