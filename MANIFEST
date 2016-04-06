@@ -16,3 +16,4 @@ MANIFEST			This list of files
 README
 README.md
 share/default.html
+share/dump_page.html
