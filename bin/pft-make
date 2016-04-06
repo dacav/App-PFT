@@ -101,6 +101,7 @@ sub node_to_rel {
 }
 
 sub node_to_root {
+    # NOTE: you actually wantarray!
     my $k = shift->content_type;
     if ($k =~ /::Blog$/) {(
         '..', '..'
@@ -154,11 +155,6 @@ sub print_issues {
         )
     }
 }
-
-my %site_info = (
-    encoding => $conf->{site}{encoding},
-    title => $conf->{site}{title},
-);
 
 sub site_links {
     my $cur_node = shift;
@@ -246,7 +242,10 @@ sub compile_entry {
     }
 
     my %entry_info = (
-        site => \%site_info,
+        site => {
+            root => join('/', node_to_root($node)),
+            %{$conf->{site}},
+        },
         content => {
             title => $node->title,
             html  => $node->html(sub { node_to_href($node, shift) }),
