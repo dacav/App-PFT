@@ -102,7 +102,7 @@ use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
 
 my %opts = (
-    pretty => \&simple_name,
+    pretty => \&simple,
 );
 
 GetOptions(
@@ -145,8 +145,9 @@ else {
     exit 1;
 }
 
-sub simple_name {
-    $_->header->title
+sub simple {
+    my $hdr = $_->header;
+    $hdr->slug . ': ' .$hdr->title
 }
 
 sub pretty_parse {
