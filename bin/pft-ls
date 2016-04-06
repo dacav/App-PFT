@@ -60,27 +60,33 @@ Count the listed items
 
 Show this help.
 
+=item --locate
+
+Show paths and titles, namely quick alias for:
+
+    --pretty='%h:%t'
+
 =item --pretty=<fmt>
 
 =over
 
-=item %t -> Title
+=item %t → Title
 
-=item %g -> Comma separated value of tags
+=item %p → Path
 
-=item %a -> Author
+=item %g → Comma separated value of tags
 
-=item %e -> Encoding
+=item %a → Author
 
-=item %o -> Comma separated value of option=value pairs
+=item %o → Comma separated value of option=value pairs
 
-=item %D -> Date in yyyy-mm-dd format if dated, empty string otherwise
+=item %D → Date in yyyy-mm-dd format if dated, empty string otherwise
 
-=item %y -> Year if dated, empty string otherwise
+=item %y → Year if dated, empty string otherwise
 
-=item %m -> Month if dated, empty string otherwise
+=item %m → Month if dated, empty string otherwise
 
-=item %d -> Day if dated, empty string otherwise
+=item %d → Day if dated, empty string otherwise
 
 =back
 
@@ -108,6 +114,7 @@ my %opts = (
 GetOptions(
     'count!'        => \$opts{count},
     'pretty=s'      => sub { $opts{pretty} = pretty_parse($_[1]) },
+    'locate!'       => sub { $opts{pretty} = pretty_parse("%p:%t") },
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -118,6 +125,7 @@ GetOptions(
 
 my %classes = (
     tags => \&list_tags,
+    tagpages => \&list_tagpages,
     pages => \&list_pages,
     blog => \&list_blog,
 );
@@ -157,9 +165,9 @@ sub pretty_parse {
         my $hdr = $_->header;
 
         $out =~ s/(?<!%)%t/$hdr->title/eg;
+        $out =~ s/(?<!%)%p/$_->path/eg;
         $out =~ s/(?<!%)%g/join ',', $hdr->tags/eg;
         $out =~ s/(?<!%)%a/$hdr->author/eg;
-        $out =~ s/(?<!%)%e/$hdr->encoding/eg;
 
         $out =~ s/(?<!%)%o/
             my $h = $hdr->opts();
@@ -201,4 +209,9 @@ sub list_pages {
 sub list_blog {
     my $p = $opts{pretty};
     [ map &$p => $tree->blog_ls ]
+}
+
+sub list_tagpages {
+    my $p = $opts{pretty};
+    [ map &$p => $tree->tags_ls ]
 }
