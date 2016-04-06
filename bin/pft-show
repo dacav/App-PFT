@@ -41,8 +41,10 @@ Show the built site
 
 =cut
 
+use v5.16;
 use strict;
 use warnings;
+use utf8;
 
 use feature qw/say/;
 
@@ -54,7 +56,17 @@ Getopt::Long::Configure ("bundling");
 
 use PFT::Tree;
 
-my $browser = $ENV{BROWSER};
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 3
+};
+
+my $conf = eval{ $tree->conf } || do {
+    say STDERR 'Configuration error: ', $@ =~ s/ at.*$//rs;
+    exit 4
+};
+
+my $browser = $conf->{system}{browser} || $ENV{BROWSER};
 my $verbose = 0;
 GetOptions(
     'browser=s' => \$browser,
@@ -66,11 +78,15 @@ GetOptions(
     }
 ) or exit 1;
 
-my $index = File::Spec->catfile(PFT::Tree->new->dir_build, 'index.html');
+my $index = File::Spec->catfile($tree->dir_build, 'index.html');
 
 unless ($index) {
     say STDERR 'Need to build first, use pft make';
     exit 1;
 }
 
-system($browser, $index);
+if ($browser =~ s/(?<!%)%s/$index/g) {
+    system($browser)
+} else {
+    system($browser, $index)
+}
