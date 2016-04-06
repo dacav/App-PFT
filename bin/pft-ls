@@ -171,7 +171,7 @@ sub pretty_parse {
 
         $out =~ s/(?<!%)%o/
             my $h = $hdr->opts();
-            join(',', map $_ .'='. $h->{$_} => keys %$h )
+            join(', ', map $_ .'='. ($h->{$_} || '<undef>') => keys %$h )
         /eg;
 
         $out =~ s/(?<!%)%D/$hdr->date ? $hdr->date->repr('-') : ''/eg;
