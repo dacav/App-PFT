@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Copyright 2014 - Giovanni Simoni
+# Copyright 2014-2016 - Giovanni Simoni
 #
 # This file is part of PFT.
 #
@@ -60,27 +60,33 @@ Count the listed items
 
 Show this help.
 
+=item --locate
+
+Show paths and titles, namely quick alias for:
+
+    --pretty='%h:%t'
+
 =item --pretty=<fmt>
 
 =over
 
-=item %t -> Title
+=item %t → Title
 
-=item %g -> Comma separated value of tags
+=item %p → Path
 
-=item %a -> Author
+=item %g → Comma separated value of tags
 
-=item %e -> Encoding
+=item %a → Author
 
-=item %o -> Comma separated value of option=value pairs
+=item %o → Comma separated value of option=value pairs
 
-=item %D -> Date in yyyy-mm-dd format if dated, empty string otherwise
+=item %D → Date in yyyy-mm-dd format if dated, empty string otherwise
 
-=item %y -> Year if dated, empty string otherwise
+=item %y → Year if dated, empty string otherwise
 
-=item %m -> Month if dated, empty string otherwise
+=item %m → Month if dated, empty string otherwise
 
-=item %d -> Day if dated, empty string otherwise
+=item %d → Day if dated, empty string otherwise
 
 =back
 
@@ -92,27 +98,23 @@ use strict;
 use warnings;
 
 use feature qw/say state/;
-use Pod::Usage;
 
-use Encode qw/decode encode/;
-
+use Encode::Locale qw/$ENCODING_LOCALE/;
 use App::PFT;
-use App::PFT::Struct::Tree;
-use App::PFT::Struct::Conf qw/
-    cfg_load
-    $ROOT
-/;
+use PFT::Tree;
 
+use Pod::Usage;
 use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
 
 my %opts = (
-    pretty => \&title,
+    pretty => \&simple,
 );
 
 GetOptions(
     'count!'        => \$opts{count},
     'pretty=s'      => sub { $opts{pretty} = pretty_parse($_[1]) },
+    'locate!'       => sub { $opts{pretty} = pretty_parse("%p:%t") },
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -121,13 +123,14 @@ GetOptions(
     },
 ) or exit 1;
 
-cfg_load App::PFT::findroot -die => 1;
-
 my %classes = (
     tags => \&list_tags,
+    tagpages => \&list_tagpages,
     pages => \&list_pages,
-    entries => \&list_entries,
+    blog => \&list_blog,
 );
+
+my $tree = PFT::Tree->new->content;
 
 my $cls = shift;
 if (defined $cls and my $handle = $classes{$cls}) {
@@ -150,29 +153,31 @@ else {
     exit 1;
 }
 
-sub tree { state $tree = App::PFT::Struct::Tree->new(basepath => $ROOT) }
-
-sub title { $_->title }
+sub simple {
+    my $hdr = $_->header;
+    $hdr->slug . ': ' .$hdr->title
+}
 
 sub pretty_parse {
     my $fmt = shift;
     sub {
         my $out = $fmt;
+        my $hdr = $_->header;
 
-        $out =~ s/(?<!%)%t/$_->title()/eg;
-        $out =~ s/(?<!%)%g/join(',', map{ $_->name } $_->tags())/eg;
-        $out =~ s/(?<!%)%a/$_->header->author()/eg;
-        $out =~ s/(?<!%)%e/$_->header->encoding()/eg;
+        $out =~ s/(?<!%)%t/$hdr->title/eg;
+        $out =~ s/(?<!%)%p/$_->path/eg;
+        $out =~ s/(?<!%)%g/join ',', $hdr->tags/eg;
+        $out =~ s/(?<!%)%a/$hdr->author/eg;
 
         $out =~ s/(?<!%)%o/
-            my $h = $_->header->opts();
-            join(',', map{ $_ .'='. $h->{$_} } keys %$h )
+            my $h = $hdr->opts();
+            join(', ', map $_ .'='. ($h->{$_} || '<undef>') => keys %$h )
         /eg;
 
-        $out =~ s/(?<!%)%D/$_->date ? $_->date->repr('-') : ''/eg;
-        $out =~ s/(?<!%)%y/$_->date ? $_->date->year() : ''/eg;
-        $out =~ s/(?<!%)%m/$_->date ? $_->date->month() : ''/eg;
-        $out =~ s/(?<!%)%d/$_->date ? $_->date->day() : ''/eg;
+        $out =~ s/(?<!%)%D/$hdr->date ? $hdr->date->repr('-') : ''/eg;
+        $out =~ s/(?<!%)%y/$hdr->date ? $hdr->date->year : ''/eg;
+        $out =~ s/(?<!%)%m/$hdr->date ? $hdr->date->month : ''/eg;
+        $out =~ s/(?<!%)%d/$hdr->date ? $hdr->date->day : ''/eg;
 
         $out;
     }
@@ -180,18 +185,33 @@ sub pretty_parse {
 
 sub list_tags {
     my %tags;
-    for my $c (tree->list_pages, tree->list_entries) {
-        $tags{$_->name} ++ for $c->tags;
+    for my $c ($tree->pages_ls, $tree->blog_ls) {
+        $tags{$_} ++ for $c->header->tags_slug
     }
-    \%tags;
+
+    my $real_title = sub {
+        my $tagpage = $tree->tag(PFT::Header->new(
+            title => shift,
+            encoding => $ENCODING_LOCALE,
+        ));
+        $tagpage->exists ? $tagpage->header->title : $_
+    };
+
+    my %out = map{ $real_title->($_) => $tags{$_} } keys %tags;
+    \%out;
 }
 
 sub list_pages {
     my $p = $opts{pretty};
-    [ map $p->(), tree->list_pages ]
+    [ map &$p => $tree->pages_ls ]
 }
 
-sub list_entries {
+sub list_blog {
     my $p = $opts{pretty};
-    [ map $p->(), tree->list_entries ]
+    [ map &$p => $tree->blog_ls ]
+}
+
+sub list_tagpages {
+    my $p = $opts{pretty};
+    [ map &$p => $tree->tags_ls ]
 }

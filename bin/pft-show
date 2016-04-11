@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Copyright 2014 - Giovanni Simoni
+# Copyright 2014-2016 - Giovanni Simoni
 #
 # This file is part of PFT.
 #
@@ -41,24 +41,33 @@ Show the built site
 
 =cut
 
+use v5.16;
 use strict;
 use warnings;
+use utf8;
 
 use feature qw/say/;
 
 use Pod::Usage;
-use File::Spec::Functions qw/catfile/;
+use File::Spec;
 
 use Getopt::Long;
 Getopt::Long::Configure ("bundling");
 
-use App::PFT;
-use App::PFT::Struct::Conf qw/cfg_load $ROOT/;
-use App::PFT::Struct::Tree;
-use App::PFT::Launcher;
+use PFT::Tree;
 
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 3
+};
+
+my $conf = eval{ $tree->conf } || do {
+    say STDERR 'Configuration error: ', $@ =~ s/ at.*$//rs;
+    exit 4
+};
+
+my $browser = $conf->{system}{browser} || $ENV{BROWSER};
 my $verbose = 0;
-my $browser;
 GetOptions(
     'browser=s' => \$browser,
     'help|h' => sub {
@@ -69,21 +78,15 @@ GetOptions(
     }
 ) or exit 1;
 
-cfg_load App::PFT::findroot -die => 1;
-
-$browser = App::PFT::Launcher::browser $browser;
-unless($browser) {
-    say STDERR
-        'define env $BROWSER or config key System.Browser';
-    exit 1;
-}
-
-my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
-my $index = catfile $tree->dir_build, 'index.html';
+my $index = File::Spec->catfile($tree->dir_build, 'index.html');
 
 unless ($index) {
     say STDERR 'Need to build first, use pft make';
     exit 1;
 }
 
-$browser->($index);
+if ($browser =~ s/(?<!%)%s/$index/g) {
+    system($browser)
+} else {
+    system($browser, $index)
+}

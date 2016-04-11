@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Copyright 2014 - Giovanni Simoni
+# Copyright 2014-2016 - Giovanni Simoni
 #
 # This file is part of PFT.
 #
@@ -158,45 +158,29 @@ configuration will be used as user for SSH login.
 
 use strict;
 use warnings;
+use utf8;
+use v5.16;
+use feature 'say';
 
-use App::PFT qw/$Name $ConfName/;
-use App::PFT::Cmd::Init qw/$HOME_TEXT $TEMPLATE_HELP $TEMPLATE_TEXT/;
-use App::PFT::Struct::Tree;
-use App::PFT::Struct::Conf qw/
-    cfg_load
-    cfg_default
-    cfg_dump
-    $ROOT
-    $TEMPLATE
-    $HOME_PAGE
-/;
+use PFT::Conf;
+use PFT::Tree;
+use PFT::Header;
 
-use IO::File;
-use File::Spec::Functions qw/catfile/;
+use Encode;
+use Encode::Locale;
 
-use Pod::Usage;
-use Pod::Find qw/pod_where/;
+use File::Spec;
+use File::Copy;
+use File::ShareDir;
+use File::Basename qw/basename/;
+use Cwd;
 
-use Getopt::Long qw/GetOptionsFromArray/;
+use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
 
-my %opts = (
-    home => 1,
-);
-
+my %opts = (home => 1);
 GetOptions(
-    'author=s' => \$App::PFT::Struct::Conf::AUTHOR,
-    'site-title=s' => \$App::PFT::Struct::Conf::SITE_TITLE,
-    'site-url=s' => \$App::PFT::Struct::Conf::SITE_URL,
-    'home-page=s' => \$App::PFT::Struct::Conf::HOME_PAGE,
-    'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
-    'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
-    'template=s' => \$App::PFT::Struct::Conf::TEMPLATE,
-    'remote-method=s' => \$App::PFT::Struct::Conf::REMOTE{Method},
-    'remote-host=s' => \$App::PFT::Struct::Conf::REMOTE{Host},
-    'remote-user=s' => \$App::PFT::Struct::Conf::REMOTE{User},
-    'remote-path=s' => \$App::PFT::Struct::Conf::REMOTE{Path},
-    'remote-port=i' => \$App::PFT::Struct::Conf::REMOTE{Port},
+    PFT::Conf::wire_getopt(\my %conf_opts),
 
     'home!' => \$opts{home},
     'help|h!' => sub {
@@ -207,38 +191,33 @@ GetOptions(
     },
 ) or exit 1;
 
-if (my $root = App::PFT::findroot) {
-    say STDERR 'Caressing configuration in ', $root;
-    cfg_load $root;
-    cfg_dump $root;
-} else {
-    say STDERR 'Creating configuration';
-    cfg_default;
-    cfg_dump '.';
+if (my $root = PFT::Conf::locate) {
+    say STDERR 'Configuration exists: ', $root;
+    exit 1;
 }
 
-my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
-my $default = catfile($tree->dir_templates, "$TEMPLATE.html");
-unless (-e $default) {
-    say STDERR 'Creating template ', $default;
-    my $fd = IO::File->new($default, 'w');
-    say $fd $TEMPLATE_TEXT;
+my $conf = PFT::Conf->new_getopt(\%conf_opts);
+$conf->save_to(my $root = Cwd::cwd);
+my $tree = PFT::Tree->new($root, {create => 1});
+
+if ($opts{home}) {
+    my $home = $tree->content->new_entry(PFT::Header->new(
+        title => $conf->{site}{home},
+        author => $conf->{site}{author},
+    ));
+    $home->open('a') unless $home->exists;
 }
 
-my $readme = catfile($tree->dir_templates, 'README.md');
-unless (-e $readme) {
-    my $rf = IO::File->new($readme, 'w');
-    print $rf $TEMPLATE_HELP;
-}
+my @shared_templates = map decode(locale_fs => $_), glob(
+    encode(locale_fs => File::Spec->catdir(
+        File::ShareDir::module_dir('App::PFT'),
+        'templates', '*'
+    ))
+);
 
-my $home = $tree->page(title => $HOME_PAGE);
-unless ($home->exists) {
-    if ($opts{home}) {
-        say STDERR "Creating default site home: $HOME_PAGE";
-        my $hf = $home->open('w');
-        print $hf $HOME_TEXT;
-    } else {
-        say STDERR 'Skipping creation of page "', $HOME_PAGE,
-                   '" as requested';
-    }
+foreach (@shared_templates) {
+    my $dst = File::Spec->catfile($tree->dir_templates, basename($_));
+    File::Copy::copy
+        encode(locale_fs => $_),
+        encode(locale_fs => $dst)
 }
