@@ -27,3 +27,6 @@ Revision history for App-PFT
 0.06    2015-12-29
         List items (pft ls)
         Misc fixes and improvements
+
+1.0.0   2016-04-11
+        Implemented core as external library, declaring version 1

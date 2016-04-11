@@ -1,4 +1,4 @@
-package App::PFT v2.00.0;
+package App::PFT v1.0.0;
 
 use strict;
 use warnings;
