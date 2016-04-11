@@ -134,7 +134,7 @@ my $entry = eval {;
         ))
     } elsif ($opts{B}) {
         $tree->content->new_entry(PFT::Header->new(
-            title => join(' ', @ARGV),
+            title => join(' ', @ARGV) || 'Today',
             author => $conf->{site}{author},
             tags => $opts{tags} || [],
             date => eval{ PFT::Date->from_spec(%datespec) } || do {
