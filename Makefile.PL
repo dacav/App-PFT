@@ -20,7 +20,7 @@ WriteMakefile(
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker'   => 0,
     },
-    BUILD_REQUIRES => {
+    TEST_REQUIRES => {
         'Test::More'            => 0,
     },
     PREREQ_PM => {
@@ -44,7 +44,7 @@ WriteMakefile(
         'Template::Alloy'       => 0,
         'URI'                   => 0,
 
-        'PFT'                   => v0.5.2,
+        'PFT'                   => v0.5.3,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'PFT-*' },
