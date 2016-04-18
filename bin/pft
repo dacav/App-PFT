@@ -19,6 +19,7 @@
 #
 
 =encoding utf-8
+
 =head1 NAME
 
 pft - Hacker friendly static blog generator
