@@ -16,10 +16,12 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
-#
+
+=encoding utf8
+
 =head1 NAME
 
-pft ls - List objects
+pft ls - List objects in your PFT site
 
 =head1 SYNOPSYS
 
@@ -38,13 +40,37 @@ Will list all the tags from all pages and entries.
 
 =head1 CLASSES
 
+A number of possible classes can be specified. Here follows a list with a
+short description, while better details can be found in the main C<pft>
+manpage (C<man pft>).
+
 =over
 
 =item pages
 
-=item entries
+List all regular pages in C<ROOT/content/pages>.
+
+This class supports the C<--pretty> argument.
+
+=item blog
+
+List all blog pages in C<ROOT/content/blog>. This includes daily entries
+and monthly entries
+
+This class supports the C<--pretty> argument.
 
 =item tags
+
+Scan through all entries and list all used tags.
+
+This class supports the C<--count> argument. If supplied the tag usage
+count is also reported.
+
+=item tagpages
+
+List all tag pages, that is pages describing tags.
+
+This class supports the C<--pretty> argument.
 
 =back
 
@@ -54,7 +80,7 @@ Will list all the tags from all pages and entries.
 
 =item --count
 
-Count the listed items
+Count the listed items.
 
 =item --help | -h
 
@@ -124,10 +150,10 @@ GetOptions(
 ) or exit 1;
 
 my %classes = (
-    tags => \&list_tags,
-    tagpages => \&list_tagpages,
     pages => \&list_pages,
     blog => \&list_blog,
+    tags => \&list_tags,
+    tagpages => \&list_tagpages,
 );
 
 my $tree = PFT::Tree->new->content;
@@ -185,7 +211,7 @@ sub pretty_parse {
 
 sub list_tags {
     my %tags;
-    for my $c ($tree->pages_ls, $tree->blog_ls) {
+    for my $c ($tree->entry_ls) {
         $tags{$_} ++ for $c->header->tags_slug
     }
 
