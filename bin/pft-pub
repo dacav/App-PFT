@@ -44,6 +44,9 @@ use PFT::Conf;
 use Pod::Usage;
 use Pod::Find qw/pod_where/;
 
+use Encode::Locale;
+use Encode;
+
 use File::Path qw/make_path remove_tree/;
 use File::Copy::Recursive;
 
@@ -119,18 +122,20 @@ sub rsync_ssh {
     );
 }
 
+use feature 'say';
+
 sub install {
     my $tree = shift;
     check qw/path/;
 
     my $dst = File::Spec->rel2abs($conf->{remote}{path}, $tree->dir_base);
 
-    remove_tree $dst;
-    make_path $dst, { verbose => 1 };
+    remove_tree $dst, { verbose => 0 };
+    make_path $dst, { verbose => 0 };
 
     local $File::Copy::Recursive::CopyLink = 0;
     File::Copy::Recursive::rcopy_glob(
-        File::Spec->catfile($tree->dir_build, '*'),
-        $dst,
+        encode(locale => File::Spec->catfile($tree->dir_build, '*')),
+        encode(locale => $dst),
     );
 }
