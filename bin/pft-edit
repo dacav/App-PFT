@@ -34,12 +34,13 @@ pft entry - Edit an entry
 
 The C<pft edit> command allows to conveniently edit a text entry in a
 I<PFT> site. It takes care of creating a skeleton for the new entries, to
-position them correctly within your I<PFT> site, and to maintain the
+position them correctly within your I<PFT> site, and to maintain their
 position consistent with the type of content.
 
-All entries are stored in the C<ROOT/content> directory, where C<ROOT> is
-the base path of your I<PFT> site. They have the same format, later
-described in this document.
+All entries are stored under the C<ROOT/content> directory, where C<ROOT>
+is the base path of your I<PFT> site. Each entry has the same format:
+a unicode text file composed by a YAML header concatenated with Markdown
+text content (more details later in this document).
 
 There can be different kind of entries:
 
@@ -50,13 +51,22 @@ There can be different kind of entries:
 Regular pages do not declare a date in their header. They get positioned
 in C<ROOT/content/pages>. Their file name depends on their title.
 
+Example:
+
+    C<ROOT/content/pages/hello-world>
+
 =item Blog pages
 
 Blog pages declare a full date (year, month and day) in their header. They
-get positioned in C<ROOT/content/blog/YYYY-MM> (where C<YYYY> and C<MM>
-correspond to the declared year and month respectively). Their file name
-starts with the C<DD-> prefix, where C<DD> corresponds to the declared
-day. The remaining part of the file name depends on their title.
+get positioned in the C<ROOT/content/blog/YYYY-MM> directory (where
+C<YYYY> and C<MM> correspond to the declared year and month respectively).
+Their file name starts with a C<DD-> prefix, where C<DD> corresponds to
+the declared day. The remaining part of the file name depends on their
+title.
+
+Example:
+
+    C<ROOT/content/blog/2015-09/12-hello-world>
 
 =item Month pages
 
@@ -65,6 +75,10 @@ like blog pages, but the date defined in their headers lack of the day
 part (it is replaced by C<*>). They are stored as
 C<ROOT/content/blog/YYYY-MM.month> (where C<YYYY> and C<MM> represent the
 declared year and month).
+
+Example:
+
+    C<ROOT/content/blog/2016-09.month>
 
 =item Tag pages
 
@@ -78,6 +92,12 @@ I<chicken> is (just in case someone doesn't know).
 
 Tag pages are stored in C<ROOT/content/tags>, and their file name depends
 on the tag title.
+
+Example:
+
+    C<ROOT/content/tags/chicken>
+
+=back
 
 =head1 OPTIONS
 
@@ -145,14 +165,21 @@ is if the file does not exist yet.
 
 =item --resume | -r
 
+Resume editing the most recent blog entry. Equivalent to C<--back 0>,
+implies C<-B>.
+
 =item --back=<count> | -b <count>
+
+Resume editing an old entry. The supplied parameter defines how many steps
+we should go back in history (0 means the most recent entry, 1 means the
+second to last).
 
 =item --editor <command>
 
 Specify an editor to use.
 
-The editor can be specified by name or as a shell command, where C<%s> is
-replaced with the file name.
+The editor can be specified by name (e.g. C<vim>) or as a shell command,
+where C<%s> is replaced with the file name (e.g. C<vim [options] %s>).
 
 This flag overrides the C<$EDITOR> environment variable and the
 C<system.editor> setting in the main configuration file.
@@ -165,82 +192,77 @@ Shows this help.
 
 =head2 Editing
 
-By design, content entries are in plain text format.
+Content entries are in encoded text format.
 
 The expected encoding for the file corresponds to the C<locale> encoding.
-On most Unix systems you can use the C<locale> command in order to figure
-it out.
+On most modern Unix systems this is I<UTF-8>, but you can use the
+C<locale> command in order to figure it out.
 
 Each file starts with a header in I<YAML> format. The header is followed
-by a line with three dashes (C<--->) marking the beginning of the actual
-content. The content will be parsed as I<Markdown> when compiled.  The
-header of a content entry is created automatically by C<pft edit> when an
-entry is accessed for the first time.
+by a line with three dashes (C<--->) which marks the beginning of the
+actual content. The content will be parsed as I<Markdown> when the site is
+compiled.
 
-The file gets opened with a text editor. The C<$EDITOR> environment
-variable will be honored unless an editor is defined in the C<pft.yaml>
-configuration file (see the manual of C<pft init> for further
-information). You may also specify a different editor using the C<--editor>
-command line option.
+The header of a content entry is created automatically by C<pft edit> when
+the accessed entry does not exist. The file gets then opened with a text
+editor. The C<$EDITOR> environment variable will be honored unless an
+editor is defined in the C<pft.yaml> configuration file (see the manual of
+C<pft init> for further information). You may also specify a different
+editor using the C<--editor> command line option.
 
 After the editor is closed a warning will be issued if the header is
 invalid. If the file completely empty (as in I<zero bytes>) it will be
-removed from the filesystem. If the header is valid but not consistent
-with the position in the filesystem (e.g. the date was changed) the file
-position is changed and made consistent.
+removed from the filesystem. If the header is valid but it is not
+consistent with the position in the filesystem (e.g. the date was manually
+changed) the file position is updated to be consistent.
 
 =head2 The content header
 
-
-
-=head2 Special links
-
-During compilation the text is parsed as Markdown and gets translated into
-HTML (see the manual of C<pft make> for additional details). In this
-phase, the text gets scanned by I<PFT> and some special syntaxes are
-recognized.  HTML tags such as C<E<lt>aE<gt>> and C<E<lt>imgE<gt>> are
-analyzed in search of links to internal resources, like pictures or other
-pages.
+Upon compilation the content text is parsed as Markdown and gets
+translated into HTML (see the manual of C<pft make> for additional
+details). In this phase some special symbols are recognized:  HTML tags
+such as C<E<lt>aE<gt>> and C<E<lt>imgE<gt>> are analyzed in search of
+links to internal resources, like pictures or other pages within your
+I<PFT> site.
 
 This section contains a reference manual for the recognized special links.
 Since Markdown is a super-set of HTML, direct HTML can be supplied in the
-text too. Both the Markdown and HTML syntaxes will be mentioned in the
-following guide.
+text too, so both Markdown and HTML syntaxes will be mentioned in the
+following description.
 
-The recognized format for special links is:
+The recognized syntax for special links is:
 
     :kind:param/param/...
 
-There is a number of supported C<kind> keywords, enumerated in this
-document. Additional parameters can be specified and separated by a C</>
-symbol.
+Follows a list of valid C<kind> keywords. The meaning of each C<param>
+depends on the specified C<kind>. Separation is done with the C</> symbol.
 
-=head3 Pictures:
+=head3 Pictures with C<:pic:path/to/picture.jpg>
 
 Picture reference accept special links in the form
 
     ![alttext](:pic:filename)
     <img alt="alttext" src=":pic:filename"/>
 
-This form will be resolved by B<pft>, and a link will be generated to the
-file named named I<filename> under the C<I<ROOT>/content/pics> directory.
-The name provided is used directly as lookup, so the complete base name
-must be provided.
+This form will be resolved to an HTML link towards a file named named
+I<filename> under the C<I<ROOT>/content/pics> directory.  The name
+provided is used directly for lookup, so it must be complete of file
+extension, if any.  The C</> symbol will work as path separator regardless
+of the operating system.
 
-Paths can also be specified. The C</> symbol will work as path separator
-regardless of the operating system.
-
-Example:
+HTML Example:
 
     <!-- ROOT/content/pics/test.png -->
     <img src=":pic:test.png"/>
+
+Markdown Example:
 
     <!-- ROOT/content/pics/cars/golf.png -->
     ![](:pic:cars/golf.png)
 
 =head3 URLs:
 
-Regular URLs in C<E<lt>a/E<gt>> tags accept the following special
+Regular URLs in C<E<lt>aE<gt>> tags accept the following special
 prefixes:
 
 =over
@@ -267,10 +289,10 @@ Examples:
 
 =item :web:I<service>/I<param>/I<param>/...
 
-Generate an URL which points to a web service (e.g. search engines, or
-specialized website) and passes data on the query. A number of valid
-values are supported for the  I<service> argument. The list of I<param>
-arguments depend on the specific service.
+Generate an URL which points to a web site or service (e.g. search
+engines, or specialized website) and passes data on the query. A number of
+valid values are supported for the  I<service> argument. The list of
+I<param> arguments depend on the specific service.
 
 Supported services:
 
@@ -281,7 +303,7 @@ Supported services:
 C<:web:ddg/I<bang>/I<param>/I<param>/...>
 
 Search query on the I<Duck Duck Go> search engine. The first parameter is
-used for I<Duck Duck Go>'s Bang syntax, and can be empty in order not to
+used for Duck Duck Go's Bang syntax, and can be empty in order not to
 use any Bang.
 
 Example: search C<linux howto> on Duck Duck Go:
@@ -313,7 +335,7 @@ Examples:
 
     :web:man/signal/7
 
-=over
+=back
 
 =back
 
@@ -321,11 +343,11 @@ Examples:
 
 =head3 Blog about today:
 
-    C<pft edit -B>
+    pft edit -B
 
-=head3 Remove an entry:
+=head3 Remove the page C<garbage> 
 
-    C<pft edit --editor ':E<gt> %s' ...
+    pft edit --editor ':> %s' -P garbage
 
 =cut
 
