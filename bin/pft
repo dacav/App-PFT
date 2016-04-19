@@ -28,9 +28,20 @@ pft - Hacker friendly static blog generator
 
 pft <command> [options]
 
-=head1 AVAILABLE COMMANDS
+=head1 DESCRIPTION
 
-Here follows a list of available commands:
+I<PFT> It is a static website generator written in Perl.  PFT stands for
+I<Plain F. Text>, where the meaning of I<F> is up to personal
+interpretation. Like I<Fancy> or I<Fantastic>.
+
+Static means that your content is compiled once and the result can be
+served by a simple HTTP server, without need of server-side dynamic
+content generation. Actually it doesn't need a server either: you can use
+it as note-taking application and browse trough your local files.
+
+I<PFT> is designed to be Hacker Friendly: it's a command-line application
+with unicode support, which handles your website's boilerplate, but stays
+out of the way. It comes with number of subcommands:
 
 =over
 
@@ -40,21 +51,22 @@ Here follows a list of available commands:
 
 =item * B<make>: Build the website;
 
-=item * B<pub>: Publish on the Web;
+=item * B<pub>: Publish the website;
 
 =item * B<clean>: Clear built tree;
 
 =item * B<grab>: Grab a file as attachment or picture;
 
-=item * B<ls>: List content;
+=item * B<ls>: List content and properties;
 
-=item * B<show>; Show in browser;
+=item * B<show>: Show the compiled site in a web browser;
 
-=item * B<help>: Show usage manual.
+=item * B<help>: Show this manual.
 
 =back
 
-For options of a specific command I<cmd> use C<pft I<cmd> --help>
+The manual of each sub-command is available in form of manpages or by
+invoking it with the C<--help> flag.
 
 =head1 FILESYSTEM LAYOUT
 
@@ -88,12 +100,13 @@ commands will add text and binary files respectively in the appropriate
 subdirectories. The C<pft make> command will scan the C<content> directory
 while building the website.
 
-=head2 C<build>: built website
+=head2 C<build>: where the built website is placed
 
 The C<pft make> command will place the HTML pages resulting from the
-compilation in this directory.
+compilation in this directory. The C<pft pub> command will publish what
+here is contained. The C<pft clean> command will erase it.
 
-=head2 C<inject>: auxiliary files
+=head2 C<inject>: a place for auxiliary files
 
 It's common practice to add files in the root directory of your online
 website. The C<pft make> command will add any arbitrary file which is
@@ -101,7 +114,8 @@ found in the C<inject> directory to the C<build> directory after
 compilation.
 
 A good use case for this feature is the C<.htaccess> file used by the
-Apache webserver.
+Apache webserver. Another one is the picture you want to share on the fly
+with your friend.
 
 =head2 C<templates>: HTML templates for compilation
 
@@ -110,109 +124,13 @@ to an HTML file. The output is created by expanding the content into the
 structure defined by a template file.
 
 Multiple template files can be stored in the C<template> directory. Some
-default files installed by C<pft init>:
-
-=over
-
-=item *
-
-C<default.html> contains a simple but reasonable template suitable
-for any page;
-
-=item *
-
-C<dump_page.html> contains a template which gets expanded with all
-the available variables for each page. This constitutes a useful test and
-a reference for writing additional templates;
-
-=item *
-
-More default installed templates may be added in future.
-
-=back
+default files installed by C<pft init>.
 
 Among other things, the C<pft.yaml> configuration defines which default
 template page should be used for the site. Single content entries can
 override this setting by declaring a different template name in their
-header. More details will follow in the C<pft edit> manual.
-
-The template engine in use is C<Template::Alloy>: see the relevant
-documentation for details about the supported template language.
-
-=head1 TEXT CONTENT
-
-=head2 Format of an entry
-
-Content files are in plain text format. Each file starts with a header in
-I<YAML> format. The header is followed by a line with three dashes
-(C<--->) marking the beginning of the actual content. The content will be
-parsed as I<Markdown> when compiled. The expected encoding for the file
-corresponds to the C<locale> encoding (on Unix systems use the C<locale>
-command in order to figure it out).
-
-=head2 Different kind of entries
-
-All entries have the same format, but there can be different kind of
-entries:
-
-=over
-
-=item Regular Pages
-
-Regular pages do not declare a date in their header. They gets positioned
-in C<ROOT/content/pages>, and their file name depends on their title.
-
-=item Blog pages
-
-Blog pages declare a full date (year, month and day) in their header. They
-get positioned in C<ROOT/content/blog/YYYY-MM> (where C<YYYY> and C<MM>
-correspond to the declared year and month respectively). Their file name
-start with the C<DD-> prefix, where C<DD> corresponds to the declared day.
-
-=item Month pages
-
-Month pages are like blog pages, but their date definition lacks of the
-day. They are meant as entries I<abouth the whole month>. They are stored as
-C<ROOT/content/blog/YYYY-MM.month> (where C<YYYY> and C<MM> represent the
-declared year and month.
-
-=item Tag pages
-
-All kind of pages can optionally declare one or more tags. A tag can
-optionally be associated to a tag page.
-
-For example, if your site has have a number of entries about cuisine, some
-of them might be tagged with the C<chicken> tag. You may want to have a
-tag page entitled C<chicken>, where you give a description of what
-I<chicken> is (just in case someone doesn't know).
-
-=back
-
-=head2 Editing
-
-The C<pft edit> command can be used to edit any entry. The type of the
-edited entry, hence its position in the C<ROOT/content> directory, is
-determined by the command line arguments.
-
-The header of a content entry is created automatically by C<pft edit> when
-an entry is accessed for the first time. The file is then opened with a
-text editor. The C<$EDITOR> environment variable will be honored unless
-an editor is defined in the C<pft.yaml> configuration file (see the manual
-of C<pft init> for further information).
-
-After the editor is closed a warning will be issued if the header is
-invalid. If the file is empty (not even the header is left) it will be
-removed from the filesystem. If the header is valid but not consistent
-with the position in the filesystem (e.g. the date was changed) the file
-position is changed and made consistent.
-
-=head2 Special references handling
-
-As mentioned, the actual content is parsed as regular I<Markdown>, but
-I<PFT> supports a special syntax in the text. The goal is allowing the
-user to define links to internal resources (like pictures or other pages).
-A detailed explanation of this mechanism can be found in the C<pft edit>
-documentation.
+header. More details will follow in the manuals for C<pft edit> and
+C<pft make>.
 
 =cut
 
