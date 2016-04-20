@@ -27,3 +27,16 @@ Editing
 
 Honoring flags like `--year` or `--author` in editing mode even if the
 entry exists. How? By rewriting header if needed.
+
+### Grab with --html or --inline
+
+Fixes
+-----
+
+Templates should use `.html` as extension explicitly. Learn from
+frustration using windows!
+
+Complex improvements
+--------------------
+
+- Referrer killer
