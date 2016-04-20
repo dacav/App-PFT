@@ -16,145 +16,34 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
- 
+
+=encoding utf8
+
 =head1 NAME
 
 pft init - Initialize a PFT Site
 
 =head1 SYNOPSYS
 
-pft init [<options>]
+pft init [<configuration options>]
 
 =head1 DESCRIPTION
 
-Initialize a PFT Site.
+This command initializes a I<PFT site> in the current directory. It
+generates a configuration file named C<pft.yaml> and it creates the
+following filesystem structure documented in the main C<pft> manual page.
 
-The command generates the C<pft.yaml> configuration file, creates the
-filesystem structure for a PFT site, a site Home Page and the site
-templates.
-
-A test configuration is provided by default, and can be later modified by
-editing the be modified by editing the C<pft.yaml> configuration file.
-
-The C<pft init> command accepts options which will override the default
-configuration. The options are listed in this document (see
-B<CONFIGURATION OPTIONS>)
-
-The C<pft init> command can also be used to override an existing
-configuration by running it on a site which was already initialized.
-The existing configuration will be respected, except for the overriden
-keys.
-
-=head1 OPTIONS
-
-=over
-
-=item --no-home
-
-Skip Home Page generation.
-
-=item --help | -h
-
-Show this help page.
-
-=back
-
-=head1 CONFIGURATION OPTIONS
-
-=over
-
-=item --author
-
-Specify a C<Author> configuration.
-
-The C<Author> value will be used as default C<Author> for all new content
-files.
-
-=item --site-title
-
-Specify a C<SiteTitle> configuration.
-
-The C<SiteTitle> value will be accessible by the template engine, so the
-title can be shown on all pages.
-
-=item --site-url
-
-Specify a C<SiteURL> configuration.
-
-C<SiteURL> is the base URL for the site. This will be used as prefix for
-all internal URLs. You probably want to specify something like
-C<http://example.org/path/to/site/>. Since B<pft> will not try to guess
-your protocol scheme, you should put it right.
-
-=item --home-page
-
-Specify a C<HomePage> configuration.
-
-C<HomePage> declares a Home Page for the site. The page will be generated
-automatically unless it exists already or the C<--no-home> is used.
-
-=item --input-enc
-
-Specify a C<InputEnc> configuration.
-
-C<InputEnc> declares the default encoding for content files. The encoding
-of single content files can be redefined by editing their header.
-
-=item --output-enc
-
-Specify a C<OutputEnc> configuration.
-
-C<OutputEnc> declares the encoding for output HTML files.
-
-=item --remote-method
-
-Specify a C<Remote.Method> configuration.
-
-C<Remote.Method> indicates how to upload the compiled content onto a
-remote machine. Current valid values are:
-
-=over
-
-=item * C<rsync+ssh> (default): Use I<RSync> over I<SSH> for sending files.
-
-=back
-
-=item --remote-host
-
-Specify a C<Remote.Host> configuration.
-
-C<Remote.Host> is optional, and declares the host name (or ip address) of
-the remote machine hosting the website. The selected remote method
-(C<--remote-method> option) may require this configuration.
-
-=item --remote-port
-
-Specify a C<Remote.Port> configuration.
-
-C<Remote.Port> is optional, and declares a port on the remote machine
-where a file upload service is running. The value may be used as parameter
-for different transport protocols, depending on the C<--remote-method> in
-use. Sensible defaults are assumed unless diffrently specified.
-
-For instance, if using C<--remote-method=rsync+ssh>, the C<Remote.Port>
-configuration will be used to determine the I<SSH> port, and will default
-to 22.
-
-=item --remote-user
-
-Specify a C<Remote.User> configuration.
-
-C<Remote.User> is optional, and declares a user on the remote machine
-where a file upload service is running. The value may be used as parameter
-for different transport protocols, depending on the C<--remote-method> in
-use.
-
-For instance, if using C<--remote-method=rsync+ssh>, the C<Remote.User>
-configuration will be used as user for SSH login.
-
-=back
+A sensible configuration skeleton is provided by default, and can be
+modified by editing the C<pft.yaml> configuration file.
 
 =cut
+# NOTE: Documentation continues with auto-generated options from PFT::Conf
+# at the end of this file (from `=head1 CONFIGURATION OPTIONS` on).
+#
+# Generate again if needed with:
+#
+#   perl -CO -MPFT:Conf=pod_autogen -wE 'say pod_autogen'
+#
 
 use strict;
 use warnings;
@@ -173,10 +62,14 @@ use File::Spec;
 use File::Copy;
 use File::ShareDir;
 use File::Basename qw/basename/;
+
 use Cwd;
 
 use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
+
+use Pod::Usage;
+use App::PFT;
 
 my %opts = (home => 1);
 GetOptions(
@@ -221,3 +114,87 @@ foreach (@shared_templates) {
         encode(locale_fs => $_),
         encode(locale_fs => $dst)
 }
+
+=head1 CONFIGURATION OPTIONS
+
+=over
+
+=item --remote-host
+
+Remote host where to publish
+
+Defaults to C<example.org>
+
+=item --remote-method
+
+Method used for publishing
+
+Defaults to C<rsync+ssh>
+
+=item --remote-path
+
+Directory on publishing host
+
+Defaults to C</home/dacav/public_html>
+
+=item --remote-port
+
+Port for connection on publishing host
+
+Defaults to C<22>
+
+=item --remote-user
+
+User login on publishing host
+
+Defaults to C<dacav>
+
+=item --site-author
+
+Default author of entries
+
+Defaults to C<dacav>
+
+=item --site-encoding
+
+Charset of the generated web pages
+
+Defaults to C<UTF-8>
+
+=item --site-home
+
+First page, where index.html redirects the browsers
+
+Defaults to C<Welcome>
+
+=item --site-template
+
+Default template for compilation, can be overriden by single entries
+
+Defaults to C<default>
+
+=item --site-title
+
+Title of the website
+
+Defaults to C<My PFT website>
+
+=item --site-url
+
+Base url for the website
+
+Defaults to C<http://example.org>
+
+=item --system-browser
+
+Browser to be invoked by C<pft show>. You may specify an executable, or a shell command where "%s" gets replaced with the file name
+
+Defaults to C<midori --private %s>
+
+=item --system-editor
+
+Editor to be invoked by C<pft edit>. You may specify an executable, or a shell command where "%s" gets replaced with the file name
+
+Defaults to C<vim %s>
+
+=back
