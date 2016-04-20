@@ -129,8 +129,8 @@ default files installed by C<pft init>.
 Among other things, the C<pft.yaml> configuration defines which default
 template page should be used for the site. Single content entries can
 override this setting by declaring a different template name in their
-header. More details will follow in the manuals for C<pft edit> and
-C<pft make>.
+header. More details about the header can be found in the C<pft edit>
+manual page. Templates are documented in the C<pft make> manual page.
 
 =cut
 
