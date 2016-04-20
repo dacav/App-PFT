@@ -75,7 +75,6 @@ my %opts = (home => 1);
 GetOptions(
     PFT::Conf::wire_getopt(\my %conf_opts),
 
-    'home!' => \$opts{home},
     'help|h!' => sub {
         pod2usage
             -exitval => 0,
@@ -93,13 +92,11 @@ my $conf = PFT::Conf->new_getopt(\%conf_opts);
 $conf->save_to(my $root = Cwd::cwd);
 my $tree = PFT::Tree->new($root, {create => 1});
 
-if ($opts{home}) {
-    my $home = $tree->content->new_entry(PFT::Header->new(
-        title => $conf->{site}{home},
-        author => $conf->{site}{author},
-    ));
-    $home->open('a') unless $home->exists;
-}
+my $home = $tree->content->new_entry(PFT::Header->new(
+    title => $conf->{site}{home},
+    author => $conf->{site}{author},
+));
+$home->open('a') unless $home->exists;
 
 my @shared_templates = map decode(locale_fs => $_), glob(
     encode(locale_fs => File::Spec->catdir(
