@@ -156,7 +156,12 @@ my %classes = (
     tagpages => \&list_tagpages,
 );
 
-my $tree = PFT::Tree->new->content;
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 3
+};
+
+my $content = PFT::Tree->new->content;
 
 my $cls = shift;
 if (defined $cls and my $handle = $classes{$cls}) {
@@ -211,12 +216,12 @@ sub pretty_parse {
 
 sub list_tags {
     my %tags;
-    for my $c ($tree->entry_ls) {
+    for my $c ($content->entry_ls) {
         $tags{$_} ++ for $c->header->tags_slug
     }
 
     my $real_title = sub {
-        my $tagpage = $tree->tag(PFT::Header->new(
+        my $tagpage = $content->tag(PFT::Header->new(
             title => shift,
             encoding => $ENCODING_LOCALE,
         ));
@@ -229,15 +234,15 @@ sub list_tags {
 
 sub list_pages {
     my $p = $opts{pretty};
-    [ map &$p => $tree->pages_ls ]
+    [ map &$p => $content->pages_ls ]
 }
 
 sub list_blog {
     my $p = $opts{pretty};
-    [ map &$p => $tree->blog_ls ]
+    [ map &$p => $content->blog_ls ]
 }
 
 sub list_tagpages {
     my $p = $opts{pretty};
-    [ map &$p => $tree->tags_ls ]
+    [ map &$p => $content->tags_ls ]
 }
