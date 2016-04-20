@@ -16,12 +16,12 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
-#
+
 =encoding utf8
 
 =head1 NAME
 
-pft make - Build the website
+pft make - Build the PFT website
 
 =head1 SYNOPSYS
 
@@ -29,11 +29,79 @@ pft make [options]
 
 =head1 DESCRIPTION
 
-Build the website into the build directory.
+This command builds all content within your C<ROOT/content> directory into
+HTML form.
+
+The content will be first organized into an internal graph representation,
+so that each entry knows which other entries refer to it. Each node of the
+graph is then mapped on a HTML template, and and saved in the
+C<ROOT/build> directory. During this process unresolved links are notified
+to the user via standard error.
+
+=head2 Templates and expansions
+
+HTML templates must be stored in the C<ROOT/templates> directory.
+
+The template engine in use is C<Template::Alloy>. In a nutshell, it allows
+to expand simple code blocks within a HTML (or text) skeleton, as for
+example in:
+
+    <title>[% site.title %]</title>
+
+Loops and conditionals are also supported. The library is well documented,
+so you may consult the relevant references for learning the supported
+mini-language.
+
+You may take advantage of the default templates which are installed by
+default during the initialization process (C<pft init>):
+
+=over
+
+=item C<default.html>
+
+is a simple but reasonable template suitable for any page;
+
+=item C<dump_page.html>
+
+is a test template which gets expanded with all the available variables
+for each page. This constitutes a useful test, and a reference for
+available keys if you want to build your own template.
+
+=back
+
+More default installed templates may be added in future. You are also
+encouraged to share your own templates: any help is appreciated! Template
+files are expected to be encoded as by locale.
+
+=head2 The output website
+
+The output encoding depends on a configuration key in C<pft.yaml> (see the
+manual of C<pft init>). The template is supposed to define the encoding in
+a proper way, that is by making use of the C<[% site.encoding %]> key in
+the HTML header:
+
+    <head>
+    <meta http-equiv="content-type"
+          content="text/html; charset=[% site.encoding %]">
+    ...
+    </head>
+
+The result of a build is a group of I<relocatable> HTML pages: pages are
+referring each other via relative links. This means that the generated
+site will work fine even if moved or copied remotely on another system.
+
+Besides the generated site, the C<ROOT/build> directory will also contain
+links to everything under the C<ROOT/inject>. This meets the common
+requirement of placing additional files in the root directory of online
+websites (typical case being the C<.htaccess> file of Apache).
 
 =head1 OPTIONS
 
 =over
+
+=item --help
+
+Show this guide
 
 =back
 
@@ -59,10 +127,28 @@ use PFT::Text;
 use PFT::Tree;
 use PFT::Util;
 
-my $tree = PFT::Tree->new;
+use App::PFT;
+use Pod::Usage;
+use Getopt::Long;
+Getopt::Long::Configure qw/bundling/;
+
+GetOptions(
+    'help|h!'       => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'make',
+    },
+) or exit 1;
+
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 2
+};
+
 my $conf = eval{ $tree->conf } || do {
     say STDERR 'Configuration error: ', $@ =~ s/ at.*$//rs;
-    exit 1;
+    exit 3;
 };
 
 my $template = Template::Alloy->new(
@@ -142,9 +228,9 @@ sub print_issues {
 
     return unless keys %$issues;
 
-    say "Processing $node:";
+    say STDERR "Processing $node:";
     for (sort keys %$issues) {
-        say "  Unresolved symbols:\n  - ", join("\n  - ",
+        say STDERR "  Unresolved symbols:\n  - ", join("\n  - ",
             map {
                 $_->[0]->keyword
                     . '(' . join(', ', $_->[0]->args)
