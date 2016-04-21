@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Copyright 2014 - Giovanni Simoni
+# Copyright 2014-2016 - Giovanni Simoni
 #
 # This file is part of PFT.
 #
@@ -16,189 +16,65 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
- 
+
+=encoding utf8
+
 =head1 NAME
 
 pft init - Initialize a PFT Site
 
 =head1 SYNOPSYS
 
-pft init [<options>]
+pft init [<configuration options>]
 
 =head1 DESCRIPTION
 
-Initialize a PFT Site.
+This command initializes a I<PFT site> in the current directory. It
+generates a configuration file named C<pft.yaml> and it creates the
+following filesystem structure documented in the main C<pft> manual page.
 
-The command generates the C<pft.yaml> configuration file, creates the
-filesystem structure for a PFT site, a site Home Page and the site
-templates.
-
-A test configuration is provided by default, and can be later modified by
-editing the be modified by editing the C<pft.yaml> configuration file.
-
-The C<pft init> command accepts options which will override the default
-configuration. The options are listed in this document (see
-B<CONFIGURATION OPTIONS>)
-
-The C<pft init> command can also be used to override an existing
-configuration by running it on a site which was already initialized.
-The existing configuration will be respected, except for the overriden
-keys.
-
-=head1 OPTIONS
-
-=over
-
-=item --no-home
-
-Skip Home Page generation.
-
-=item --help | -h
-
-Show this help page.
-
-=back
-
-=head1 CONFIGURATION OPTIONS
-
-=over
-
-=item --author
-
-Specify a C<Author> configuration.
-
-The C<Author> value will be used as default C<Author> for all new content
-files.
-
-=item --site-title
-
-Specify a C<SiteTitle> configuration.
-
-The C<SiteTitle> value will be accessible by the template engine, so the
-title can be shown on all pages.
-
-=item --site-url
-
-Specify a C<SiteURL> configuration.
-
-C<SiteURL> is the base URL for the site. This will be used as prefix for
-all internal URLs. You probably want to specify something like
-C<http://example.org/path/to/site/>. Since B<pft> will not try to guess
-your protocol scheme, you should put it right.
-
-=item --home-page
-
-Specify a C<HomePage> configuration.
-
-C<HomePage> declares a Home Page for the site. The page will be generated
-automatically unless it exists already or the C<--no-home> is used.
-
-=item --input-enc
-
-Specify a C<InputEnc> configuration.
-
-C<InputEnc> declares the default encoding for content files. The encoding
-of single content files can be redefined by editing their header.
-
-=item --output-enc
-
-Specify a C<OutputEnc> configuration.
-
-C<OutputEnc> declares the encoding for output HTML files.
-
-=item --remote-method
-
-Specify a C<Remote.Method> configuration.
-
-C<Remote.Method> indicates how to upload the compiled content onto a
-remote machine. Current valid values are:
-
-=over
-
-=item * C<rsync+ssh> (default): Use I<RSync> over I<SSH> for sending files.
-
-=back
-
-=item --remote-host
-
-Specify a C<Remote.Host> configuration.
-
-C<Remote.Host> is optional, and declares the host name (or ip address) of
-the remote machine hosting the website. The selected remote method
-(C<--remote-method> option) may require this configuration.
-
-=item --remote-port
-
-Specify a C<Remote.Port> configuration.
-
-C<Remote.Port> is optional, and declares a port on the remote machine
-where a file upload service is running. The value may be used as parameter
-for different transport protocols, depending on the C<--remote-method> in
-use. Sensible defaults are assumed unless diffrently specified.
-
-For instance, if using C<--remote-method=rsync+ssh>, the C<Remote.Port>
-configuration will be used to determine the I<SSH> port, and will default
-to 22.
-
-=item --remote-user
-
-Specify a C<Remote.User> configuration.
-
-C<Remote.User> is optional, and declares a user on the remote machine
-where a file upload service is running. The value may be used as parameter
-for different transport protocols, depending on the C<--remote-method> in
-use.
-
-For instance, if using C<--remote-method=rsync+ssh>, the C<Remote.User>
-configuration will be used as user for SSH login.
-
-=back
+A sensible configuration skeleton is provided by default, and can be
+modified by editing the C<pft.yaml> configuration file.
 
 =cut
+# NOTE: Documentation continues with auto-generated options from PFT::Conf
+# at the end of this file (from `=head1 CONFIGURATION OPTIONS` on).
+#
+# Generate again if needed with:
+#
+#   perl -CO -MPFT:Conf=pod_autogen -wE 'say pod_autogen'
+#
 
 use strict;
 use warnings;
+use utf8;
+use v5.16;
+use feature 'say';
 
-use App::PFT qw/$Name $ConfName/;
-use App::PFT::Cmd::Init qw/$HOME_TEXT $TEMPLATE_HELP $TEMPLATE_TEXT/;
-use App::PFT::Struct::Tree;
-use App::PFT::Struct::Conf qw/
-    cfg_load
-    cfg_default
-    cfg_dump
-    $ROOT
-    $TEMPLATE
-    $HOME_PAGE
-/;
+use PFT::Conf;
+use PFT::Tree;
+use PFT::Header;
 
-use IO::File;
-use File::Spec::Functions qw/catfile/;
+use Encode;
+use Encode::Locale;
 
-use Pod::Usage;
-use Pod::Find qw/pod_where/;
+use File::Spec;
+use File::Copy;
+use File::ShareDir;
+use File::Basename qw/basename/;
 
-use Getopt::Long qw/GetOptionsFromArray/;
+use Cwd;
+
+use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
 
-my %opts = (
-    home => 1,
-);
+use Pod::Usage;
+use App::PFT;
 
+my %opts = (home => 1);
 GetOptions(
-    'author=s' => \$App::PFT::Struct::Conf::AUTHOR,
-    'site-title=s' => \$App::PFT::Struct::Conf::SITE_TITLE,
-    'site-url=s' => \$App::PFT::Struct::Conf::SITE_URL,
-    'home-page=s' => \$App::PFT::Struct::Conf::HOME_PAGE,
-    'input-enc=s' => \$App::PFT::Struct::Conf::INPUT_ENC,
-    'output-enc=s' => \$App::PFT::Struct::Conf::OUTPUT_ENC,
-    'template=s' => \$App::PFT::Struct::Conf::TEMPLATE,
-    'remote-method=s' => \$App::PFT::Struct::Conf::REMOTE{Method},
-    'remote-host=s' => \$App::PFT::Struct::Conf::REMOTE{Host},
-    'remote-user=s' => \$App::PFT::Struct::Conf::REMOTE{User},
-    'remote-path=s' => \$App::PFT::Struct::Conf::REMOTE{Path},
-    'remote-port=i' => \$App::PFT::Struct::Conf::REMOTE{Port},
+    PFT::Conf::wire_getopt(\my %conf_opts),
 
-    'home!' => \$opts{home},
     'help|h!' => sub {
         pod2usage
             -exitval => 0,
@@ -207,38 +83,129 @@ GetOptions(
     },
 ) or exit 1;
 
-if (my $root = App::PFT::findroot) {
-    say STDERR 'Caressing configuration in ', $root;
-    cfg_load $root;
-    cfg_dump $root;
-} else {
-    say STDERR 'Creating configuration';
-    cfg_default;
-    cfg_dump '.';
+if (my $root = PFT::Conf::locate) {
+    say STDERR 'Configuration exists: ', $root;
+    exit 1;
 }
 
-my $tree = App::PFT::Struct::Tree->new(basepath => $ROOT);
-my $default = catfile($tree->dir_templates, "$TEMPLATE.html");
-unless (-e $default) {
-    say STDERR 'Creating template ', $default;
-    my $fd = IO::File->new($default, 'w');
-    say $fd $TEMPLATE_TEXT;
-}
+my $conf = PFT::Conf->new_getopt(\%conf_opts);
+$conf->save_to(my $root = Cwd::cwd);
+my $tree = PFT::Tree->new($root, {create => 1});
 
-my $readme = catfile($tree->dir_templates, 'README.md');
-unless (-e $readme) {
-    my $rf = IO::File->new($readme, 'w');
-    print $rf $TEMPLATE_HELP;
-}
+my $home = $tree->content->new_entry(PFT::Header->new(
+    title => $conf->{site}{home},
+    author => $conf->{site}{author},
+));
+$home->open('a') unless $home->exists;
 
-my $home = $tree->page(title => $HOME_PAGE);
-unless ($home->exists) {
-    if ($opts{home}) {
-        say STDERR "Creating default site home: $HOME_PAGE";
-        my $hf = $home->open('w');
-        print $hf $HOME_TEXT;
-    } else {
-        say STDERR 'Skipping creation of page "', $HOME_PAGE,
-                   '" as requested';
-    }
-}
+my $glob = File::Spec->catdir(
+    File::ShareDir::module_dir('App::PFT'),
+    'templates',
+    '*',
+);
+
+foreach (glob encode(locale_fs => $glob)) {
+    my $outfn = File::Spec->catfile(
+        encode(locale_fs => $tree->dir_templates),
+        basename($_)
+    );
+
+    open my $in, '< :encoding(UTF-8)', $_ or do {
+        say STDERR 'Cannot open ', decode(locale_fs => $_), ": $!";
+        exit 1;
+    };
+
+    open my $out, '> :encoding(locale_fs)', $outfn or do {
+        say STDERR 'Cannot open ', decode(locale_fs => $outfn), ": $!";
+        exit 1;
+    };
+
+    print $out (<$in>);
+
+    close $in;
+    close $out;
+};
+
+=head1 CONFIGURATION OPTIONS
+
+=over
+
+=item --remote-host
+
+Remote host where to publish
+
+Defaults to C<example.org>
+
+=item --remote-method
+
+Method used for publishing
+
+Defaults to C<rsync+ssh>
+
+=item --remote-path
+
+Directory on publishing host
+
+Defaults to C</home/dacav/public_html>
+
+=item --remote-port
+
+Port for connection on publishing host
+
+Defaults to C<22>
+
+=item --remote-user
+
+User login on publishing host
+
+Defaults to C<dacav>
+
+=item --site-author
+
+Default author of entries
+
+Defaults to C<dacav>
+
+=item --site-encoding
+
+Charset of the generated web pages
+
+Defaults to C<UTF-8>
+
+=item --site-home
+
+First page, where index.html redirects the browsers
+
+Defaults to C<Welcome>
+
+=item --site-template
+
+Default template for compilation, can be overriden by single entries
+
+Defaults to C<default>
+
+=item --site-title
+
+Title of the website
+
+Defaults to C<My PFT website>
+
+=item --site-url
+
+Base url for the website
+
+Defaults to C<http://example.org>
+
+=item --system-browser
+
+Browser to be invoked by C<pft show>. You may specify an executable, or a shell command where "%s" gets replaced with the file name
+
+Defaults to C<midori --private %s>
+
+=item --system-editor
+
+Editor to be invoked by C<pft edit>. You may specify an executable, or a shell command where "%s" gets replaced with the file name
+
+Defaults to C<vim %s>
+
+=back

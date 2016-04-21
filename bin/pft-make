@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Copyright 2014 - Giovanni Simoni
+# Copyright 2014-2016 - Giovanni Simoni
 #
 # This file is part of PFT.
 #
@@ -16,10 +16,12 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
-#
+
+=encoding utf8
+
 =head1 NAME
 
-pft make - Build the website
+pft make - Build the PFT website
 
 =head1 SYNOPSYS
 
@@ -27,15 +29,83 @@ pft make [options]
 
 =head1 DESCRIPTION
 
-Build the website into the build directory.
+This command builds all content within your C<ROOT/content> directory into
+HTML form.
+
+The content will be first organized into an internal graph representation,
+so that each entry knows which other entries refer to it. Each node of the
+graph is then mapped on a HTML template, and and saved in the
+C<ROOT/build> directory. During this process unresolved links are notified
+to the user via standard error.
+
+=head2 Templates and expansions
+
+HTML templates must be stored in the C<ROOT/templates> directory.
+
+The template engine in use is C<Template::Alloy>. In a nutshell, it allows
+to expand simple code blocks within a HTML (or text) skeleton, as for
+example in:
+
+    <title>[% site.title %]</title>
+
+Loops and conditionals are also supported. The library is well documented,
+so you may consult the relevant references for learning the supported
+mini-language.
+
+You may take advantage of the default templates which are installed by
+default during the initialization process (C<pft init>):
+
+=over
+
+=item C<default.html>
+
+is a simple but reasonable template suitable for any page;
+
+=item C<dump_page.html>
+
+is a test template which gets expanded with all the available variables
+for each page. This constitutes a useful test, and a reference for
+available keys if you want to build your own template.
+
+=back
+
+More default installed templates may be added in future.
+
+If you are writing a template, keep in mind they are expected to be
+encoded as by locale.
+
+You are also encouraged to share your own templates: any help is
+appreciated! Please encode your shared templates as utf-8.
+
+=head2 The output website
+
+The output encoding depends on a configuration key in C<pft.yaml> (see the
+manual of C<pft init>). The template is supposed to define the encoding in
+a proper way, that is by making use of the C<[% site.encoding %]> key in
+the HTML header:
+
+    <head>
+    <meta http-equiv="content-type"
+          content="text/html; charset=[% site.encoding %]">
+    ...
+    </head>
+
+The result of a build is a group of I<relocatable> HTML pages: pages are
+referring each other via relative links. This means that the generated
+site will work fine even if moved or copied remotely on another system.
+
+Besides the generated site, the C<ROOT/build> directory will also contain
+links to everything under the C<ROOT/inject>. This meets the common
+requirement of placing additional files in the root directory of online
+websites (typical case being the C<.htaccess> file of Apache).
 
 =head1 OPTIONS
 
 =over
 
-=item --preview | -p
+=item --help
 
-=item --help | -h
+Show this guide
 
 =back
 
@@ -43,72 +113,271 @@ Build the website into the build directory.
 
 use strict;
 use warnings;
+use utf8;
+use v5.16;
 
-use Pod::Usage;
-use Pod::Find qw/pod_where/;
-use File::Spec::Functions qw/catdir catfile no_upwards/;
+use feature qw/say state/;
+
+use Carp;
+use Encode;
+use Encode::Locale;
+use Template::Alloy;
+
+use File::Spec;
+use File::Basename qw/dirname/;
 use File::Path qw/make_path/;
 
-use Getopt::Long;
-Getopt::Long::Configure ("bundling");
-
-use App::PFT::Struct::Conf qw/
-    cfg_load
-    $ROOT
-    $SITE_TITLE
-    $SITE_URL
-    $HOME_PAGE
-    $OUTPUT_ENC
-    $TEMPLATE
-/;
+use PFT::Text;
+use PFT::Tree;
+use PFT::Util;
 
 use App::PFT;
-use App::PFT::Struct::Tree;
-use App::PFT::Output::HTML;
-use App::PFT::Util;
+use Pod::Usage;
+use Getopt::Long;
+Getopt::Long::Configure qw/bundling/;
 
-sub inject {
-    my $tree = shift;
-    my $inject = $tree->dir_inject;
-    App::PFT::Util::ln
-            catfile($inject, $_),
-            catfile($tree->dir_build, $_),
-            1
-        foreach
-            no_upwards
-            map { substr($_, 1 + length $inject) }
-        (
-            glob(catfile $inject, '*'),
-            glob(catfile $inject, '.*'),
-        )
-}
-
-my $preview;
 GetOptions(
-    'preview|p!' => \$preview,
-    'help|h' => sub {
+    'help|h!'       => sub {
         pod2usage
             -exitval => 1,
             -verbose => 2,
             -input => App::PFT::help_of 'make',
-    }
+    },
 ) or exit 1;
 
-cfg_load App::PFT::findroot -die => 1;
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 2
+};
 
-my $tree = App::PFT::Struct::Tree->new(
-    basepath => $ROOT
+my $conf = eval{ $tree->conf } || do {
+    say STDERR 'Configuration error: ', $@ =~ s/ at.*$//rs;
+    exit 3;
+};
+
+my $template = Template::Alloy->new(
+    INCLUDE_PATH => $tree->dir_templates,
+    ENCODING => $conf->{site}{encoding},
 );
+my $dir_build = $tree->dir_build;
+my $map = $tree->content_map;
 
-App::PFT::Output::HTML->new(
-    title => $SITE_TITLE,
-    home => $HOME_PAGE,
-    # site_footer => $ENV{SITE_FOOTER},
-    base_url => $preview ? $tree->dir_build : $SITE_URL,
-    encoding => $OUTPUT_ENC || 'utf-8',
+sub node_to_rel {
+    my $node = shift;
+    confess unless $node;
+    my $hdr = $node->header;
+    my $k = $node->content_type;
 
-    default_template => $TEMPLATE,
-    tree => $tree,
-)->build;
+    if ($k =~ /::Blog$/) {(
+        'blog',
+        sprintf('%04d-%02d', $hdr->date->y, $hdr->date->m),
+        sprintf('%02d-%s.html', $hdr->date->d, $hdr->slug),
+    )} elsif ($k =~ /::Month$/) {(
+        'blog',
+        sprintf('%04d-%02d.html', $hdr->date->y, $hdr->date->m),
+    )} elsif ($k =~ /::Page$/) {(
+        'pages',
+        $hdr->slug . '.html',
+    )} elsif ($k =~ /::Tag$/) {(
+        'tags',
+        $hdr->slug . '.html',
+    )} elsif ($k =~ /::Picture$/) {(
+        'pics',
+        $node->content->relpath
+    )} elsif ($k =~ /::Attachment$/) {(
+        'attachments',
+        $node->content->relpath
+    )} else { die $k };
+}
 
-inject $tree;
+sub node_to_root {
+    # NOTE: you actually wantarray!
+    my $k = shift->content_type;
+    if ($k =~ /::Blog$/) {(
+        '..', '..'
+    )} elsif ($k =~ /::(Month|Page|Tag)$/n) {(
+        '..',
+    )} else {
+         die "Why going back from $k?"
+    };
+}
+
+sub node_to_href {
+    my($cur_node, $other_node) = @_;
+    join('/', node_to_root($cur_node), node_to_rel($other_node));
+}
+
+sub node_to_anchor {
+    my($cur_node, $other_node) = @_;
+    if (defined $other_node) {{
+        href => node_to_href(@_),
+        slug => $other_node->title,
+        date => do {
+            my $d = $other_node->date;
+            defined $d ? $d->to_hash : undef
+        },
+    }} else {
+        undef
+    }
+}
+
+sub nodes_to_anchors {
+    my $cur_node = shift;
+    return undef unless (@_);
+    [map node_to_anchor($cur_node, $_), @_]
+}
+
+sub print_issues {
+    my($node, $issues) = @_;
+
+    return unless keys %$issues;
+
+    say STDERR "Processing $node:";
+    for (sort keys %$issues) {
+        say STDERR "  Unresolved symbols:\n  - ", join("\n  - ",
+            map {
+                $_->[0]->keyword
+                    . '(' . join(', ', $_->[0]->args)
+                    . '): '
+                    . (defined $_->[1] ? $_->[1] : "Lookup failed")
+            }
+            $node->symbols_unres
+        )
+    }
+}
+
+sub site_links {
+    my $cur_node = shift;
+    pages => sub {
+        nodes_to_anchors($cur_node, $map->pages)
+    },
+    tags => sub {
+        nodes_to_anchors($cur_node, $map->tags)
+    },
+    backlog => sub {
+        nodes_to_anchors($cur_node, $map->recent_blog(shift))
+    },
+    months_backlog => sub {
+        nodes_to_anchors($cur_node, $map->recent_months(shift))
+    },
+}
+
+
+my $home_node_slug = PFT::Header::slugify($conf->{site}{home});
+my $home_node;
+
+for my $node ($map->nodes) {
+    my %issues;
+    my $content = $node->content;
+
+    if ($content->isa('PFT::Content::Entry')) {
+        compile_entry($node, $content, \%issues)
+    }
+    elsif ($content->isa('PFT::Content::Blob')) {
+        install_blob($node, $content, \%issues)
+    }
+
+    print_issues($node, \%issues);
+}
+
+use App::PFT::Util qw/ln/;
+my $inject = $tree->dir_inject;
+foreach (
+    File::Spec->no_upwards(
+        map substr($_, 1 + length $inject) => (
+            PFT::Util::locale_glob(File::Spec->catfile($inject, '*')),
+            PFT::Util::locale_glob(File::Spec->catfile($inject, '.*')),
+        )
+    )
+) {
+    my $orig = File::Spec->catfile($inject, $_);
+    my $dst = File::Spec->catfile($dir_build, $_);
+    ln encode(locale_fs => $orig),
+       encode($conf->{site}{encoding}, $dst)
+}
+
+if (defined $home_node) {
+    my $fn = File::Spec->catfile($dir_build, 'index.html');
+    open my $f, ">:encoding($conf->{site}{encoding})", $fn
+        or croak "Unable to open $fn: $!";
+    my $href = join '/', node_to_rel($home_node);
+    my $title = $home_node->title;
+    print $f
+        "<!--\n",
+        "    This file is generated automatically. Do not edit, it will be\n",
+        "    overwritten. It points browsers to $title\n",
+        "-->\n",
+        "<meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=$href\">"
+    ;
+} else {
+    print STDERR "Warning: I was not able to find any $home_node_slug page";
+}
+
+sub compile_entry {
+    my($node, $content, $issues) = @_;
+
+    my $hdr = $node->header;
+    if (my @unres = $node->symbols_unres) {
+        $issues->{'Unresolved'} = \@unres
+    }
+
+    if (!$node->virtual && $hdr->slug eq $home_node_slug) {
+        die "There should be no doubles" if defined $home_node;
+        $home_node = $node;
+    }
+
+    if ($hdr->opts->{hide}) {
+        print "Node $node will be hidden\n";
+        return;
+    }
+
+    my %entry_info = (
+        site => {
+            root => join('/', node_to_root($node)),
+            %{$conf->{site}},
+        },
+        content => {
+            title => $node->title,
+            html  => $node->html(sub { node_to_href($node, shift) }),
+            tags  => nodes_to_anchors($node, $node->tags),
+            date  => do {
+                my $d = $node->date;
+                defined $d ? $d->to_hash : undef
+            },
+        },
+        links => {
+            site_links($node),
+            prev     => node_to_anchor($node, $node->prev),
+            next     => node_to_anchor($node, $node->next),
+            parent   => node_to_anchor($node, $node->month),
+            children => nodes_to_anchors($node, $node->children),
+        }
+    );
+
+    my $out_data;
+    $template->process(
+        # Encoding alert!
+        ($hdr->opts->{template} || $conf->{site}{template}),
+        \%entry_info,
+        \$out_data,
+    ) || croak 'Template expansion issue: ', $template->error;
+
+    my $out_path = File::Spec->catfile(
+        $dir_build,
+        map encode($conf->{site}{encoding}, $_) => node_to_rel($node)
+    );
+    make_path dirname $out_path;
+    open(my $fh, ">:encoding($conf->{site}{encoding})", $out_path)
+        or croak "Opening $out_path: $!";
+    print $fh $out_data;
+    close $fh;
+}
+
+sub install_blob {
+    my($node, $content, $issues) = @_;
+
+    my $out_path = File::Spec->catfile($dir_build, node_to_rel($node));
+
+    ln encode(locale_fs => $content->path),
+       encode($conf->{site}{encoding}, $out_path)
+}

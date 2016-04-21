@@ -1,0 +1,248 @@
+#!/usr/bin/perl
+#
+# Copyright 2014-2016 - Giovanni Simoni
+#
+# This file is part of PFT.
+#
+# PFT is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# PFT is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with PFT.  If not, see <http://www.gnu.org/licenses/>.
+
+=encoding utf8
+
+=head1 NAME
+
+pft ls - List objects in your PFT site
+
+=head1 SYNOPSYS
+
+pft ls <class> [options]
+pft ls --help
+
+=head1 DESCRIPTION
+
+List objects.
+
+The general usage provides a class of objects to lists. For instance
+
+    pft ls tags
+
+Will list all the tags from all pages and entries.
+
+=head1 CLASSES
+
+A number of possible classes can be specified. Here follows a list with a
+short description, while better details can be found in the main C<pft>
+manpage (C<man pft>).
+
+=over
+
+=item pages
+
+List all regular pages in C<ROOT/content/pages>.
+
+This class supports the C<--pretty> argument.
+
+=item blog
+
+List all blog pages in C<ROOT/content/blog>. This includes daily entries
+and monthly entries
+
+This class supports the C<--pretty> argument.
+
+=item tags
+
+Scan through all entries and list all used tags.
+
+This class supports the C<--count> argument. If supplied the tag usage
+count is also reported.
+
+=item tagpages
+
+List all tag pages, that is pages describing tags.
+
+This class supports the C<--pretty> argument.
+
+=back
+
+=head1 OPTIONS
+
+=over
+
+=item --count
+
+Count the listed items.
+
+=item --help | -h
+
+Show this help.
+
+=item --locate
+
+Show paths and titles, namely quick alias for:
+
+    --pretty='%h:%t'
+
+=item --pretty=<fmt>
+
+=over
+
+=item %t → Title
+
+=item %p → Path
+
+=item %g → Comma separated value of tags
+
+=item %a → Author
+
+=item %o → Comma separated value of option=value pairs
+
+=item %D → Date in yyyy-mm-dd format if dated, empty string otherwise
+
+=item %y → Year if dated, empty string otherwise
+
+=item %m → Month if dated, empty string otherwise
+
+=item %d → Day if dated, empty string otherwise
+
+=back
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+
+use feature qw/say state/;
+
+use Encode::Locale qw/$ENCODING_LOCALE/;
+use App::PFT;
+use PFT::Tree;
+
+use Pod::Usage;
+use Getopt::Long;
+Getopt::Long::Configure qw/bundling/;
+
+my %opts = (
+    pretty => \&simple,
+);
+
+GetOptions(
+    'count!'        => \$opts{count},
+    'pretty=s'      => sub { $opts{pretty} = pretty_parse($_[1]) },
+    'locate!'       => sub { $opts{pretty} = pretty_parse("%p:%t") },
+    'help|h!'       => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'ls',
+    },
+) or exit 1;
+
+my %classes = (
+    pages => \&list_pages,
+    blog => \&list_blog,
+    tags => \&list_tags,
+    tagpages => \&list_tagpages,
+);
+
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 3
+};
+
+my $content = PFT::Tree->new->content;
+
+my $cls = shift;
+if (defined $cls and my $handle = $classes{$cls}) {
+    my $to_show = $handle->();
+    if (ref $to_show eq 'HASH') {
+        my @keys = sort keys %$to_show;
+        say for $opts{count}
+            ? map{"$to_show->{$_} $_"} @keys
+            : @keys
+    }
+    elsif (ref $to_show eq 'ARRAY') {
+        say for sort @$to_show;
+    }
+    else { die ref $to_show }
+}
+else {
+    say STDERR "Usage: $App::PFT::Name <class> [options]";
+    say STDERR "Available classes:";
+    say "  * $_" for keys %classes;
+    exit 1;
+}
+
+sub simple {
+    my $hdr = $_->header;
+    $hdr->slug . ': ' .$hdr->title
+}
+
+sub pretty_parse {
+    my $fmt = shift;
+    sub {
+        my $out = $fmt;
+        my $hdr = $_->header;
+
+        $out =~ s/(?<!%)%t/$hdr->title/eg;
+        $out =~ s/(?<!%)%p/$_->path/eg;
+        $out =~ s/(?<!%)%g/join ',', $hdr->tags/eg;
+        $out =~ s/(?<!%)%a/$hdr->author/eg;
+
+        $out =~ s/(?<!%)%o/
+            my $h = $hdr->opts();
+            join(', ', map $_ .'='. ($h->{$_} || '<undef>') => keys %$h )
+        /eg;
+
+        $out =~ s/(?<!%)%D/$hdr->date ? $hdr->date->repr('-') : ''/eg;
+        $out =~ s/(?<!%)%y/$hdr->date ? $hdr->date->year : ''/eg;
+        $out =~ s/(?<!%)%m/$hdr->date ? $hdr->date->month : ''/eg;
+        $out =~ s/(?<!%)%d/$hdr->date ? $hdr->date->day : ''/eg;
+
+        $out;
+    }
+}
+
+sub list_tags {
+    my %tags;
+    for my $c ($content->entry_ls) {
+        $tags{$_} ++ for $c->header->tags_slug
+    }
+
+    my $real_title = sub {
+        my $tagpage = $content->tag(PFT::Header->new(
+            title => shift,
+            encoding => $ENCODING_LOCALE,
+        ));
+        $tagpage->exists ? $tagpage->header->title : $_
+    };
+
+    my %out = map{ $real_title->($_) => $tags{$_} } keys %tags;
+    \%out;
+}
+
+sub list_pages {
+    my $p = $opts{pretty};
+    [ map &$p => $content->pages_ls ]
+}
+
+sub list_blog {
+    my $p = $opts{pretty};
+    [ map &$p => $content->blog_ls ]
+}
+
+sub list_tagpages {
+    my $p = $opts{pretty};
+    [ map &$p => $content->tags_ls ]
+}
