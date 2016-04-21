@@ -36,6 +36,9 @@ Fixes
 Templates should use `.html` as extension explicitly. Learn from
 frustration using windows!
 
+Configuration should use 'publish' instead of 'remote'. This is because
+publishing can also be a local business.
+
 Complex improvements
 --------------------
 
