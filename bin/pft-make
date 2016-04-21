@@ -69,9 +69,13 @@ available keys if you want to build your own template.
 
 =back
 
-More default installed templates may be added in future. You are also
-encouraged to share your own templates: any help is appreciated! Template
-files are expected to be encoded as by locale.
+More default installed templates may be added in future.
+
+If you are writing a template, keep in mind they are expected to be
+encoded as by locale.
+
+You are also encouraged to share your own templates: any help is
+appreciated! Please encode your shared templates as utf-8.
 
 =head2 The output website
 

@@ -98,19 +98,33 @@ my $home = $tree->content->new_entry(PFT::Header->new(
 ));
 $home->open('a') unless $home->exists;
 
-my @shared_templates = map decode(locale_fs => $_), glob(
-    encode(locale_fs => File::Spec->catdir(
-        File::ShareDir::module_dir('App::PFT'),
-        'templates', '*'
-    ))
+my $glob = File::Spec->catdir(
+    File::ShareDir::module_dir('App::PFT'),
+    'templates',
+    '*',
 );
 
-foreach (@shared_templates) {
-    my $dst = File::Spec->catfile($tree->dir_templates, basename($_));
-    File::Copy::copy
-        encode(locale_fs => $_),
-        encode(locale_fs => $dst)
-}
+foreach (glob encode(locale_fs => $glob)) {
+    my $outfn = File::Spec->catfile(
+        encode(locale_fs => $tree->dir_templates),
+        basename($_)
+    );
+
+    open my $in, '< :encoding(UTF-8)', $_ or do {
+        say STDERR 'Cannot open ', decode(locale_fs => $_), ": $!";
+        exit 1;
+    };
+
+    open my $out, '> :encoding(locale_fs)', $outfn or do {
+        say STDERR 'Cannot open ', decode(locale_fs => $outfn), ": $!";
+        exit 1;
+    };
+
+    print $out (<$in>);
+
+    close $in;
+    close $out;
+};
 
 =head1 CONFIGURATION OPTIONS
 
