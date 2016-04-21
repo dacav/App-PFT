@@ -45,7 +45,7 @@ WriteMakefile1(
         'Template::Alloy'       => 0,
         'URI'                   => 0,
 
-        'PFT'                   => v0.5.3,
+        'PFT'                   => v0.5.4,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'PFT-*' },

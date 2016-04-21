@@ -10,7 +10,6 @@ Build
 
   - Plus a command for setting a default theme maybe?
 
-
 Mapping
 -------
 
@@ -30,16 +29,14 @@ entry exists. How? By rewriting header if needed.
 
 ### Grab with --html or --inline
 
-Fixes
------
-
-Templates should use `.html` as extension explicitly. Learn from
-frustration using windows!
-
-Configuration should use 'publish' instead of 'remote'. This is because
-publishing can also be a local business.
-
 Complex improvements
 --------------------
 
 - Referrer killer
+- Dangling link detector
+- 0-in-degree detector
+
+Testing
+-------
+
+Have unit test, especially with encoding, if possible
