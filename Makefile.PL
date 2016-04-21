@@ -9,7 +9,7 @@ use File::ShareDir::Install;
 install_share module => 'App::PFT', 'share';
 
 WriteMakefile1(
-    NAME             => 'PFT',
+    NAME             => 'App::PFT',
     AUTHOR           => q{Giovanni Simoni (dacav at openmailbox)},
     VERSION_FROM     => 'lib/App/PFT.pm',
     ABSTRACT         => 'Hacker friendly static blog generator',
@@ -48,7 +48,7 @@ WriteMakefile1(
         'PFT'                   => v0.5.4,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean => { FILES => 'PFT-*' },
+    clean => { FILES => 'App-PFT-*' },
 );
 
 sub WriteMakefile1 {
