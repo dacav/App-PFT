@@ -357,7 +357,7 @@ sub compile_entry {
     my $out_data;
     $template->process(
         # Encoding alert!
-        ($hdr->opts->{template} || $conf->{site}{template}) . '.html',
+        ($hdr->opts->{template} || $conf->{site}{template}),
         \%entry_info,
         \$out_data,
     ) || croak 'Template expansion issue: ', $template->error;
