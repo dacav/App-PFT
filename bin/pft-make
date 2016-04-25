@@ -321,9 +321,11 @@ sub compile_entry {
         $issues->{'Unresolved'} = \@unres
     }
 
+    my $is_home;
     if (!$node->virtual && $hdr->slug eq $home_node_slug) {
         die "There should be no doubles" if defined $home_node;
         $home_node = $node;
+        $is_home ++;
     }
 
     if ($hdr->opts->{hide}) {
@@ -344,6 +346,7 @@ sub compile_entry {
                 my $d = $node->date;
                 defined $d ? $d->to_hash : undef
             },
+            is_home => $is_home,
         },
         links => {
             site_links($node),
