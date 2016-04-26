@@ -207,15 +207,19 @@ sub node_to_href {
     join('/', node_to_root($cur_node), node_to_rel($other_node));
 }
 
+sub node_to_date {
+    my $d = shift->date;
+    return undef unless defined $d;
+    return $d->to_hash unless @_;
+    return $d->repr(shift)
+}
+
 sub node_to_anchor {
     my($cur_node, $other_node) = @_;
     if (defined $other_node) {{
         href => node_to_href(@_),
         slug => $other_node->title,
-        date => do {
-            my $d = $other_node->date;
-            defined $d ? $d->to_hash : undef
-        },
+        date => sub { node_to_date($other_node, @_) },
     }} else {
         undef
     }
@@ -342,10 +346,7 @@ sub compile_entry {
             title => $node->title,
             html  => $node->html(sub { node_to_href($node, shift) }),
             tags  => nodes_to_anchors($node, $node->tags),
-            date  => do {
-                my $d = $node->date;
-                defined $d ? $d->to_hash : undef
-            },
+            date  => sub { node_to_date($node, @_) },
             is_home => $is_home,
         },
         links => {
