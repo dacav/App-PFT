@@ -10,6 +10,9 @@
                 color : #383838;
                 font-family : "Courier New", "Courier", monospace;
                 line-height : 1.6em;
+                margin : 0 auto 0;
+                min-width : 10em;
+                max-width : 50em;
             }
 
             a {
@@ -23,43 +26,46 @@
             div#header {
                 background-color : cornflowerblue;
                 color : white;
+                margin 0;
+                padding : 1.5em 1em 1em;
             }
 
             div#header h1 {
-                padding : 1.5em 1em 1em;
                 text-align : center;
                 font-family : sans-serif;
             }
 
-            div#header div#all_pages {
+            div#all_pages {
                 line-height : 2.5em;
                 border : 1px solid cornflowerblue;
                 background-color : white;
+                margin: 0 auto 0;
+                max-width : 40em;
+                font-size : 14px;
             }
 
-            div#header div#all_pages a {
+            div#all_pages a {
                 color #383838;
                 padding : 0.75em;
             }
 
-            div#header div#all_pages a span {
+            div#all_pages a span {
                 white-space : nowrap;
                 margin : 0 auto 0;
             }
 
             div#content {
-                padding-top : 3em;
-            }
-
-            div#content,div#all_tags,div#children {
-                max-width : 40em;
-                min-width : 10em;
-                font-size : 14px;
-                margin : 0 auto 0;
+                padding : 3em 0 0;
             }
 
             div#all_tags {
                 line-height : 2.5em;
+            }
+
+            div#content,div#all_tags,div#children {
+                font-size : 14px;
+                margin : 0 auto 0;
+                max-width : 40em;
             }
 
             div#content h1 {
@@ -130,11 +136,12 @@
     <body>
         <div id="header">
             <h1>[% site.title %]</h1>
-            <div id="all_pages">
-                [% FOREACH p = links.pages %]
-                <a href="[% p.href %]"><span>[% p.slug %]</span></a>
-                [% END %]
-            </div>
+        </div>
+
+        <div id="all_pages">
+            [% FOREACH p = links.pages %]
+            <a href="[% p.href %]"><span>[% p.slug %]</span></a>
+            [% END %]
         </div>
 
         <div id="content">
