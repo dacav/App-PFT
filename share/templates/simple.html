@@ -47,11 +47,17 @@
                 margin: 0 auto 0;
                 max-width : 40em;
                 font-size : 14px;
+                padding : 1px;
             }
 
             div#all_pages a {
-                color #383838;
+                color : #383838;
                 padding : 0.75em;
+            }
+
+            div#all_pages a.self {
+                color : white;
+                background-color : cornflowerblue;
             }
 
             div#all_pages a span {
@@ -145,7 +151,13 @@
 
         <div id="all_pages">
             [% FOREACH p = links.pages %]
-            <a href="[% p.href %]"><span>[% p.slug %]</span></a>
+                <a href="[% p.href %]"
+                    [% IF p.is_self %]
+                    class="self"
+                    [% END %]
+                >
+                    <span>[% p.slug %]</span>
+                </a>
             [% END %]
         </div>
 
