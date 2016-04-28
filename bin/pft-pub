@@ -82,7 +82,7 @@ GetOptions(
     'list-required-conf' => sub {
         for my $mname (sort keys %methods) {
             say $mname, ':';
-            say "\t--remote-$_" foreach $methods{$mname}->();
+            say "\t--publish-$_" foreach $methods{$mname}->();
         }
         exit 0;
     },
@@ -104,8 +104,8 @@ my $conf = eval{ $tree->conf } || do {
     exit 4
 };
 
-my $method = $methods{$conf->{remote}{method}} || do {
-    say STDERR 'Unknown method ', $conf->{remote}{method};
+my $method = $methods{$conf->{publish}{method}} || do {
+    say STDERR 'Unknown method ', $conf->{publish}{method};
     exit 5;
 };
 
@@ -114,9 +114,9 @@ exit 0;
 
 sub check {
     foreach (@_) {
-        unless(defined $conf->{remote}{$_}) {
-            say STDERR 'Cannot use remote.', $_,
-                ': missing remote.', $_, ' in ',
+        unless(defined $conf->{publish}{$_}) {
+            say STDERR 'Cannot use publish.', $_,
+                ': missing publish.', $_, ' in ',
                 $PFT::Conf::CONF_NAME;
             exit 6
         }
@@ -130,9 +130,9 @@ sub rsync_ssh {
     check qw/user host path/;
 
     my $src = File::Spec->catfile($tree->dir_build, '');
-    my $remote = $conf->{remote};
-    my $dst = "$remote->{user}\@$remote->{host}:$remote->{path}";
-    my $port = $remote->{port} || 22;
+    my $publish = $conf->{publish};
+    my $dst = "$publish->{user}\@$publish->{host}:$publish->{path}";
+    my $port = $publish->{port} || 22;
 
     local $, = "\n\t";
     say STDERR 'Sending with RSync', "from $src", "to $dst";
@@ -158,7 +158,7 @@ sub install {
     defined $tree || return qw/path/;
     check qw/path/;
 
-    my $dst = File::Spec->rel2abs($conf->{remote}{path}, $tree->dir_base);
+    my $dst = File::Spec->rel2abs($conf->{publish}{path}, $tree->dir_base);
 
     remove_tree $dst, { verbose => 0 };
     make_path $dst, { verbose => 0 };
