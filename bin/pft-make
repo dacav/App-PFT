@@ -220,6 +220,7 @@ sub node_to_anchor {
         href => node_to_href(@_),
         slug => $other_node->title,
         date => sub { node_to_date($other_node, @_) },
+        is_self => !($cur_node <=> $other_node),
     }} else {
         undef
     }
