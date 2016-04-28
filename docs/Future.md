@@ -32,9 +32,13 @@ entry exists. How? By rewriting header if needed.
 Complex improvements
 --------------------
 
+More-to-least (perceived) complexity
+
+- Callback-based mapping on make
 - Referrer killer
 - Dangling link detector
 - 0-in-degree detector
+- Virtual home
 
 Testing
 -------
