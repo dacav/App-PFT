@@ -16,6 +16,7 @@
                 <li><code>content.date.y</code>: [% content.date.y %]</li>
                 <li><code>content.date.m</code>: [% content.date.m %]</li>
                 <li><code>content.date.d</code>: [% content.date.d %]</li>
+                <li><code>content.date('/')</code>: [% content.date('/') %]<li>
             </ul>
             [% END %]
         </li>
@@ -32,6 +33,9 @@
                 [% END %]
             </ul>
             [% END %]
+        </li>
+        <li><code>content.is_home</code>
+            [% content.is_home %]
         </li>
     </ul></li>
 
@@ -66,6 +70,9 @@
                 </li>
                 <li>
                     <code>links.pages.[% loop.index %].slug</code>: [% p.slug %]</li>
+                </li>
+                <li>
+                    <code>links.pages.[% loop.index %].is_self</code>: [% p.is_self %]</li>
                 </li>
                 [% END %]
             </ul>

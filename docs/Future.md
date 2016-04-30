@@ -1,6 +1,8 @@
 Future features and improvements
 ================================
 
+A list of ideas for making it better.
+
 Build
 -----
 
@@ -29,14 +31,31 @@ entry exists. How? By rewriting header if needed.
 
 ### Grab with --html or --inline
 
-Complex improvements
---------------------
+Other improvements
+------------------
 
+More-to-least (perceived) complexity
+
+- Nested sites (useful?)
+- Optional per-{post,entry} picture
+- Callback-based mapping on make
+- Source code coloring (e.g. `| highlight_code` filter?)
+- Encryption support (e.g `| encrypt_if` filter)
+- Attachments download page
 - Referrer killer
 - Dangling link detector
+- Configuration options (e.g. `Editor : vim`)
+- Custom editor modes (e.g. if using vim, add modelines)
 - 0-in-degree detector
+- Virtual home
+
+ * More special references
+    - Configurable redirector for avoiding referrers (e.g :redirect:<url>)
+ * Additional template variables
+    - Random value (e.g. for random css effects)
+    - Random quote from a pool
 
 Testing
 -------
 
-Have unit test, especially with encoding, if possible
+Have unit test, especially with encoding, also in App::PFT (not just PFT)
