@@ -260,10 +260,10 @@ sub site_links {
         nodes_to_anchors($cur_node, $map->tags)
     },
     backlog => sub {
-        nodes_to_anchors($cur_node, $map->recent_blog(shift))
+        nodes_to_anchors($cur_node, $map->blog_recent(shift))
     },
     months_backlog => sub {
-        nodes_to_anchors($cur_node, $map->recent_months(shift))
+        nodes_to_anchors($cur_node, $map->months_recent(shift))
     },
 }
 
