@@ -164,7 +164,17 @@ unless (defined $subcmd) {
     print STDERR "Usage: $0 <command> [<args>]\n",
                  "Usage: $0 --help\n";
     exit 1;
-} elsif ($subcmd =~ /^(?:help|-h|--help)$/) {
+} elsif ($subcmd =~ /^(version|-v|--version)$/n) {
+    # TODO: figure out a way to automatically read it as in
+    # ExtUtils::Makemaker
+    say STDERR <<'    EOF' =~ s/^    //grm;
+    PFT v 1.0.1  Copyright (C) 2016  Giovanni Simoni
+    This program comes with ABSOLUTELY NO WARRANTY.
+    This is free software, and you are welcome to redistribute it
+    under certain conditions; see the source code for details.
+    EOF
+    exit 0
+} elsif ($subcmd =~ /^(help|-h|--help)$/n) {
     @ARGV and do {
         print STDERR "Did you mean `$0 $ARGV[0] --help`?\n";
         exit 1
