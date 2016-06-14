@@ -12,6 +12,10 @@ with the ones I tried, and because I wanted to learn another language
 (Perl) with a side project. While writing it I got inspired by
 the *App::Dapper* project.
 
+See the [home page of the project][home]
+
+[home]: http://dacav.roundhousecode.com/pages/pft.html
+
 # INSTALLATION
 
 To install this module, run the following commands:
