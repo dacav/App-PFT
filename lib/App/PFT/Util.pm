@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with PFT.  If not, see <http://www.gnu.org/licenses/>.
 #
-package App::PFT::Util v1.0.1;
+package App::PFT::Util v1.0.2;
 
 use strict;
 use warnings;

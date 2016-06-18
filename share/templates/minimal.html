@@ -5,20 +5,15 @@
         <title>[% site.title %]: [% content.title %]</title>
         <style type="text/css">
 
-            html {
-                background-color : #949494;
-            }
-
             body {
                 background-color : white;
                 color : #383838;
-                font-family : sans-serif;
-                line-height : 1.6em;
+                font-family : monospace;
                 margin : 0 auto 0;
                 min-width : 10em;
                 max-width : 50em;
-                box-shadow : 0em 0em 1em black;
-                padding-bottom : 4em;
+                padding : 0 1em 4em 1em;
+                line-height : 1.4;
             }
 
             a {
@@ -30,35 +25,32 @@
             a:visited { color : cornflowerblue }
 
             div#header {
-                background-color : cornflowerblue;
-                color : white;
                 margin 0;
                 padding : 1.5em 1em 1em;
             }
 
             div#header h1 {
                 text-align : center;
-                font-family : sans-serif;
             }
 
             div#all_pages {
-                line-height : 2.5em;
-                border : 1px solid cornflowerblue;
-                background-color : white;
-                margin: 0 auto 0;
-                max-width : 45em;
                 font-size : 14px;
-                padding : 1px;
             }
 
-            div#all_pages a {
-                color : #383838;
-                padding : 0.75em;
+            div#all_pages h3 {
+                display : inline;
+            }
+
+            div#all_pages,div#all_tags h3 {
+                display : inline;
+            }
+
+            div#all_tags a {
+                white-space : nowrap;
             }
 
             div#all_pages a.self {
-                color : white;
-                background-color : cornflowerblue;
+                color : #383838;
             }
 
             div#all_pages a span {
@@ -68,10 +60,6 @@
 
             div#content {
                 padding : 3em 0 0;
-            }
-
-            div#all_tags {
-                line-height : 2.5em;
             }
 
             div#content,div#all_tags,div#children {
@@ -87,11 +75,15 @@
             }
 
             div#content div.nav span {
-                padding : 0 5em;
+                padding : 0 1.2em;
             }
 
             div#content div.nav span a {
                 white-space : nowrap;
+            }
+
+            div#content div.nav h3 {
+                display : inline;
             }
 
             div#content div#text h1,h2,h3,h4,h5,h6 {
@@ -130,22 +122,6 @@
                 font-family : serif;
             }
 
-            div#content div#tags {
-                margin-bottom : 3em;
-            }
-
-            a.tag {
-                color: #383838;
-            }
-
-            a.tag span {
-                border : 1px solid #909090;
-                background-color: #eaeaea;
-                padding : 0.3em;
-                border-radius : 1em;
-                white-space : nowrap;
-            }
-
         </style>
     </head>
 
@@ -156,13 +132,13 @@
 
         <div id="all_pages">
             [% FOREACH p = links.pages %]
-                <a href="[% p.href %]"
-                    [% IF p.is_self %]
-                    class="self"
-                    [% END %]
-                >
+                [% IF loop.first %]
+                    <h3>Pages:</h3>[
+                [% END %]
+                <a href="[% p.href %]" [% IF p.is_self %]class="self"[% END %]>
                     <span>[% p.slug %]</span>
                 </a>
+                [% IF loop.last %]][% ELSE %]|[% END %]
             [% END %]
         </div>
 
@@ -175,21 +151,32 @@
                 [% content.date.y %]/[% content.date.m %]/[% content.date.d %]
             </h2>
             [% END %]
-            <div class="nav">
-                <span>[% IF links.prev %]
-                <a href="[% links.prev.href %]">← prev</a>
+
+            <div class="nav" id="top_nav">
+                <div>[% IF links.prev %]
+                <h3>Prev:</h3>
+                <a href="[% links.prev.href %]">[% links.prev.slug %]</a>
                 [% END %]
-                </span>
-                <span>
+                </div>
+                <div>
                 [% IF links.parent %]
-                <a href="[% links.parent.href %]">up</a>
+                <h3>Up:</h3>
+                <a href="[% links.parent.href %]">[% links.parent.slug %]</a>
                 [% END %]
-                </span>
-                <span>
+                </div>
+                <div>
                 [% IF links.next %]
-                <a href="[% links.next.href %]">next →</a>
+                <h3>Next:</h3>
+                <a href="[% links.next.href %]">[% links.next.slug %]</a>
                 [% END %]
-                </span>
+                </div>
+                <div>
+                [% FOREACH t = content.tags %]
+                    [% IF loop.first %]<h3>Tags:</h3>[[% END %]
+                    <a class="tag" href="[% t.href %]">[% t.slug %]</a>
+                    [% IF loop.last %]][% ELSE %]|[% END %]
+                [% END %]
+                </div>
             </div>
 
             <div id="text">
@@ -211,38 +198,16 @@
                 [% END %]
             </div>
             [% END %]
-
-            <div id="tags">
-                [% FOREACH t = content.tags %]
-                <a class="tag" href="[% t.href %]"><span>[% t.slug %]</span></a>
-                [% END %]
-            </div>
-
-            [% IF content.html %]
-            <div class="nav">
-                <span>[% IF links.prev %]
-                <a href="[% links.prev.href %]">← prev</a>
-                [% END %]
-                </span>
-                <span>
-                [% IF links.parent %]
-                <a href="[% links.parent.href %]">up</a>
-                [% END %]
-                </span>
-                <span>
-                [% IF links.next %]
-                <a href="[% links.next.href %]">next →</a>
-                [% END %]
-                </span>
-            </div>
-            [% END %]
         </div>
 
         [% IF content.is_home %]
         <div id="all_tags">
-            <h1>Tags</h1>
             [% FOREACH t = links.tags %]
-            <a class="tag" href="[% t.href %]"><span>[% t.slug %]</span></a>
+                [% IF loop.first %]
+                    <h3>All Tags:</h3>[
+                [% END %]
+                    <a class="tag" href="[% t.href %]"><span>[% t.slug %]</span></a>
+                [% IF loop.last %]][% ELSE %]|[% END %]
             [% END %]
         </div>
         [% END %]
