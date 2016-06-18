@@ -5,10 +5,6 @@
         <title>[% site.title %]: [% content.title %]</title>
         <style type="text/css">
 
-            html {
-                background-color : #cacaca;
-            }
-
             body {
                 background-color : white;
                 color : #383838;
@@ -16,7 +12,6 @@
                 margin : 0 auto 0;
                 min-width : 10em;
                 max-width : 50em;
-                box-shadow : 0em 0em 0.1em black;
                 padding : 0 1em 4em 1em;
                 line-height : 1.4;
             }
@@ -138,12 +133,12 @@
         <div id="all_pages">
             [% FOREACH p = links.pages %]
                 [% IF loop.first %]
-                    <h3>Pages:</h3>
+                    <h3>Pages:</h3>[
                 [% END %]
                 <a href="[% p.href %]" [% IF p.is_self %]class="self"[% END %]>
                     <span>[% p.slug %]</span>
                 </a>
-                [% IF ! loop.last %]|[% END %]
+                [% IF loop.last %]][% ELSE %]|[% END %]
             [% END %]
         </div>
 
