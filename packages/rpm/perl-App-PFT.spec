@@ -7,6 +7,7 @@ Summary:        Hacker friendly static blog generator
 License:        GPL+
 URL:            https://github.com/dacav/%{module}
 Source0:        https://github.com/dacav/%{module}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+Patch0:         https://raw.githubusercontent.com/dacav/%{module}/master/packages/rpm/%{name}.libexec.patch
 
 BuildArch:      noarch
 # Correct for lots of packages, other common choices include eg. Module::Build
@@ -28,7 +29,7 @@ without need of server-side dynamic content generation.
 
 %prep
 %setup -q -n %{module}-%{version}
-
+%patch0 -p1
 
 %build
 # Remove OPTIMIZE=... from noarch packages (unneeded)
@@ -41,10 +42,16 @@ rm -rf %{buildroot}
 make pure_install DESTDIR=%{buildroot}
 find %{buildroot} -type f -name .packlist -exec rm -f {} ';'
 find %{buildroot}%{perl_vendorlib} -type f -name .packlist -exec rm -f {} ';'
-#install -d %{buildroot}%{_libexecdir}/%{name}
-#for i in clean edit grab init ls make pub show; do
-#    mv "%{buildroot}%{_bindir}/pft-$i" "%{buildroot}%{_libexecdir}/%{name}/pft-$i"
-#done
+install -d %{buildroot}%{_libexecdir}/%{name}
+
+mv "%{buildroot}%{_bindir}/pft-clean"   "%{buildroot}%{_libexecdir}/%{name}"
+mv "%{buildroot}%{_bindir}/pft-edit"    "%{buildroot}%{_libexecdir}/%{name}"
+mv "%{buildroot}%{_bindir}/pft-grab"    "%{buildroot}%{_libexecdir}/%{name}"
+mv "%{buildroot}%{_bindir}/pft-init"    "%{buildroot}%{_libexecdir}/%{name}"
+mv "%{buildroot}%{_bindir}/pft-ls"      "%{buildroot}%{_libexecdir}/%{name}"
+mv "%{buildroot}%{_bindir}/pft-make"    "%{buildroot}%{_libexecdir}/%{name}"
+mv "%{buildroot}%{_bindir}/pft-pub"     "%{buildroot}%{_libexecdir}/%{name}"
+mv "%{buildroot}%{_bindir}/pft-show"    "%{buildroot}%{_libexecdir}/%{name}"
 
 
 %check
@@ -55,17 +62,19 @@ LC_ALL="en_US.utf8" make test
 %doc %{_mandir}/man1/*
 %{perl_vendorlib}/*
 %attr(755, -, -) %{_bindir}/pft
-#%attr(755, -, -) %{_libexecdir}/%{name}/pft-clean
-%attr(755, -, -) %{_bindir}/pft-clean
-%attr(755, -, -) %{_bindir}/pft-edit
-%attr(755, -, -) %{_bindir}/pft-grab
-%attr(755, -, -) %{_bindir}/pft-init
-%attr(755, -, -) %{_bindir}/pft-ls
-%attr(755, -, -) %{_bindir}/pft-make
-%attr(755, -, -) %{_bindir}/pft-pub
-%attr(755, -, -) %{_bindir}/pft-show
+%attr(755, -, -) %{_libexecdir}/%{name}/pft-clean
+%attr(755, -, -) %{_libexecdir}/%{name}/pft-edit
+%attr(755, -, -) %{_libexecdir}/%{name}/pft-grab
+%attr(755, -, -) %{_libexecdir}/%{name}/pft-init
+%attr(755, -, -) %{_libexecdir}/%{name}/pft-ls
+%attr(755, -, -) %{_libexecdir}/%{name}/pft-make
+%attr(755, -, -) %{_libexecdir}/%{name}/pft-pub
+%attr(755, -, -) %{_libexecdir}/%{name}/pft-show
 
 
 %changelog
 * Mon Jun 20 2016 dacav openmailbox.org 1.0.2-1.fc23
 - First packaging
+
+* Tue Jun 21 2016 dacav openmailbox.org 1.0.2-1.fc23
+- Moved transitive call binaries in /usr/libexec
