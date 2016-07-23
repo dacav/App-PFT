@@ -1,13 +1,14 @@
 %define module App-PFT
 Name:           perl-%{module}
-Version:        1.0.2
+Version:        1.0.3
 Release:        1%{?dist}
 Summary:        Hacker friendly static blog generator
 
 License:        GPL+
 URL:            https://github.com/dacav/%{module}
 Source0:        https://github.com/dacav/%{module}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
-Patch0:         https://raw.githubusercontent.com/dacav/%{module}/master/packages/rpm/%{name}.libexec.patch
+%define patchbase https://raw.githubusercontent.com/dacav/%{module}/v%{version}/packages/rpm/%{name}
+Patch0:         %{patchbase}.libexec.patch
 
 BuildArch:      noarch
 # Correct for lots of packages, other common choices include eg. Module::Build
@@ -73,8 +74,11 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
-* Mon Jun 20 2016 dacav openmailbox.org 1.0.2-1.fc23
-- First packaging
+* Sat Jul 23 2016 dacav@openmailbox.org
+- Patches from github according to version tag
 
-* Tue Jun 21 2016 dacav openmailbox.org 1.0.2-1.fc23
+* Tue Jun 21 2016 dacav openmailbox.org 1.0.2-1
 - Moved transitive call binaries in /usr/libexec
+
+* Mon Jun 20 2016 dacav openmailbox.org 1.0.2-1
+- First packaging
