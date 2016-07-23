@@ -11,3 +11,38 @@ index 47512a4..7d00fdc 100755
  unless (defined $return) {
      print STDERR 'pft: ', $@, "\n" if $@;
      print STDERR 'pft: cannot run command ', $subcmd, ': ', $!, "\n" if $!;
+diff --git a/lib/App/PFT.pm b/lib/App/PFT.pm
+index 30aa63e..f262f70 100644
+--- a/lib/App/PFT.pm
++++ b/lib/App/PFT.pm
+@@ -37,7 +37,11 @@ use FindBin;
+ use File::Spec;
+ 
+ sub help_of {
+-    File::Spec->catfile($FindBin::RealBin, join '-', $Name, @_);
++    File::Spec->catfile(
++        qw/usr libexec perl-App-PFT/,
++        $FindBin::RealBin,
++        join '-', $Name, @_
++    );
+ }
+ 
+ 1;
+diff --git a/packages/rpm/perl-App-PFT.libexec.patch b/packages/rpm/perl-App-PFT.libexec.patch
+index e3eebf1..e69de29 100644
+--- a/packages/rpm/perl-App-PFT.libexec.patch
++++ b/packages/rpm/perl-App-PFT.libexec.patch
+@@ -1,13 +0,0 @@
+-diff --git a/bin/pft b/bin/pft
+-index 47512a4..7d00fdc 100755
+---- a/bin/pft
+-+++ b/bin/pft
+-@@ -177,7 +177,7 @@ unless (defined $subcmd) {
+-         -verbose => 2,
+-         -input => pod_where({-inc => 1}, __PACKAGE__)
+- }
+--my $return = do catfile $FindBin::RealBin, $App::PFT::Name . '-' . $subcmd;
+-+my $return = do catfile '', qw/usr libexec perl-App-PFT/, $App::PFT::Name . '-' . $subcmd;
+- unless (defined $return) {
+-     print STDERR 'pft: ', $@, "\n" if $@;
+-     print STDERR 'pft: cannot run command ', $subcmd, ': ', $!, "\n" if $!;
