@@ -271,6 +271,14 @@ prefixes:
 
 Resolve the link as the page having identified by C<pagename>.
 
+=item :blog:date/I<yy>/I<mm>/I<dd>/I<slug>
+
+Resolve the link as the blog entry published at date I<yy/mm/dd> and
+having the slug I<slug>.
+
+The I<slug> parameter is optional if only one entry was published in the
+given date. The keyword C<date> can be shortened as C<d>.
+
 =item :blog:back/I<N>
 
 Only valid within a blog entry. The generated link refers to I<N + 1> blog

@@ -1,0 +1,25 @@
+#!/usr/bin/perl
+#
+# Read the POD-generated manpage as it will be installed
+
+use warnings;
+use strict;
+use utf8;
+use v5.16;
+
+use Encode;
+use Encode::Locale;
+binmode STDIN,  ":encoding(console_in)"  if -t STDIN;
+binmode STDOUT, ":encoding(console_out)" if -t STDOUT;
+binmode STDERR, ":encoding(console_out)" if -t STDERR;
+
+use Pod::Usage;
+
+@ARGV or do {
+    say STDERR "Usage: $0 <path>";
+    exit 1
+};
+
+pod2usage
+    -verbose => 3,
+    -input => shift

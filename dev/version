@@ -1,0 +1,133 @@
+#!/bin/perl
+
+use strict;
+use warnings;
+use v5.16;
+use utf8;
+
+use Encode;
+use Encode::Locale;
+use File::Spec;
+use version 0.77;
+
+binmode STDIN,  ":encoding(console_in)"  if -t STDIN;
+binmode STDOUT, ":encoding(console_out)" if -t STDOUT;
+binmode STDERR, ":encoding(console_out)" if -t STDERR;
+
+
+my $basedir = encode locale => 'lib';
+
+-e $basedir or do {
+    say "Run me from project root";
+    exit 1
+};
+
+my($act, $par) = @ARGV;
+
+sub nope {
+    say "Error: @_" if @_;
+    say "Usage: ";
+    say "  $0 list";
+    say "  $0 bump major";
+    say "  $0 bump minor";
+    say "  $0 bump patch";
+    exit 1
+};
+
+defined($act) or nope 'no action';
+$act =~ /^(?:list|bump|-*h(?:elp)?)$/ or nope 'invalid action';
+$act =~ /-*h(?:elp)/ and nope;
+
+if ($act eq 'bump') {
+    defined $par or nope;
+    $par =~ /(?:major|minor|patch)/ or nope 'invalid bump';
+
+    scalar(grep !/^\?\?/, `git status --porcelain`) and die
+        'Tree is not clean. Please stash or commit, then retry'
+}
+
+my @modules;
+
+# Scan for all modules.
+do {
+    my @todo = $basedir;
+    while (@todo) {
+        my $d = shift @todo;
+        opendir my $dh, $d or die "Cannot open $_: $!";
+        my @sub = File::Spec->no_upwards(readdir $dh);
+
+        push @todo, grep -d, map File::Spec->catdir($d, $_), @sub;
+        push @modules, map File::Spec->catfile($d, $_), grep /\.pm$/, @sub;
+    }
+};
+
+if ($act eq 'list') {
+    foreach (@modules) {
+        open my $fin, '<:encoding(locale)', $_ or die "Cannot open $_: $!";
+        local $_; while (<$fin>) {
+            chomp;
+            /\s*package\s+(\S+)\s+(v[\d\.]+)\s*;/ or next;
+            say "$1 $2";
+            last;
+        }
+        close $fin;
+    }
+} else {
+    my $new_version;
+
+    my @rollback_cbs;
+    $SIG{__DIE__} = sub {
+        select STDOUT;
+
+        say 'Rolling back:';
+        $_->() foreach @rollback_cbs;
+    };
+
+    push @rollback_cbs, sub { system qw/git checkout ./ };
+    for my $orig (@modules) {
+        my $fix = "$orig.fix";
+
+        open my $fin, '<:encoding(locale)', $orig or die "Cannot open $orig: $!";
+        open my $fout, '>:encoding(locale)', $fix or die "Cannot open $fix: $!";
+        push @rollback_cbs, sub { unlink $fix };
+
+        select $fout;
+        local $" = '.';
+
+        local $_; while (<$fin>) {
+            if (my($cur, @mmp) = /\s*package\s+\S+\s+v((\d+)\.(\d+)\.(\d+))\s*;/) {
+                $mmp[$par eq 'major' ? 0 : $par eq 'minor' ? 1 : 2] ++;
+
+                my $nv = version->parse("@mmp");
+                if (defined $new_version) {
+                    if ($new_version != $nv) {
+                        die "Mismatching version for $orig, $nv != $new_version"
+                    }
+                } else {
+                    $new_version = $nv;
+                }
+
+                s/\Q$cur\E/@mmp/;
+            }
+            print or die "Cannot print in $fix: $!"
+        }
+        close $fin;
+        close $fout;
+        rename $fix, $orig;
+        pop @rollback_cbs;
+    }
+    pop @rollback_cbs;
+
+    select STDOUT;
+    push @rollback_cbs, sub { system qw/git reset --hard @^/ };
+    my $tag = "v$new_version";
+
+    system qw/git rev-parse --verify -q/ => $tag
+        or die "Existing tag $tag. Rolling back";
+
+    system git => commit => -a => -m => "Bumped $par"
+        and die 'Cannot commit';
+
+    system git => tag => -s => -m => "Release $new_version" => $tag
+        and die 'Cannot tag';
+}
