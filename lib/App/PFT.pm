@@ -26,8 +26,8 @@ our @EXPORT_OK = qw/$Name $ConfName $VersionString/;
 our $Name = 'pft';
 our $ConfName = 'pft.yaml';
 our $NoInitMsg = "Not a $Name site. Try running: $Name init";
-our $VersionString = <<EOF;
-PFT v 1.0.4  Copyright (C) 2016  Giovanni Simoni
+our $VersionString = <<"EOF";
+PFT $App::PFT::VERSION Copyright (C) 2016  Giovanni Simoni
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions; see the source code for details.
