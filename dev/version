@@ -14,8 +14,8 @@ binmode STDIN,  ":encoding(console_in)"  if -t STDIN;
 binmode STDOUT, ":encoding(console_out)" if -t STDOUT;
 binmode STDERR, ":encoding(console_out)" if -t STDERR;
 
-
-my $basedir = encode locale => 'lib';
+my $basedir = encode locale_fs => 'lib';
+my $rpmspec = encode locale_fs => 'packages/rpm/perl-App-PFT.spec';
 
 -e $basedir or do {
     say "Run me from project root";
@@ -116,10 +116,16 @@ if ($act eq 'list') {
         rename $fix, $orig;
         pop @rollback_cbs;
     }
-    pop @rollback_cbs;
+
+    chomp(my $packager = join ' ', map s/[@.]/ /gr, `rpmdev-packager`);
+    system 'rpmdev-bumpspec',
+        -u => $packager,
+        -c => "Release $new_version",
+        -n => $new_version,
+        $rpmspec
+        and die "Cannot bump version in $rpmspec";
 
     select STDOUT;
-    push @rollback_cbs, sub { system qw/git reset --hard @^/ };
     my $tag = "v$new_version";
 
     system qw/git rev-parse --verify -q/ => $tag
@@ -127,6 +133,11 @@ if ($act eq 'list') {
 
     system git => commit => -a => -m => "Bumped $par"
         and die 'Cannot commit';
+
+    # Once we commited, the correct rollback strategy is a reset to the
+    # previous commit.
+    pop @rollback_cbs;
+    push @rollback_cbs, sub { system qw/git reset --hard HEAD^/ };
 
     system git => tag => -s => -m => "Release $new_version" => $tag
         and die 'Cannot tag';
