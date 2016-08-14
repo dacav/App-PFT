@@ -74,6 +74,9 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
+* Sun Aug 14 2016 dacav openmailbox org - 1.0.5-1
+- Release v1.0.5
+
 * Sat Jul 23 2016 dacav@openmailbox.org
 - Patches from github according to version tag
 
