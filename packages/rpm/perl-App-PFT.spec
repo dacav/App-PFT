@@ -1,7 +1,7 @@
 %define module App-PFT
 Name:           perl-%{module}
 Version:        1.0.5
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Hacker friendly static blog generator
 
 License:        GPL+
@@ -74,6 +74,9 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
+* Sun Aug 14 2016 dacav openmailbox org - 1.0.5-2
+- Fixed changelog
+
 * Sun Aug 14 2016 dacav openmailbox org - 1.0.5-1
 - Release v1.0.5
 
