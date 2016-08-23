@@ -1,19 +1,23 @@
-%define module App-PFT
+%global module App-PFT
+%global patchbase https://raw.githubusercontent.com/dacav/%{module}/v%{version}/packages/rpm/%{name}
+
 Name:           perl-%{module}
 Version:        1.0.5
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Hacker friendly static blog generator
 
-License:        GPL+
+License:        GPLv3+
 URL:            https://github.com/dacav/%{module}
 Source0:        https://github.com/dacav/%{module}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
-%define patchbase https://raw.githubusercontent.com/dacav/%{module}/v%{version}/packages/rpm/%{name}
 Patch0:         %{patchbase}.libexec.patch
 
 BuildArch:      noarch
 # Correct for lots of packages, other common choices include eg. Module::Build
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 Requires:       perl(PFT)
+
+BuildRequires:  perl
+BuildRequires:  perl-generators
 BuildRequires:  perl(ExtUtils::MakeMaker)
 BuildRequires:  perl(File::ShareDir::Install)
 
@@ -29,20 +33,18 @@ without need of server-side dynamic content generation.
 
 
 %prep
-%setup -q -n %{module}-%{version}
-%patch0 -p1
+%autosetup -n %{module}-%{version} -p1
 
 %build
-# Remove OPTIMIZE=... from noarch packages (unneeded)
-%{__perl} Makefile.PL INSTALLDIRS=vendor OPTIMIZE="$RPM_OPT_FLAGS"
+%{__perl} Makefile.PL INSTALLDIRS=vendor
 make %{?_smp_mflags}
 
 
 %install
-rm -rf %{buildroot}
 make pure_install DESTDIR=%{buildroot}
 find %{buildroot} -type f -name .packlist -exec rm -f {} ';'
-find %{buildroot}%{perl_vendorlib} -type f -name .packlist -exec rm -f {} ';'
+find %{buildroot} -depth -type d -exec rmdir {} 2>/dev/null ';'
+%{_fixperms} %{buildroot}/*
 install -d %{buildroot}%{_libexecdir}/%{name}
 
 mv "%{buildroot}%{_bindir}/pft-clean"   "%{buildroot}%{_libexecdir}/%{name}"
@@ -60,20 +62,26 @@ LC_ALL="en_US.utf8" make test
 
 
 %files
-%doc %{_mandir}/man1/*
+%{!?_licensedir:%global license %%doc}
+%doc %{_mandir}/man1/*.1*
+%doc README.md
 %{perl_vendorlib}/*
-%attr(755, -, -) %{_bindir}/pft
-%attr(755, -, -) %{_libexecdir}/%{name}/pft-clean
-%attr(755, -, -) %{_libexecdir}/%{name}/pft-edit
-%attr(755, -, -) %{_libexecdir}/%{name}/pft-grab
-%attr(755, -, -) %{_libexecdir}/%{name}/pft-init
-%attr(755, -, -) %{_libexecdir}/%{name}/pft-ls
-%attr(755, -, -) %{_libexecdir}/%{name}/pft-make
-%attr(755, -, -) %{_libexecdir}/%{name}/pft-pub
-%attr(755, -, -) %{_libexecdir}/%{name}/pft-show
+%{_bindir}/pft
+%{_libexecdir}/%{name}/pft-clean
+%{_libexecdir}/%{name}/pft-edit
+%{_libexecdir}/%{name}/pft-grab
+%{_libexecdir}/%{name}/pft-init
+%{_libexecdir}/%{name}/pft-ls
+%{_libexecdir}/%{name}/pft-make
+%{_libexecdir}/%{name}/pft-pub
+%{_libexecdir}/%{name}/pft-show
+%license COPYING
 
 
 %changelog
+* Tue Aug 23 2016 dacav@openmailbox.org - 1.0.5-3
+- Fixes as by Bug 1368790 in bugzilla.redhat.com
+
 * Sun Aug 14 2016 dacav openmailbox org - 1.0.5-2
 - Fixed changelog
 
