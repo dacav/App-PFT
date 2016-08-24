@@ -3,7 +3,7 @@
 
 Name:           perl-%{module}
 Version:        1.0.5
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Hacker friendly static blog generator
 
 License:        GPLv3+
@@ -79,20 +79,23 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
-* Tue Aug 23 2016 dacav@openmailbox.org - 1.0.5-3
-- Fixes as by Bug 1368790 in bugzilla.redhat.com
-
-* Sun Aug 14 2016 dacav openmailbox org - 1.0.5-2
+* Wed Aug 24 2016 dacav@openmailbox.org - 1.0.5-4
 - Fixed changelog
 
-* Sun Aug 14 2016 dacav openmailbox org - 1.0.5-1
+* Tue Aug 23 2016 <dacav@openmailbox.org> - 1.0.5-3
+- Fixes as by Bug 1368790 in bugzilla.redhat.com
+
+* Sun Aug 14 2016 <dacav@openmailbox.org> - 1.0.5-2
+- Fixed changelog
+
+* Sun Aug 14 2016 <dacav@openmailbox.org> - 1.0.5-1
 - Release v1.0.5
 
-* Sat Jul 23 2016 dacav@openmailbox.org
+* Sat Jul 23 2016 <dacav@openmailbox.org>
 - Patches from github according to version tag
 
-* Tue Jun 21 2016 dacav openmailbox.org 1.0.2-1
+* Tue Jun 21 2016 <dacav@openmailbox.org> 1.0.2-1
 - Moved transitive call binaries in /usr/libexec
 
-* Mon Jun 20 2016 dacav openmailbox.org 1.0.2-1
+* Mon Jun 20 2016 <dacav@openmailbox.org> 1.0.2-1
 - First packaging
