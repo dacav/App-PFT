@@ -7,14 +7,10 @@ It is yet another static website generator. This means your content is
 compiled once and the result can be served by a simple HTTP server,
 without need of server-side dynamic content generation.
 
-I started it from scratch, both because as I was not entirely satisfied
-with the ones I tried, and because I wanted to learn another language
-(Perl) with a side project. While writing it I got inspired by
-the *App::Dapper* project.
-
-See the [home page of the project][home]
-
-[home]: http://dacav.roundhousecode.com/pages/pft.html
+This project provides the command line tools needed for managing the blog
+and compile it in web pages. It uses the library called
+[PFT](https://github.com/dacav/pft) in order to obtain an abstraction over
+the file system access.
 
 # INSTALLATION
 
