@@ -12,14 +12,32 @@ Source0:        https://github.com/dacav/%{module}/archive/v%{version}.tar.gz#/%
 Patch0:         %{patchbase}.libexec.patch
 
 BuildArch:      noarch
-# Correct for lots of packages, other common choices include eg. Module::Build
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 Requires:       perl(PFT)
 
 BuildRequires:  perl
 BuildRequires:  perl-generators
+
+# Generated BuildRequires via the following command:
+# tangerine -c Makefile.PL lib \|
+#       perl -nE '/^\s/ and next; s/^/BuildRequires:  perl(/; s/$/)/; print'
+BuildRequires:  perl(Carp)
+BuildRequires:  perl(Cwd)
+BuildRequires:  perl(Encode)
+BuildRequires:  perl(Encode::Locale)
+BuildRequires:  perl(Exporter)
 BuildRequires:  perl(ExtUtils::MakeMaker)
+BuildRequires:  perl(File::Basename)
+BuildRequires:  perl(File::Copy::Recursive)
+BuildRequires:  perl(File::Path)
 BuildRequires:  perl(File::ShareDir::Install)
+BuildRequires:  perl(File::Spec)
+BuildRequires:  perl(File::Spec::Functions)
+BuildRequires:  perl(FindBin)
+BuildRequires:  perl(strict)
+BuildRequires:  perl(utf8)
+BuildRequires:  perl(warnings)
+
 
 %{?perl_default_filter}
 
@@ -79,7 +97,8 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
-* Wed Aug 24 2016 dacav@openmailbox.org - 1.0.5-4
+* Wed Aug 24 2016 <dacav@openmailbox.org> - 1.0.5-4
+- Generated BuildRequires with tangerine.
 - Fixed changelog
 
 * Tue Aug 23 2016 <dacav@openmailbox.org> - 1.0.5-3
