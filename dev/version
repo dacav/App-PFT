@@ -117,7 +117,7 @@ if ($act eq 'list') {
         pop @rollback_cbs;
     }
 
-    chomp(my $packager = join ' ', map s/[@.]/ /gr, `rpmdev-packager`);
+    chomp(my $packager = join ' ', map s/^([^<].*?[^>])$/<$1>/gr, `rpmdev-packager`);
     system 'rpmdev-bumpspec',
         -u => $packager,
         -c => "Release $new_version",
