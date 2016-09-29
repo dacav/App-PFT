@@ -3,17 +3,24 @@
 
 Name:           perl-%{module}
 Version:        1.0.6
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Hacker friendly static blog generator
 
 License:        GPLv3+
 URL:            https://github.com/dacav/%{module}
 Source0:        https://github.com/dacav/%{module}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+
+# This software packet is composed by a toolkit of executable scripts, which
+# are chain loaded by a main script named 'pft`. The position of the scripts is
+# determined by using perl(FindBin). If the package is installed via CPAN it
+# makes sense to seek for the scripts in the same directory as the library. For
+# the Fedora package the appropriate position is /usr/libexec/%{module}.
+# The following patch makes it compliant with this requirement without breaking
+# the desirable behavior in the CPAN distribution.
 Patch0:         %{patchbase}.libexec.patch
 
 BuildArch:      noarch
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
-Requires:       perl(PFT)
 
 BuildRequires:  perl
 BuildRequires:  perl-generators
@@ -97,6 +104,10 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
+* Thu Sep 29 2016 dacav@openmailbox.org - 1.0.6-2
+- Fixed patch description
+- Removed explicit dependency
+
 * Sat Sep 03 2016 <dacav@openmailbox.org> - 1.0.6-1
 - Release 1.0.6
 
