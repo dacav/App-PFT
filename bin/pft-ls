@@ -165,7 +165,15 @@ my $content = PFT::Tree->new->content;
 
 my $cls = shift;
 if (defined $cls and my $handle = $classes{$cls}) {
+    # The selected handle is used to list the specific class of content objects.
     my $to_show = $handle->();
+
+    # The returned value may be a hash or an array.
+    # An array is shown simply by listing it in alphabetic order.
+    # The hash keys will be shown in alphabetic order, while values can be used
+    # to map each name to a counter. If --counter is enabled the values will
+    # also be displayed
+
     if (ref $to_show eq 'HASH') {
         my @keys = sort keys %$to_show;
         say for $opts{count}
