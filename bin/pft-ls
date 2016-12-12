@@ -177,6 +177,7 @@ else {
 
 sub pretty_parse {
     my $fmt = shift;
+    my $align = qr/-?\d*/;
 
     sub {
         my $out = $fmt;
@@ -185,21 +186,39 @@ sub pretty_parse {
         my $hdr = $_->header;
         my $date = $hdr ? $hdr->date : undef;
 
-        $out =~ s/(?<!%)%t/$hdr ? $hdr->title : $_->name /eg;
-        $out =~ s/(?<!%)%p/$hdr ? $_->path : '' /eg;
-        $out =~ s/(?<!%)%g/$hdr ? join(',', $hdr->tags_slug ) : ''/eg;
-        $out =~ s/(?<!%)%a/$hdr ? $hdr->author : ''/eg;
-        $out =~ s/(?<!%)%s/$hdr ? $hdr->slug : $_->name /eg;
-        $out =~ s/(?<!%)%D/$date ? $date->repr('-') : ''/eg;
-        $out =~ s/(?<!%)%y/$date ? $date->y : ''/eg;
-        $out =~ s/(?<!%)%m/$date ? $date->m : ''/eg;
-        $out =~ s/(?<!%)%d/$date ? $date->d : ''/eg;
-        $out =~ s/(?<!%)%o/
+        $out =~ s/(?<!%)%($align)t/sprintf(
+            "%$1s", $hdr ? $hdr->title : $_->name
+        )/eg;
+        $out =~ s/(?<!%)%($align)p/sprintf(
+            "%$1s", $hdr ? $_->path : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)a/sprintf(
+            "%$1s", $hdr ? $hdr->author : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)s/sprintf(
+            "%$1s", $hdr ? $hdr->slug : $_->name
+        )/eg;
+        $out =~ s/(?<!%)%($align)D/sprintf(
+            "%$1s", $date ? $date->repr('-') : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)y/sprintf(
+            "%$1s", $date ? $date->y : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)m/sprintf(
+            "%$1s", $date ? $date->m : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)d/sprintf(
+            "%$1s", $date ? $date->d : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)o/sprintf("%$1s",
             !defined($hdr) ? '' : do {
                 my $h = $hdr->opts();
                 join(', ', map $_ .'='. ($h->{$_} || '>') => keys %$h )
             }
-        /eg;
+        )/eg;
+        $out =~ s/(?<!%)%($align)g/sprintf(
+            "%$1s", $hdr ? join(',', $hdr->tags_slug ) : ''
+        )/eg;
 
         $out;
     }
