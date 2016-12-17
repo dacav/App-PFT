@@ -124,7 +124,7 @@ use Encode::Locale;
 use Template::Alloy;
 
 use File::Spec;
-use File::Basename qw/dirname/;
+use File::Basename qw/dirname basename/;
 use File::Path qw/make_path/;
 
 use PFT::Text;
@@ -132,6 +132,8 @@ use PFT::Tree;
 use PFT::Util;
 
 use App::PFT;
+use App::PFT::Util qw/ln/;
+
 use Pod::Usage;
 use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
@@ -287,37 +289,29 @@ for my $node ($map->nodes) {
     print_issues($node, \%issues);
 }
 
-use App::PFT::Util qw/ln/;
-my $inject = $tree->dir_inject;
-foreach (
-    File::Spec->no_upwards(
-        map substr($_, 1 + length $inject) => (
-            PFT::Util::locale_glob(File::Spec->catfile($inject, '*')),
-            PFT::Util::locale_glob(File::Spec->catfile($inject, '.*')),
-        )
-    )
-) {
-    my $orig = File::Spec->catfile($inject, $_);
-    my $dst = File::Spec->catfile($dir_build, $_);
-    ln encode(locale_fs => $orig),
-       encode($conf->{site}{encoding}, $dst)
-}
+sub write_file {
 
-if (defined $home_node) {
-    my $fn = File::Spec->catfile($dir_build, 'index.html');
-    open my $f, ">:encoding($conf->{site}{encoding})", $fn
-        or croak "Unable to open $fn: $!";
-    my $href = join '/', node_to_rel($home_node);
-    my $title = $home_node->title;
-    print $f
-        "<!--\n",
-        "    This file is generated automatically. Do not edit, it will be\n",
-        "    overwritten. It points browsers to $title\n",
-        "-->\n",
-        "<meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=$href\">"
-    ;
-} else {
-    print STDERR "Warning: I was not able to find any $home_node_slug page";
+    my($data, $path) = @_;
+
+    my $dirname = dirname $path;
+    my $basename = basename $path;
+
+    make_path $dirname;
+
+    # TODO:
+    # This function writes the content on a temporary file. If the content is
+    # the same we keep the old one, otherwise we replace it. This will maintain
+    # the same timestamp for unchanged files, improving the deployment speed
+    # (e.g. via rsync).
+    # TODO: use this tempname
+    #my $temp = File::Spec->catfile($dirname, ".$basename");
+    my $temp = File::Spec->catfile($dirname, $basename);
+    open(my $fh, ">:encoding($conf->{site}{encoding})", $temp)
+        or croak "Opening $temp $!";
+    print $fh $data;
+    close $fh;
+
+    # TODO: if different then rename over it, otherwise unlink tempname
 }
 
 sub compile_entry {
@@ -375,11 +369,8 @@ sub compile_entry {
         $dir_build,
         map encode($conf->{site}{encoding}, $_) => node_to_rel($node)
     );
-    make_path dirname $out_path;
-    open(my $fh, ">:encoding($conf->{site}{encoding})", $out_path)
-        or croak "Opening $out_path: $!";
-    print $fh $out_data;
-    close $fh;
+
+    write_file $out_data => $out_path;
 }
 
 sub install_blob {
@@ -389,4 +380,36 @@ sub install_blob {
 
     ln encode(locale_fs => $content->path),
        encode($conf->{site}{encoding}, $out_path)
+}
+
+my $inject = $tree->dir_inject;
+foreach (
+    File::Spec->no_upwards(
+        map substr($_, 1 + length $inject) => (
+            PFT::Util::locale_glob(File::Spec->catfile($inject, '*')),
+            PFT::Util::locale_glob(File::Spec->catfile($inject, '.*')),
+        )
+    )
+) {
+    my $orig = File::Spec->catfile($inject, $_);
+    my $dst = File::Spec->catfile($dir_build, $_);
+    ln encode(locale_fs => $orig),
+       encode($conf->{site}{encoding}, $dst)
+}
+
+if (defined $home_node) {
+    my $fn = File::Spec->catfile($dir_build, 'index.html');
+    open my $f, ">:encoding($conf->{site}{encoding})", $fn
+        or croak "Unable to open $fn: $!";
+    my $href = join '/', node_to_rel($home_node);
+    my $title = $home_node->title;
+    print $f
+        "<!--\n",
+        "    This file is generated automatically. Do not edit, it will be\n",
+        "    overwritten. It points browsers to $title\n",
+        "-->\n",
+        "<meta HTTP-EQUIV=\"REFRESH\" content=\"0; url=$href\">"
+    ;
+} else {
+    print STDERR "Warning: I was not able to find any $home_node_slug page";
 }
