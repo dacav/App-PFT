@@ -473,6 +473,7 @@ eval {
     }
     if ($entry->exists) {
         if ($entry->empty) {
+            say STDERR "Removing empty entry at $path";
             $entry->unlink;
         } else {
             $entry->make_consistent;
