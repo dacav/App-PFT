@@ -263,11 +263,29 @@ sub site_links {
     },
     backlog => sub {
         # param is the number of recent entries depend on template.
-        nodes_to_anchors($cur_node, $map->blog_recent(shift))
+        my $n = shift;
+        if (!defined $n) {
+            $map->blog_exists
+        }
+        elsif ($n > 0) {
+            nodes_to_anchors($cur_node, $map->blog_recent($n))
+        }
+        else {
+            ()
+        }
     },
     months_backlog => sub {
         # param is the number of recent months depend on template.
-        nodes_to_anchors($cur_node, $map->months_recent(shift))
+        my $n = shift;
+        if (!defined $n) {
+            $map->blog_exists
+        }
+        elsif ($n > 0) {
+            nodes_to_anchors($cur_node, $map->months_recent($n))
+        }
+        else {
+            ()
+        }
     },
 }
 
