@@ -418,13 +418,6 @@ my $conf = eval{ $tree->conf } || do {
     exit 4
 };
 
-my $editor = $opts{editor} || $conf->{system}{editor} || $ENV{EDITOR} || do {
-    say STDERR "Cannot edit: no editor selected";
-    say STDERR "Try setting env EDITOR or to define it in configuration file";
-    say STDERR "(system -> editor)";
-    exit 5
-};
-
 my $entry = eval {;
     if (defined $opts{back}) {
         my $entry = $tree->content->blog_back($opts{back});
@@ -464,13 +457,28 @@ or do {
     exit 6
 };
 
-eval {
-    my $path = $entry->path;
+sub edit_file {
+    my $path = shift;
+    my $editor = $opts{editor}
+              || $conf->{system}{editor}
+              || $ENV{EDITOR}
+              || do {
+        say STDERR "Cannot infer editor. Try setting env EDITOR or to";
+        say STDERR "define it in configuration file (system -> editor)";
+        exit 5
+    };
     if ($editor =~ s/(?<!%)%s/$path/g) {
         system($editor)
-    } else {
+    }
+    else {
         system($editor, $entry->path)
     }
+}
+
+eval {
+    my $path = $entry->path;
+    edit_file $path;
+
     if ($entry->exists) {
         if ($entry->empty) {
             say STDERR "Removing empty entry at $path";
