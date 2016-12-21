@@ -184,6 +184,39 @@ where C<%s> is replaced with the file name (e.g. C<vim [options] %s>).
 This flag overrides the C<$EDITOR> environment variable and the
 C<system.editor> setting in the main configuration file.
 
+=item --stdin
+
+Retrieve content from stdin.
+
+The content file is selected according to the given options, and the content is
+retrieved from standard input.  If the file does exist it gets created with a
+reasonable header. If the file exists but the header is corrupted, the whole
+file gets replaced.  If the file exists and the header is well formed, the
+header is maintained and the remaining part of the file is replaced with content
+retrieved from standard input.
+
+If this option is in use the C<--editor> gets ignored.
+
+This mode handles input and output encoding according to the current locale,
+under the assumption that your content is B<plain text>.
+
+=item --append
+
+As for C<--stdin>, but append content instead of replacing it.
+
+If the content file does not exist or is empty it will be created with a
+reasonable header. Otherwise the content will be appended to it. If the header
+is corrupted the command will issue a warning, but no further action will be
+taken.
+
+=item --raw
+
+This option is useful only if C<--stdin> or C<--append> are specified.
+
+If the C<--raw> option is used the header is not maintained: C<--stdin> will
+behave like the C<cat E<gt> $content_file> unix command line, and C<--append>
+will behave like C<cat E<gt>E<gt> $content_file>.
+
 =item --help | -h
 
 Shows this help.
@@ -353,7 +386,7 @@ Examples:
 
     pft edit -B
 
-=head3 Remove the page C<garbage> 
+=head3 Remove the page C<garbage>
 
     pft edit --editor ':> %s' -P garbage
 
@@ -368,6 +401,9 @@ use PFT::Tree;
 use PFT::Date;
 
 use Pod::Usage;
+
+use Encode;
+use Encode::Locale;
 
 use Getopt::Long qw/GetOptionsFromArray/;
 Getopt::Long::Configure qw/bundling/;
@@ -388,6 +424,9 @@ GetOptions(
     'resume|r!'     => sub { $opts{back} = 0 },
     'back=i'        => sub { $opts{back} = int($_[1]) },
     'editor=s'      => sub { $opts{editor} = $_[1] },
+    'stdin!'        => sub { $opts{stdin} = 1 },
+    'append!'       => sub { $opts{append} = 1 },
+    'raw!'          => sub { $opts{raw} = 1 },
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -418,47 +457,57 @@ my $conf = eval{ $tree->conf } || do {
     exit 4
 };
 
-my $entry = eval {;
+my($entry, $hdr);
+
+# The following block defines $entry as the entry we are going to edit.
+# In some of the cases also $hdr will be defined with the corresponding header.
+do {
+    local $SIG{__DIE__} = sub {
+        say STDERR 'Cannot edit entry: ', shift;
+        exit 6
+    };
+
     if (defined $opts{back}) {
-        my $entry = $tree->content->blog_back($opts{back});
-        defined $entry and $entry or
+        $entry = $tree->content->blog_back($opts{back}) or
             die 'Cannot go back by ', $opts{back}, ': ', $@ =~ s/ at .*$//rs;
-    } elsif ($opts{M}) {
-        $tree->content->new_entry(PFT::Header->new(
-            author => $conf->{site}{author},
-            date => PFT::Date->from_spec(%datespec)->derive(d => undef),
-        ))
-    } elsif ($opts{B}) {
-        $tree->content->new_entry(PFT::Header->new(
-            title => join(' ', @ARGV) || 'Today',
-            author => $conf->{site}{author},
-            tags => $opts{tags} || [],
-            date => eval{ PFT::Date->from_spec(%datespec) } || do {
-                say STDERR 'Invalid date: ', $@ =~ s/ at.*$//rs;
-            },
-        ))
+        $hdr = eval{ $entry->header };  # Might be malformed.
     } elsif ($opts{T}) {
         die 'Mandatory title' unless @ARGV;
-        $tree->content->new_tag(PFT::Header->new(
+        $hdr = PFT::Header->new(
             title => join(' ', @ARGV),
             author => $conf->{site}{author},
-        ))
-    } elsif ($opts{P}) {
-        die 'Mandatory title' unless @ARGV;
-        $tree->content->new_entry(PFT::Header->new(
-            title => join(' ', @ARGV),
-            author => $conf->{site}{author},
-            tags => $opts{tags} || [],
-        ))
-    } else { die "Unhandled?" }
-}
-or do {
-    say STDERR 'Cannot edit entry: ', $@ =~ s/ at.*$//rs;
-    exit 6
+        );
+        $entry = $tree->content->new_tag($hdr)
+    } else {
+        if ($opts{M}) {
+            $hdr = PFT::Header->new(
+                author => $conf->{site}{author},
+                date => PFT::Date->from_spec(%datespec)->derive(d => undef),
+            )
+        } elsif ($opts{B}) {
+            $hdr = PFT::Header->new(
+                title => join(' ', @ARGV) || 'Today',
+                author => $conf->{site}{author},
+                tags => $opts{tags} || [],
+                date => eval{ PFT::Date->from_spec(%datespec) } || do {
+                    say STDERR 'Invalid date: ', $@ =~ s/ at.*$//rs;
+                },
+            )
+        } elsif ($opts{P}) {
+            die 'Mandatory title' unless @ARGV;
+            $hdr = PFT::Header->new(
+                title => join(' ', @ARGV),
+                author => $conf->{site}{author},
+                tags => $opts{tags} || [],
+            )
+        } else { die "Unhandled?" }
+
+        $entry = $tree->content->new_entry($hdr)
+    }
 };
 
 sub edit_file {
-    my $path = shift;
+    my $path = $entry->path;
     my $editor = $opts{editor}
               || $conf->{system}{editor}
               || $ENV{EDITOR}
@@ -471,19 +520,44 @@ sub edit_file {
         system($editor)
     }
     else {
-        system($editor, $entry->path)
+        system($editor, $path)
     }
 }
 
+sub feed_file {
+    my $mode = '>';
+    my $skip_header = $opts{raw} || !defined $hdr;
+    if ($opts{stdin}) {
+        die "Supported --stdin or --append, not both" if $opts{append};
+    }
+    elsif ($opts{append}) {
+        if (-f $entry->path) {
+            $mode .= '>';
+            $skip_header = 1;
+        }
+    }
+
+    open my $out, "$mode:encoding(locale)", $entry->path
+        or die 'Cannot open ', $entry->path, ": $!";
+    $hdr->dump($out) unless $skip_header;
+    print $out <STDIN>;
+    close $out;
+}
+
 eval {
-    my $path = $entry->path;
-    edit_file $path;
+    if ($opts{stdin} or $opts{append}) {
+        feed_file
+    }
+    else {
+        edit_file
+    }
 
     if ($entry->exists) {
         if ($entry->empty) {
-            say STDERR "Removing empty entry at $path";
+            say STDERR "Removing empty entry at ", $entry->path;
             $entry->unlink;
-        } else {
+        }
+        else {
             $entry->make_consistent;
         }
     }
