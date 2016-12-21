@@ -234,25 +234,6 @@ sub nodes_to_anchors {
     [map node_to_anchor($cur_node, $_), @_]
 }
 
-sub print_issues {
-    my($node, $issues) = @_;
-
-    return unless keys %$issues;
-
-    say STDERR "Processing $node:";
-    for (sort keys %$issues) {
-        say STDERR "  Unresolved symbols:\n  - ", join("\n  - ",
-            map {
-                $_->[0]->keyword
-                    . '(' . join(', ', $_->[0]->args)
-                    . '): '
-                    . (defined $_->[1] ? $_->[1] : "Lookup failed")
-            }
-            $node->symbols_unres
-        )
-    }
-}
-
 sub site_links {
     my $cur_node = shift;
     pages => sub {
@@ -294,17 +275,14 @@ my $home_node_slug = PFT::Header::slugify($conf->{site}{home});
 my $home_node;
 
 for my $node ($map->nodes) {
-    my %issues;
     my $content = $node->content;
 
     if ($content->isa('PFT::Content::Entry')) {
-        compile_entry($node, $content, \%issues)
+        compile_entry($node, $content)
     }
     elsif ($content->isa('PFT::Content::Blob')) {
-        install_blob($node, $content, \%issues)
+        install_blob($node, $content)
     }
-
-    print_issues($node, \%issues);
 }
 
 sub write_file {
@@ -333,11 +311,20 @@ sub write_file {
 }
 
 sub compile_entry {
-    my($node, $content, $issues) = @_;
+    my($node, $content) = @_;
 
     my $hdr = $node->header;
-    if (my @unres = $node->symbols_unres) {
-        $issues->{'Unresolved'} = \@unres
+    my $first = 1;
+    foreach ($node->symbols_unres) {
+        if ($first) {
+            say STDERR "Unresolved links in $node:"
+        }
+
+        my($symbol, $reason) = @$_;
+        say STDERR "- link: $symbol";
+        say STDERR "- reason: $reason";
+
+        undef $first;
     }
 
     my $is_home;
@@ -392,7 +379,7 @@ sub compile_entry {
 }
 
 sub install_blob {
-    my($node, $content, $issues) = @_;
+    my($node, $content) = @_;
 
     my $out_path = File::Spec->catfile($dir_build, node_to_rel($node));
 
