@@ -42,7 +42,7 @@ modified by editing the C<pft.yaml> configuration file.
 #
 # Generate again if needed with:
 #
-#   perl -CO -MPFT:Conf=pod_autogen -wE 'say pod_autogen'
+#   perl -CO -MPFT::Conf=pod_autogen -wE 'say pod_autogen'
 #
 
 use strict;
@@ -130,31 +130,31 @@ foreach (glob encode(locale_fs => $glob)) {
 
 =over
 
-=item --remote-host
+=item --publish-host
 
 Remote host where to publish
 
 Defaults to C<example.org>
 
-=item --remote-method
+=item --publish-method
 
 Method used for publishing
 
 Defaults to C<rsync+ssh>
 
-=item --remote-path
+=item --publish-path
 
 Directory on publishing host
 
 Defaults to C</home/dacav/public_html>
 
-=item --remote-port
+=item --publish-port
 
 Port for connection on publishing host
 
 Defaults to C<22>
 
-=item --remote-user
+=item --publish-user
 
 User login on publishing host
 
@@ -182,7 +182,7 @@ Defaults to C<Welcome>
 
 Default template for compilation, can be overriden by single entries
 
-Defaults to C<default>
+Defaults to C<default.html>
 
 =item --site-title
 
@@ -200,7 +200,7 @@ Defaults to C<http://example.org>
 
 Browser to be invoked by C<pft show>. You may specify an executable, or a shell command where "%s" gets replaced with the file name
 
-Defaults to C<midori --private %s>
+Defaults to C<firefox %s>
 
 =item --system-editor
 
