@@ -4,11 +4,24 @@
         <meta http-equiv="content-type" content="text/html; charset=[% site.encoding %]">
         <title>[% site.title %]: [% content.title %]</title>
         <style type="text/css">
+            [%
+                IF site.theme == 'dark'
+                    color.bg = '#292727'
+                    color.fg = '#e9e9e9'
+                    color.h = '#bdcce6'
+                    color.prebg = '#4a4a4a'
+                ELSE
+                    color.bg = 'white'
+                    color.fg = '#252525'
+                    color.h = '#616161'
+                    color.prebg = '#e7e7e7'
+                END
+            %]
 
             body {
                 margin: 0 auto 0;
-                background-color : white;
-                color : #252525;
+                background-color : [% color.bg %];
+                color : [% color.fg %];
                 font-family : serif;
                 max-width : 50em;
                 padding : 1em;
@@ -20,7 +33,7 @@
 
             h1,h2,h3,h4,h5 {
                 font-family : sans-serif;
-                color : #616161;
+                color : [% color.h %];
             }
 
             div#all_pages h3 {
@@ -43,7 +56,6 @@
             }
 
             div#content div#info h4  {
-                color : #9f9f9f;
                 display : inline;
                 font-style : italic;
                 font-family : serif;
@@ -63,15 +75,15 @@
             }
 
             a {
-                color : cornflowerblue
+                color : cornflowerblue;
             }
 
             a:hover {
-                color : cornflowerblue
+                color : cornflowerblue;
             }
 
             a:visited {
-                color : cornflowerblue
+                color : cornflowerblue;
             }
 
             h3#tags_list a {
@@ -80,10 +92,9 @@
 
             div#content div#text pre {
                 overflow : auto;
-                background-color : #e7e7e7;
+                background-color : [% color.prebg %];
                 padding : 1em;
-                /* lighter than cornflowerblue */
-                border-left : 0.4em solid #c1d6fb;
+                border-left : 0.4em solid cornflowerblue;
             }
 
             div#content div#text blockquote {
@@ -103,7 +114,6 @@
         <div id="header">
             <h1>[% site.title %]</h1>
         </div>
-
         <div id="all_pages">
             [% FOREACH p = links.pages %]
                 [% IF loop.first %]
