@@ -124,7 +124,7 @@ use Encode::Locale;
 use Template::Alloy;
 
 use File::Spec;
-use File::Basename qw/dirname/;
+use File::Basename qw/dirname basename/;
 use File::Path qw/make_path/;
 
 use PFT::Text;
@@ -132,6 +132,8 @@ use PFT::Tree;
 use PFT::Util;
 
 use App::PFT;
+use App::PFT::Util qw/ln/;
+
 use Pod::Usage;
 use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
@@ -232,25 +234,6 @@ sub nodes_to_anchors {
     [map node_to_anchor($cur_node, $_), @_]
 }
 
-sub print_issues {
-    my($node, $issues) = @_;
-
-    return unless keys %$issues;
-
-    say STDERR "Processing $node:";
-    for (sort keys %$issues) {
-        say STDERR "  Unresolved symbols:\n  - ", join("\n  - ",
-            map {
-                $_->[0]->keyword
-                    . '(' . join(', ', $_->[0]->args)
-                    . '): '
-                    . (defined $_->[1] ? $_->[1] : "Lookup failed")
-            }
-            $node->symbols_unres
-        )
-    }
-}
-
 sub site_links {
     my $cur_node = shift;
     pages => sub {
@@ -260,10 +243,30 @@ sub site_links {
         nodes_to_anchors($cur_node, $map->tags)
     },
     backlog => sub {
-        nodes_to_anchors($cur_node, $map->blog_recent(shift))
+        # param is the number of recent entries depend on template.
+        my $n = shift;
+        if (!defined $n) {
+            $map->blog_exists
+        }
+        elsif ($n > 0) {
+            nodes_to_anchors($cur_node, $map->blog_recent($n))
+        }
+        else {
+            ()
+        }
     },
     months_backlog => sub {
-        nodes_to_anchors($cur_node, $map->months_recent(shift))
+        # param is the number of recent months depend on template.
+        my $n = shift;
+        if (!defined $n) {
+            $map->blog_exists
+        }
+        elsif ($n > 0) {
+            nodes_to_anchors($cur_node, $map->months_recent($n))
+        }
+        else {
+            ()
+        }
     },
 }
 
@@ -272,20 +275,118 @@ my $home_node_slug = PFT::Header::slugify($conf->{site}{home});
 my $home_node;
 
 for my $node ($map->nodes) {
-    my %issues;
     my $content = $node->content;
 
     if ($content->isa('PFT::Content::Entry')) {
-        compile_entry($node, $content, \%issues)
+        compile_entry($node, $content)
     }
     elsif ($content->isa('PFT::Content::Blob')) {
-        install_blob($node, $content, \%issues)
+        install_blob($node, $content)
     }
-
-    print_issues($node, \%issues);
 }
 
-use App::PFT::Util qw/ln/;
+sub write_file {
+
+    my($data, $path) = @_;
+
+    my $dirname = dirname $path;
+    my $basename = basename $path;
+
+    make_path $dirname;
+
+    # TODO:
+    # This function writes the content on a temporary file. If the content is
+    # the same we keep the old one, otherwise we replace it. This will maintain
+    # the same timestamp for unchanged files, improving the deployment speed
+    # (e.g. via rsync).
+    # TODO: use this tempname
+    #my $temp = File::Spec->catfile($dirname, ".$basename");
+    my $temp = File::Spec->catfile($dirname, $basename);
+    open(my $fh, ">:encoding($conf->{site}{encoding})", $temp)
+        or croak "Opening $temp $!";
+    print $fh $data;
+    close $fh;
+
+    # TODO: if different then rename over it, otherwise unlink tempname
+}
+
+sub compile_entry {
+    my($node, $content) = @_;
+
+    my $hdr = $node->header;
+    my $first = 1;
+    foreach ($node->symbols_unres) {
+        if ($first) {
+            say STDERR "Unresolved links in $node:"
+        }
+
+        my($symbol, $reason) = @$_;
+        say STDERR "- link: $symbol";
+        say STDERR "- reason: $reason";
+
+        undef $first;
+    }
+
+    my $is_home;
+    if (!$node->virtual && $hdr->slug eq $home_node_slug) {
+        die "There should be no doubles" if defined $home_node;
+        $home_node = $node;
+        $is_home ++;
+    }
+
+    if ($hdr->opts->{hide}) {
+        print "Node $node will be hidden\n";
+        return;
+    }
+
+    my %entry_info = (
+        site => {
+            root => join('/', node_to_root($node)),
+            %{$conf->{site}},
+        },
+        content => {
+            title => $node->title,
+            html  => $node->html(sub { node_to_href($node, shift) }),
+            tags  => nodes_to_anchors($node, $node->tags),
+            date  => sub { node_to_date($node, @_) },
+            is_home => $is_home,
+            author => $node->author,
+            is_virtual => $node->virtual,
+        },
+        links => {
+            site_links($node),
+            prev     => node_to_anchor($node, $node->prev),
+            next     => node_to_anchor($node, $node->next),
+            parent   => node_to_anchor($node, $node->month),
+            children => nodes_to_anchors($node, $node->children),
+        }
+    );
+
+    my $out_data;
+    $template->process(
+        # Encoding alert!
+        ($hdr->opts->{template} || $conf->{site}{template}),
+        \%entry_info,
+        \$out_data,
+    ) || croak 'Template expansion issue: ', $template->error;
+
+    my $out_path = File::Spec->catfile(
+        $dir_build,
+        map encode($conf->{site}{encoding}, $_) => node_to_rel($node)
+    );
+
+    write_file $out_data => $out_path;
+}
+
+sub install_blob {
+    my($node, $content) = @_;
+
+    my $out_path = File::Spec->catfile($dir_build, node_to_rel($node));
+
+    ln encode(locale_fs => $content->path),
+       encode($conf->{site}{encoding}, $out_path)
+}
+
 my $inject = $tree->dir_inject;
 foreach (
     File::Spec->no_upwards(
@@ -316,73 +417,4 @@ if (defined $home_node) {
     ;
 } else {
     print STDERR "Warning: I was not able to find any $home_node_slug page";
-}
-
-sub compile_entry {
-    my($node, $content, $issues) = @_;
-
-    my $hdr = $node->header;
-    if (my @unres = $node->symbols_unres) {
-        $issues->{'Unresolved'} = \@unres
-    }
-
-    my $is_home;
-    if (!$node->virtual && $hdr->slug eq $home_node_slug) {
-        die "There should be no doubles" if defined $home_node;
-        $home_node = $node;
-        $is_home ++;
-    }
-
-    if ($hdr->opts->{hide}) {
-        print "Node $node will be hidden\n";
-        return;
-    }
-
-    my %entry_info = (
-        site => {
-            root => join('/', node_to_root($node)),
-            %{$conf->{site}},
-        },
-        content => {
-            title => $node->title,
-            html  => $node->html(sub { node_to_href($node, shift) }),
-            tags  => nodes_to_anchors($node, $node->tags),
-            date  => sub { node_to_date($node, @_) },
-            is_home => $is_home,
-        },
-        links => {
-            site_links($node),
-            prev     => node_to_anchor($node, $node->prev),
-            next     => node_to_anchor($node, $node->next),
-            parent   => node_to_anchor($node, $node->month),
-            children => nodes_to_anchors($node, $node->children),
-        }
-    );
-
-    my $out_data;
-    $template->process(
-        # Encoding alert!
-        ($hdr->opts->{template} || $conf->{site}{template}),
-        \%entry_info,
-        \$out_data,
-    ) || croak 'Template expansion issue: ', $template->error;
-
-    my $out_path = File::Spec->catfile(
-        $dir_build,
-        map encode($conf->{site}{encoding}, $_) => node_to_rel($node)
-    );
-    make_path dirname $out_path;
-    open(my $fh, ">:encoding($conf->{site}{encoding})", $out_path)
-        or croak "Opening $out_path: $!";
-    print $fh $out_data;
-    close $fh;
-}
-
-sub install_blob {
-    my($node, $content, $issues) = @_;
-
-    my $out_path = File::Spec->catfile($dir_build, node_to_rel($node));
-
-    ln encode(locale_fs => $content->path),
-       encode($conf->{site}{encoding}, $out_path)
 }

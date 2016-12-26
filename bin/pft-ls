@@ -63,9 +63,6 @@ This class supports the C<--pretty> argument.
 
 Scan through all entries and list all used tags.
 
-This class supports the C<--count> argument. If supplied the tag usage
-count is also reported.
-
 =item tagpages
 
 List all tag pages, that is pages describing tags.
@@ -77,10 +74,6 @@ This class supports the C<--pretty> argument.
 =head1 OPTIONS
 
 =over
-
-=item --count
-
-Count the listed items.
 
 =item --help | -h
 
@@ -94,25 +87,34 @@ Show paths and titles, namely quick alias for:
 
 =item --pretty=<fmt>
 
+Print properties of the listed nodes according to the specified format. The
+format uses the same I<percent notation> as printf. Note that some of those
+values can be void (for example, pages don't have a date). If this is the case
+the placeholder gets expanded with an empty string.
+
+The output is encoding depending on the locale.
+
 =over
 
 =item %t → Title
 
-=item %p → Path
+=item %p → Path (might be void if the node is virtual)
 
-=item %g → Comma separated value of tags
+=item %g → Comma separated list of tags (possibly void)
 
-=item %a → Author
+=item %a → Author (possibly void)
 
-=item %o → Comma separated value of option=value pairs
+=item %s → Slug (or name, if the node is virtual)
 
-=item %D → Date in yyyy-mm-dd format if dated, empty string otherwise
+=item %D → Date in yyyy-mm-dd format (possibly void)
 
-=item %y → Year if dated, empty string otherwise
+=item %y → Year (possibly void)
 
-=item %m → Month if dated, empty string otherwise
+=item %m → Month (possibly void)
 
-=item %d → Day if dated, empty string otherwise
+=item %d → Day (possibly void)
+
+=item %o → Comma separated value of option=value pairs (possibly void)
 
 =back
 
@@ -134,13 +136,12 @@ use Getopt::Long;
 Getopt::Long::Configure qw/bundling/;
 
 my %opts = (
-    pretty => \&simple,
+    pretty => pretty_parse("%t : %p")
 );
 
 GetOptions(
-    'count!'        => \$opts{count},
     'pretty=s'      => sub { $opts{pretty} = pretty_parse($_[1]) },
-    'locate!'       => sub { $opts{pretty} = pretty_parse("%p:%t") },
+    'locate!'       => sub { $opts{pretty} = pretty_parse("%t:%p") },
     'help|h!'       => sub {
         pod2usage
             -exitval => 1,
@@ -153,7 +154,6 @@ my %classes = (
     pages => \&list_pages,
     blog => \&list_blog,
     tags => \&list_tags,
-    tagpages => \&list_tagpages,
 );
 
 my $tree = eval{ PFT::Tree->new } || do {
@@ -165,17 +165,8 @@ my $content = PFT::Tree->new->content;
 
 my $cls = shift;
 if (defined $cls and my $handle = $classes{$cls}) {
-    my $to_show = $handle->();
-    if (ref $to_show eq 'HASH') {
-        my @keys = sort keys %$to_show;
-        say for $opts{count}
-            ? map{"$to_show->{$_} $_"} @keys
-            : @keys
-    }
-    elsif (ref $to_show eq 'ARRAY') {
-        say for sort @$to_show;
-    }
-    else { die ref $to_show }
+    # The selected handle is used to list the specific class of content objects.
+    say &{$opts{pretty}} for $handle->()
 }
 else {
     say STDERR "Usage: $App::PFT::Name <class> [options]";
@@ -184,31 +175,50 @@ else {
     exit 1;
 }
 
-sub simple {
-    my $hdr = $_->header;
-    $hdr->slug . ': ' .$hdr->title
-}
-
 sub pretty_parse {
     my $fmt = shift;
+    my $align = qr/-?\d*/;
+
     sub {
         my $out = $fmt;
+
+        # defined(hdr) implies $_->exists
         my $hdr = $_->header;
+        my $date = $hdr ? $hdr->date : undef;
 
-        $out =~ s/(?<!%)%t/$hdr->title/eg;
-        $out =~ s/(?<!%)%p/$_->path/eg;
-        $out =~ s/(?<!%)%g/join ',', $hdr->tags/eg;
-        $out =~ s/(?<!%)%a/$hdr->author/eg;
-
-        $out =~ s/(?<!%)%o/
-            my $h = $hdr->opts();
-            join(', ', map $_ .'='. ($h->{$_} || '<undef>') => keys %$h )
-        /eg;
-
-        $out =~ s/(?<!%)%D/$hdr->date ? $hdr->date->repr('-') : ''/eg;
-        $out =~ s/(?<!%)%y/$hdr->date ? $hdr->date->year : ''/eg;
-        $out =~ s/(?<!%)%m/$hdr->date ? $hdr->date->month : ''/eg;
-        $out =~ s/(?<!%)%d/$hdr->date ? $hdr->date->day : ''/eg;
+        $out =~ s/(?<!%)%($align)t/sprintf(
+            "%$1s", $hdr ? $hdr->title : $_->name
+        )/eg;
+        $out =~ s/(?<!%)%($align)p/sprintf(
+            "%$1s", $hdr ? $_->path : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)a/sprintf(
+            "%$1s", $hdr ? $hdr->author : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)s/sprintf(
+            "%$1s", $hdr ? $hdr->slug : $_->name
+        )/eg;
+        $out =~ s/(?<!%)%($align)D/sprintf(
+            "%$1s", $date ? $date->repr('-') : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)y/sprintf(
+            "%$1s", $date ? $date->y : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)m/sprintf(
+            "%$1s", $date ? $date->m : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)d/sprintf(
+            "%$1s", $date ? $date->d : ''
+        )/eg;
+        $out =~ s/(?<!%)%($align)o/sprintf("%$1s",
+            !defined($hdr) ? '' : do {
+                my $h = $hdr->opts();
+                join(', ', map $_ .'='. ($h->{$_} || '>') => keys %$h )
+            }
+        )/eg;
+        $out =~ s/(?<!%)%($align)g/sprintf(
+            "%$1s", $hdr ? join(',', $hdr->tags_slug ) : ''
+        )/eg;
 
         $out;
     }
@@ -220,29 +230,20 @@ sub list_tags {
         $tags{$_} ++ for $c->header->tags_slug
     }
 
-    my $real_title = sub {
-        my $tagpage = $content->tag(PFT::Header->new(
-            title => shift,
-            encoding => $ENCODING_LOCALE,
-        ));
-        $tagpage->exists ? $tagpage->header->title : $_
-    };
-
-    my %out = map{ $real_title->($_) => $tags{$_} } keys %tags;
-    \%out;
+    map $content->tag(PFT::Header->new(
+        title => $_,
+        encoding => $ENCODING_LOCALE,
+    )), keys %tags;
 }
 
 sub list_pages {
-    my $p = $opts{pretty};
-    [ map &$p => $content->pages_ls ]
+    $content->pages_ls
 }
 
 sub list_blog {
-    my $p = $opts{pretty};
-    [ map &$p => $content->blog_ls ]
+    $content->blog_ls
 }
 
 sub list_tagpages {
-    my $p = $opts{pretty};
-    [ map &$p => $content->tags_ls ]
+    $content->tags_ls
 }

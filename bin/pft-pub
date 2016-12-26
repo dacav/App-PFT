@@ -47,14 +47,26 @@ Show this help
 
 =back
 
+=head2 SUPPORTED INSTALLATION METHODS
+
+=over
+
+=item install
+
+Copy the C<build> directory in another part of the filesystem.
+
+This installation method will clear the target directory before reconstructing
+it: any data contained in such directory will be lost. Consider using the
+C<inject> directory for auxiliary files (This topic is covered by C<pft --help>)
+
+=item rsync+ssh
+
+Copy the C<build> directory via RSYNC onto a remote server, using SSH as
+transport protocol.
+
+=back
+
 =cut
-
-use v5.16;
-use strict;
-use warnings;
-use utf8;
-
-use feature qw/say state/;
 
 use PFT::Tree;
 use PFT::Conf;
@@ -81,8 +93,8 @@ my %methods = (
 GetOptions(
     'list-required-conf' => sub {
         for my $mname (sort keys %methods) {
-            say $mname, ':';
-            say "\t--publish-$_" foreach $methods{$mname}->();
+            say STDOUT $mname, ':';
+            say STDOUT "\t--publish-$_" foreach $methods{$mname}->();
         }
         exit 0;
     },
@@ -149,8 +161,6 @@ sub rsync_ssh {
         $src, $dst,
     );
 }
-
-use feature 'say';
 
 sub install {
     my $tree = shift;

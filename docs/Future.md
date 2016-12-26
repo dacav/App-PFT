@@ -12,15 +12,6 @@ Build
 
   - Plus a command for setting a default theme maybe?
 
-Mapping
--------
-
-### Reference to day
-
-Links as `:blog:2016/02/11` should reference the day. Not working if
-multiple blog entries were done that day. If this is the case, slug shall
-be specified
-
 Editing
 -------
 
@@ -38,16 +29,13 @@ More-to-least (perceived) complexity
 
 - Nested sites (useful?)
 - Optional per-{post,entry} picture
-- Callback-based mapping on make
 - Source code coloring (e.g. `| highlight_code` filter?)
 - Encryption support (e.g `| encrypt_if` filter)
 - Attachments download page
 - Referrer killer
-- Dangling link detector
 - Configuration options (e.g. `Editor : vim`)
 - Custom editor modes (e.g. if using vim, add modelines)
 - 0-in-degree detector
-- Virtual home
 
  * More special references
     - Configurable redirector for avoiding referrers (e.g :redirect:<url>)
