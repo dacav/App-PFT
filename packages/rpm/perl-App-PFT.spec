@@ -2,8 +2,8 @@
 %global patchbase https://raw.githubusercontent.com/dacav/%{module}/v%{version}/packages/rpm/%{name}
 
 Name:           perl-%{module}
-Version:        1.0.6
-Release:        2%{?dist}
+Version:        1.1.0
+Release:        1%{?dist}
 Summary:        Hacker friendly static blog generator
 
 License:        GPLv3+
@@ -104,6 +104,10 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
+* Tue Dec 27 2016 <Giovanni Simoni <dacav@openmailbox.org>
+> - 1.1.0-1
+- Release 1.1.0
+
 * Thu Sep 29 2016 dacav@openmailbox.org - 1.0.6-2
 - Fixed patch description
 - Removed explicit dependency
