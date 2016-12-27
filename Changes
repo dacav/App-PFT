@@ -30,3 +30,9 @@ Revision history for App-PFT
 
 1.0.0   2016-04-21
         Implemented core as external library, declaring version 1
+
+1.1.0   2016-12-27
+        Improved 'pft edit' command with stdin/append/raw
+        Fixed compilation process
+        Improved default templates
+        Added theme management
