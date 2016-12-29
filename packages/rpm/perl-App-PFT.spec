@@ -3,12 +3,12 @@
 
 Name:           perl-%{module}
 Version:        1.1.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Hacker friendly static blog generator
 
 License:        GPLv3+
 URL:            https://github.com/dacav/%{module}
-Source0:        https://github.com/dacav/%{module}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+Source0:        https://github.com/dacav/%{module}/archive/v%{version}.tar.gz#/%{module}-%{version}.tar.gz
 
 # This software packet is composed by a toolkit of executable scripts, which
 # are chain loaded by a main script named 'pft`. The position of the scripts is
@@ -104,8 +104,10 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
-* Tue Dec 27 2016 <Giovanni Simoni <dacav@openmailbox.org>
-> - 1.1.0-1
+* Thu Dec 29 2016 dacav <dacav@openmailbox.org> - 1.1.0-2
+- Fixed source name
+
+* Tue Dec 27 2016 dacav@openmailbox.org - 1.1.0-1
 - Release 1.1.0
 
 * Thu Sep 29 2016 dacav@openmailbox.org - 1.0.6-2
