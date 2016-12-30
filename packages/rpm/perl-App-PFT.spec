@@ -3,7 +3,7 @@
 
 Name:           perl-%{module}
 Version:        1.1.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Hacker friendly static blog generator
 
 License:        GPLv3+
@@ -21,6 +21,7 @@ Patch0:         %{patchbase}.libexec.patch
 
 BuildArch:      noarch
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+Provides:       pft = %{version}-%{release}
 
 BuildRequires:  perl
 BuildRequires:  perl-generators
@@ -104,6 +105,9 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
+* Fri Dec 30 2016 dacav <dacav@openmailbox.org> - 1.1.0-3
+- Added "pft" as Provides
+
 * Thu Dec 29 2016 dacav <dacav@openmailbox.org> - 1.1.0-2
 - Fixed source name
 
