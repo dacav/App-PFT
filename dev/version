@@ -96,7 +96,9 @@ if ($act eq 'list') {
 
         local $_; while (<$fin>) {
             if (my($cur, @mmp) = /\s*package\s+\S+\s+v((\d+)\.(\d+)\.(\d+))\s*;/) {
-                $mmp[$par eq 'major' ? 0 : $par eq 'minor' ? 1 : 2] ++;
+                my $idx = $par eq 'major' ? 0 : $par eq 'minor' ? 1 : 2;
+                $mmp[$idx] ++;
+                $mmp[$_] = 0 for (1 + $idx .. 2);
 
                 my $nv = version->parse("@mmp");
                 if (defined $new_version) {
