@@ -2,8 +2,8 @@
 %global patchbase https://raw.githubusercontent.com/dacav/%{module}/v%{version}/packages/rpm/%{name}
 
 Name:           perl-%{module}
-Version:        1.1.0
-Release:        3%{?dist}
+Version:        1.1.1
+Release:        1%{?dist}
 Summary:        Hacker friendly static blog generator
 
 License:        GPLv3+
@@ -105,6 +105,9 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
+* Fri Jan 13 2017 dacav <dacav@openmailbox.org> - 1.1.1-1
+- Release 1.1.1
+
 * Fri Dec 30 2016 dacav <dacav@openmailbox.org> - 1.1.0-3
 - Added "pft" as Provides
 
