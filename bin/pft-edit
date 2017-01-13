@@ -553,7 +553,7 @@ eval {
     }
 
     if ($entry->exists) {
-        if ($entry->empty) {
+        if ($entry->void) {
             say STDERR "Removing empty entry at ", $entry->path;
             $entry->unlink;
         }
