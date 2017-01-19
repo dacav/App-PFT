@@ -442,7 +442,7 @@ do {
     my @sel = grep $opts{$_}, qw(B M T P);
     if (@sel != 1) {
         local $, = ' -';
-        say STDERR 'Select exactly one mode: -B -M -T -P. Currently:', @sel;
+        say STDERR 'Select exactly one mode: -B -M -T -P';
         exit 2
     }
 };
