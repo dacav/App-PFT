@@ -105,11 +105,11 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
-* Fri Jan 20 2017 dacav <dacav@openmailbox.org> - 1.1.2-1
+* Wed Mar 01 2017 dacav <dacav@openmailbox.org> - 1.1.2-1
 - Release 1.1.2
 
-* Fri Jan 13 2017 dacav <dacav@openmailbox.org> - 1.1.1-1
-- Release 1.1.1
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1.1.0-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
 * Fri Dec 30 2016 dacav <dacav@openmailbox.org> - 1.1.0-3
 - Added "pft" as Provides
