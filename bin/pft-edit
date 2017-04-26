@@ -209,6 +209,15 @@ reasonable header. Otherwise the content will be appended to it. If the header
 is corrupted the command will issue a warning, but no further action will be
 taken.
 
+=item --select=<id>
+
+Select a certain entry by index, in case of ambiguity.
+
+This option applies when multiple files are matching the parameters for file
+selection, and a choice is required.  In these situations, if C<--select> is
+not provided the C<pft edit> command will fail, and the use of C<--select>
+will be explicitly requested by an error message.
+
 =item --raw
 
 This option is useful only if C<--stdin> or C<--append> are specified.
@@ -426,6 +435,7 @@ GetOptions(
     'editor=s'      => sub { $opts{editor} = $_[1] },
     'stdin!'        => sub { $opts{stdin} = 1 },
     'append!'       => sub { $opts{append} = 1 },
+    'select=i'      => sub { $opts{select} = $_[1] },
     'raw!'          => sub { $opts{raw} = 1 },
     'help|h!'       => sub {
         pod2usage
@@ -463,16 +473,43 @@ my($entry, $hdr);
 # In some of the cases also $hdr will be defined with the corresponding header.
 do {
     local $SIG{__DIE__} = sub {
-        say STDERR 'Cannot edit entry: ', shift;
+        say STDERR 'Cannot edit entry: ',
+            shift =~ s/ at .*$//rs;
         exit 6
     };
 
     if (defined $opts{back}) {
-        $entry = $tree->content->blog_back($opts{back}) or
-            die 'Cannot go back by ', $opts{back}, ': ', $@ =~ s/ at .*$//rs;
+        if (keys %datespec) {
+            my $date = PFT::Date->from_spec(%datespec);
+            my @entries = $tree->content->blog_at($date);
+            die 'none for the specified date ', $date unless @entries;
+            if (@entries == 1) {
+                $entry = $entries[0];
+            }
+            elsif (exists $opts{select}) {
+                $entry = $entries[$opts{select}];
+                die 'invalid index ', $opts{select} unless defined $entry;
+            }
+            else {
+                say STDERR 'Multiple entries:';
+                for (my $idx = 0; $idx < @entries; $idx ++) {
+                    my $hdr = $entries[$idx]->header;
+                    say STDERR sprintf("%d: %s",
+                        $idx,
+                        $hdr ? $hdr->title : $_->name
+                    )
+                }
+                die 'disambiguate by providing --select=<index>'
+            }
+        }
+        else {
+            $entry = $tree->content->blog_back($opts{back})
+                or die 'cannot go back by ', $opts{back}, ': ',
+                    $@ =~ s/ at .*$//rs;
+        }
         $hdr = eval{ $entry->header };  # Might be malformed.
     } elsif ($opts{T}) {
-        die 'Mandatory title' unless @ARGV;
+        die 'mandatory title' unless @ARGV;
         $hdr = PFT::Header->new(
             title => join(' ', @ARGV),
             author => $conf->{site}{author},
@@ -494,13 +531,13 @@ do {
                 },
             )
         } elsif ($opts{P}) {
-            die 'Mandatory title' unless @ARGV;
+            die 'mandatory title' unless @ARGV;
             $hdr = PFT::Header->new(
                 title => join(' ', @ARGV),
                 author => $conf->{site}{author},
                 tags => $opts{tags} || [],
             )
-        } else { die "Unhandled?" }
+        } else { die "unhandled case? This is a bug" }
 
         $entry = $tree->content->new_entry($hdr)
     }
