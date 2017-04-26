@@ -165,8 +165,16 @@ is if the file does not exist yet.
 
 =item --resume | -r
 
-Resume editing the most recent blog entry. Equivalent to C<--back 0>,
-implies C<-B>.
+Resume editing of a blog entry. Implies C<-B>.
+
+A date can be specified via the C<-y>, C<-m> and C<-d> options. If one entry
+corresponds to this date the corresponding file gets opened. If more then
+one entry exists for such date the user is required to specify a selection
+via the C<--select> option. If the date is only partially specified, that is
+not all of C<-y>, C<-m> and C<-d> are provided, it gets completed with the
+current date.
+
+If no date is specified, C<-r> is equivalent to C<--back 0>.
 
 =item --back=<count> | -b <count>
 
@@ -340,6 +348,8 @@ Examples:
 =item :web:I<service>/I<param>/I<param>/...
 
 Generate an URL which points to a web site or service (e.g. search
+In all other cases the C<--select> flag is silently ignored.
+
 engines, or specialized website) and passes data on the query. A number of
 valid values are supported for the  I<service> argument. The list of
 I<param> arguments depend on the specific service.
@@ -395,9 +405,17 @@ Examples:
 
     pft edit -B
 
+=head3 Blog about today specifying a title
+
+    pft edit -B A lucky day
+
 =head3 Remove the page C<garbage>
 
     pft edit --editor ':> %s' -P garbage
+
+=head3 Resume the blog entry of the 27th of August 2014
+
+    pft edit -B -r -y2014 -d27 -m Aug
 
 =cut
 
