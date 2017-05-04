@@ -171,7 +171,7 @@ if (defined $cls and my $handle = $classes{$cls}) {
 else {
     say STDERR "Usage: $App::PFT::Name <class> [options]";
     say STDERR "Available classes:";
-    say "  * $_" for keys %classes;
+    say STDERR "  * $_" for keys %classes;
     exit 1;
 }
 
