@@ -243,7 +243,3 @@ sub list_pages {
 sub list_blog {
     $content->blog_ls
 }
-
-sub list_tagpages {
-    $content->tags_ls
-}
