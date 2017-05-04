@@ -83,7 +83,7 @@ Show this help.
 
 Show paths and titles, namely quick alias for:
 
-    --pretty='%h:%t'
+    --pretty='%t:%p'
 
 =item --pretty=<fmt>
 

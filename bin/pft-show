@@ -23,7 +23,7 @@ pft show - Show the built site
 
 =head1 SYNOPSYS
 
-pft clean [-v]
+pft show [-v]
 
 =head1 DESCRIPTION
 
