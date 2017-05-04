@@ -165,22 +165,25 @@ is if the file does not exist yet.
 
 =item --resume | -r
 
-Resume editing of a blog entry. Implies C<-B>.
+Resume editing of a blog entry.
 
-A date can be specified via the C<-y>, C<-m> and C<-d> options. If one entry
-corresponds to this date the corresponding file gets opened. If more then
-one entry exists for such date the user is required to specify a selection
-via the C<--select> option. If the date is only partially specified, that is
-not all of C<-y>, C<-m> and C<-d> are provided, it gets completed with the
-current date.
+This option implies C<-B>. The blog entry resumed for editing corresponds by
+default to the latest in chronological order.
 
-If no date is specified, C<-r> is equivalent to C<--back 0>.
+A date can be specified via the C<-y>, C<-m> and C<-d> options. If the date
+is only partially specified, that is not all of C<-y>, C<-m> and C<-d> are
+provided, the missing bits get completed with the current date.  If no date
+is specified, C<-r> is equivalent to C<--back 0>.
+
+If more then one entry exists for the specified date, the command fails and
+the user is explicitly required to specify a selection via the C<--select>
+option.
 
 =item --back=<count> | -b <count>
 
-Resume editing an old entry. The supplied parameter defines how many steps
-we should go back in history (0 means the most recent entry, 1 means the
-second to last).
+Resume editing an old entry. The supplied parameter defines how many days
+we should go back in history since the last day we have an entry for (0
+means the most recent day, 1 means the second to last).
 
 =item --editor <command>
 
