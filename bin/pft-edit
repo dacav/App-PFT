@@ -21,14 +21,14 @@
 
 =head1 NAME
 
-pft entry - Edit an entry
+pft edit - Edit an entry
 
 =head1 SYNOPSYS
 
-    pft entry -P [options] title of your page
-    pft entry -B [options] title of your blog page
-    pft entry -M [options] title of your month page
-    pft entry -T [options] title of your tag page
+    pft edit -P [options] title of your page
+    pft edit -B [options] title of your blog page
+    pft edit -M [options] title of your month page
+    pft edit -T [options] title of your tag page
 
 =head1 DESCRIPTION
 
