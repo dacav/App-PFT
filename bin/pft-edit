@@ -252,6 +252,66 @@ changed) the file position is updated to be consistent.
 
 =head2 The content header
 
+Each entry starts with a header in YAML format. The header defines the
+properties of the entries. Valid properties with their descriptions follow
+in this section.
+
+=over
+
+=item I<Author>
+
+The author of the entry. Any string can be entered as value. The default
+value of it is taken from the C<pft.yaml> configuration file.
+
+=item I<Date>
+
+The date associated with the entry. This field is required only for blog
+entries. Changing the value while editing with C<pft edit> will result to
+the position in the filesystem to be adapted consistently.
+
+=item I<Options>
+
+Some optional properties of the entry:
+
+=over
+
+=item I<hide>
+
+If set to 1 the entry is going to be hidden.
+
+This option is meant as a way to temporarily hide an entry. Currently it is
+somewhat broken, so its use is not recommended.
+
+=item I<template>
+
+Each page can specify a different template to use by means of this field.
+It is by default defined as C<~> (in YAML that is I<null>) meaning that the
+page will use the global template as defined in the C<pft.yaml>
+configuration file.
+
+=back
+
+=item I<Slug>
+
+The slug determines how the file will be named.
+
+By default it is derived by removing non-word characters from the I<Title>
+field. The purpose is having a reasonable file name, which is both
+convenient and I<healty> to handle with command line programs (escape
+sequences get removed, etc).
+
+=item I<Tags>
+
+A list of tags for the entry
+
+=item I<Title>
+
+The title of the entry, in human readable form.
+
+=back
+
+=head2 The content text
+
 Upon compilation the content text is parsed as Markdown and gets
 translated into HTML (see the manual of C<pft make> for additional
 details). In this phase some special symbols are recognized:  HTML tags
