@@ -39,8 +39,8 @@ position consistent with the type of content.
 
 All entries are stored under the C<ROOT/content> directory, where C<ROOT>
 is the base path of your I<PFT> site. Each entry has the same format:
-a unicode text file composed by a YAML header concatenated with Markdown
-text content (more details later in this document).
+a text file encoded as by locale, composed by a YAML header concatenated
+with Markdown text (more details later in this document).
 
 There can be different kind of entries:
 
@@ -51,9 +51,9 @@ There can be different kind of entries:
 Regular pages do not declare a date in their header. They get positioned
 in C<ROOT/content/pages>. Their file name depends on their title.
 
-Example:
+Example: a page entitled I<Hello World> gets
 
-    C<ROOT/content/pages/hello-world>
+    ROOT/content/pages/hello-world
 
 =item Blog pages
 
@@ -64,9 +64,10 @@ Their file name starts with a C<DD-> prefix, where C<DD> corresponds to
 the declared day. The remaining part of the file name depends on their
 title.
 
-Example:
+Example: an entry entitled I<Hello World> edited the 12th of September 2015
+gets
 
-    C<ROOT/content/blog/2015-09/12-hello-world>
+    ROOT/content/blog/2015-09/12-hello-world
 
 =item Month pages
 
@@ -76,9 +77,9 @@ part (it is replaced by C<*>). They are stored as
 C<ROOT/content/blog/YYYY-MM.month> (where C<YYYY> and C<MM> represent the
 declared year and month).
 
-Example:
+Example: the month page for September 2015 gets
 
-    C<ROOT/content/blog/2016-09.month>
+    ROOT/content/blog/2016-09.month
 
 =item Tag pages
 
@@ -88,14 +89,14 @@ associated to a tag page.
 For example, if your site has have a number of entries about cuisine, some
 of them might be tagged with the C<chicken> tag. You may want to have a
 tag page entitled C<chicken>, where you give a description of what
-I<chicken> is (just in case someone doesn't know).
+I<chicken> is (just in case someone does not know).
 
 Tag pages are stored in C<ROOT/content/tags>, and their file name depends
 on the tag title.
 
-Example:
+Example: a page containing a description of the tag I<chicken> gets
 
-    C<ROOT/content/tags/chicken>
+    ROOT/content/tags/chicken
 
 =back
 
