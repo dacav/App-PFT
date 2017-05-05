@@ -500,33 +500,36 @@ do {
     };
 
     if (defined $opts{back}) {
+        my @entries;
         if (keys %datespec) {
             my $date = PFT::Date->from_spec(%datespec);
-            my @entries = $tree->content->blog_at($date);
+            @entries = $tree->content->blog_at($date);
             die 'none for the specified date ', $date unless @entries;
-            if (@entries == 1) {
-                $entry = $entries[0];
-            }
-            elsif (exists $opts{select}) {
-                $entry = $entries[$opts{select}];
-                die 'invalid index ', $opts{select} unless defined $entry;
-            }
-            else {
-                say STDERR 'Multiple entries:';
-                for (my $idx = 0; $idx < @entries; $idx ++) {
-                    my $hdr = $entries[$idx]->header;
-                    say STDERR sprintf("%d: %s",
-                        $idx,
-                        $hdr ? $hdr->title : $_->name
-                    )
-                }
-                die 'disambiguate by providing --select=<index>'
-            }
         }
         else {
-            $entry = $tree->content->blog_back($opts{back})
+            @entries = $tree->content->blog_back($opts{back})
                 or die 'cannot go back by ', $opts{back}, ': ',
                     $@ =~ s/ at .*$//rs;
+            die "cannot go back $opts{back} days" unless @entries;
+        }
+
+        if (@entries == 1) {
+            $entry = $entries[0];
+        }
+        elsif (exists $opts{select}) {
+            $entry = $entries[$opts{select}];
+            die 'invalid index ', $opts{select} unless defined $entry;
+        }
+        else {
+            say STDERR 'Multiple entries:';
+            for (my $idx = 0; $idx < @entries; $idx ++) {
+                my $hdr = $entries[$idx]->header;
+                say STDERR sprintf("%d: %s",
+                    $idx,
+                    $hdr ? $hdr->title : $_->name
+                )
+            }
+            die 'disambiguate by providing --select=<index>'
         }
         $hdr = eval{ $entry->header };  # Might be malformed.
     } elsif ($opts{T}) {
