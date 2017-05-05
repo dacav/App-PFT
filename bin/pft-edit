@@ -302,7 +302,13 @@ sequences get removed, etc).
 
 =item I<Tags>
 
-A list of tags for the entry
+A list of tags for the entry.
+
+Tags can be specified one per line with a leading C<->:
+
+    Tags:
+    - chicken
+    - tomato
 
 =item I<Title>
 
