@@ -21,14 +21,14 @@
 
 =head1 NAME
 
-pft entry - Edit an entry
+pft edit - Edit an entry
 
 =head1 SYNOPSYS
 
-    pft entry -P [options] title of your page
-    pft entry -B [options] title of your blog page
-    pft entry -M [options] title of your month page
-    pft entry -T [options] title of your tag page
+    pft edit -P [options] title of your page
+    pft edit -B [options] title of your blog page
+    pft edit -M [options] title of your month page
+    pft edit -T [options] title of your tag page
 
 =head1 DESCRIPTION
 
@@ -39,8 +39,8 @@ position consistent with the type of content.
 
 All entries are stored under the C<ROOT/content> directory, where C<ROOT>
 is the base path of your I<PFT> site. Each entry has the same format:
-a unicode text file composed by a YAML header concatenated with Markdown
-text content (more details later in this document).
+a text file encoded as by locale, composed by a YAML header concatenated
+with Markdown text (more details later in this document).
 
 There can be different kind of entries:
 
@@ -51,9 +51,9 @@ There can be different kind of entries:
 Regular pages do not declare a date in their header. They get positioned
 in C<ROOT/content/pages>. Their file name depends on their title.
 
-Example:
+Example: a page entitled I<Hello World> gets
 
-    C<ROOT/content/pages/hello-world>
+    ROOT/content/pages/hello-world
 
 =item Blog pages
 
@@ -64,9 +64,10 @@ Their file name starts with a C<DD-> prefix, where C<DD> corresponds to
 the declared day. The remaining part of the file name depends on their
 title.
 
-Example:
+Example: an entry entitled I<Hello World> edited the 12th of September 2015
+gets
 
-    C<ROOT/content/blog/2015-09/12-hello-world>
+    ROOT/content/blog/2015-09/12-hello-world
 
 =item Month pages
 
@@ -76,9 +77,9 @@ part (it is replaced by C<*>). They are stored as
 C<ROOT/content/blog/YYYY-MM.month> (where C<YYYY> and C<MM> represent the
 declared year and month).
 
-Example:
+Example: the month page for September 2015 gets
 
-    C<ROOT/content/blog/2016-09.month>
+    ROOT/content/blog/2016-09.month
 
 =item Tag pages
 
@@ -88,14 +89,14 @@ associated to a tag page.
 For example, if your site has have a number of entries about cuisine, some
 of them might be tagged with the C<chicken> tag. You may want to have a
 tag page entitled C<chicken>, where you give a description of what
-I<chicken> is (just in case someone doesn't know).
+I<chicken> is (just in case someone does not know).
 
 Tag pages are stored in C<ROOT/content/tags>, and their file name depends
 on the tag title.
 
-Example:
+Example: a page containing a description of the tag I<chicken> gets
 
-    C<ROOT/content/tags/chicken>
+    ROOT/content/tags/chicken
 
 =back
 
@@ -165,14 +166,25 @@ is if the file does not exist yet.
 
 =item --resume | -r
 
-Resume editing the most recent blog entry. Equivalent to C<--back 0>,
-implies C<-B>.
+Resume editing of a blog entry.
+
+This option implies C<-B>. The blog entry resumed for editing corresponds by
+default to the latest in chronological order.
+
+A date can be specified via the C<-y>, C<-m> and C<-d> options. If the date
+is only partially specified, that is not all of C<-y>, C<-m> and C<-d> are
+provided, the missing bits get completed with the current date.  If no date
+is specified, C<-r> is equivalent to C<--back 0>.
+
+If more then one entry exists for the specified date, the command fails and
+the user is explicitly required to specify a selection via the C<--select>
+option.
 
 =item --back=<count> | -b <count>
 
-Resume editing an old entry. The supplied parameter defines how many steps
-we should go back in history (0 means the most recent entry, 1 means the
-second to last).
+Resume editing an old entry. The supplied parameter defines how many days
+we should go back in history since the last day we have an entry for (0
+means the most recent day, 1 means the second to last).
 
 =item --editor <command>
 
@@ -208,6 +220,15 @@ If the content file does not exist or is empty it will be created with a
 reasonable header. Otherwise the content will be appended to it. If the header
 is corrupted the command will issue a warning, but no further action will be
 taken.
+
+=item --select=<id>
+
+Select a certain entry by index, in case of ambiguity.
+
+This option applies when multiple files are matching the parameters for file
+selection, and a choice is required.  In these situations, if C<--select> is
+not provided the C<pft edit> command will fail, and the use of C<--select>
+will be explicitly requested by an error message.
 
 =item --raw
 
@@ -250,6 +271,72 @@ consistent with the position in the filesystem (e.g. the date was manually
 changed) the file position is updated to be consistent.
 
 =head2 The content header
+
+Each entry starts with a header in YAML format. The header defines the
+properties of the entries. Valid properties with their descriptions follow
+in this section.
+
+=over
+
+=item I<Author>
+
+The author of the entry. Any string can be entered as value. The default
+value of it is taken from the C<pft.yaml> configuration file.
+
+=item I<Date>
+
+The date associated with the entry. This field is required only for blog
+entries. Changing the value while editing with C<pft edit> will result to
+the position in the filesystem to be adapted consistently.
+
+=item I<Options>
+
+Some optional properties of the entry:
+
+=over
+
+=item I<hide>
+
+If set to 1 the entry is going to be hidden.
+
+This option is meant as a way to temporarily hide an entry. Currently it is
+somewhat broken, so its use is not recommended.
+
+=item I<template>
+
+Each page can specify a different template to use by means of this field.
+It is by default defined as C<~> (in YAML that is I<null>) meaning that the
+page will use the global template as defined in the C<pft.yaml>
+configuration file.
+
+=back
+
+=item I<Slug>
+
+The slug determines how the file will be named.
+
+By default it is derived by removing non-word characters from the I<Title>
+field. The purpose is having a reasonable file name, which is both
+convenient and I<healty> to handle with command line programs (escape
+sequences get removed, etc).
+
+=item I<Tags>
+
+A list of tags for the entry.
+
+Tags can be specified one per line with a leading C<->:
+
+    Tags:
+    - chicken
+    - tomato
+
+=item I<Title>
+
+The title of the entry, in human readable form.
+
+=back
+
+=head2 The content text
 
 Upon compilation the content text is parsed as Markdown and gets
 translated into HTML (see the manual of C<pft make> for additional
@@ -331,6 +418,8 @@ Examples:
 =item :web:I<service>/I<param>/I<param>/...
 
 Generate an URL which points to a web site or service (e.g. search
+In all other cases the C<--select> flag is silently ignored.
+
 engines, or specialized website) and passes data on the query. A number of
 valid values are supported for the  I<service> argument. The list of
 I<param> arguments depend on the specific service.
@@ -386,9 +475,17 @@ Examples:
 
     pft edit -B
 
+=head3 Blog about today specifying a title
+
+    pft edit -B A lucky day
+
 =head3 Remove the page C<garbage>
 
     pft edit --editor ':> %s' -P garbage
+
+=head3 Resume the blog entry of the 27th of August 2014
+
+    pft edit -B -r -y2014 -d27 -m Aug
 
 =cut
 
@@ -426,6 +523,7 @@ GetOptions(
     'editor=s'      => sub { $opts{editor} = $_[1] },
     'stdin!'        => sub { $opts{stdin} = 1 },
     'append!'       => sub { $opts{append} = 1 },
+    'select=i'      => sub { $opts{select} = $_[1] },
     'raw!'          => sub { $opts{raw} = 1 },
     'help|h!'       => sub {
         pod2usage
@@ -463,16 +561,46 @@ my($entry, $hdr);
 # In some of the cases also $hdr will be defined with the corresponding header.
 do {
     local $SIG{__DIE__} = sub {
-        say STDERR 'Cannot edit entry: ', shift;
+        say STDERR 'Cannot edit entry: ',
+            shift =~ s/ at .*$//rs;
         exit 6
     };
 
     if (defined $opts{back}) {
-        $entry = $tree->content->blog_back($opts{back}) or
-            die 'Cannot go back by ', $opts{back}, ': ', $@ =~ s/ at .*$//rs;
+        my @entries;
+        if (keys %datespec) {
+            my $date = PFT::Date->from_spec(%datespec);
+            @entries = $tree->content->blog_at($date);
+            die 'none for the specified date ', $date unless @entries;
+        }
+        else {
+            @entries = $tree->content->blog_back($opts{back})
+                or die 'cannot go back by ', $opts{back}, ': ',
+                    $@ =~ s/ at .*$//rs;
+            die "cannot go back $opts{back} days" unless @entries;
+        }
+
+        if (@entries == 1) {
+            $entry = $entries[0];
+        }
+        elsif (exists $opts{select}) {
+            $entry = $entries[$opts{select}];
+            die 'invalid index ', $opts{select} unless defined $entry;
+        }
+        else {
+            say STDERR 'Multiple entries:';
+            for (my $idx = 0; $idx < @entries; $idx ++) {
+                my $hdr = $entries[$idx]->header;
+                say STDERR sprintf("%d: %s",
+                    $idx,
+                    $hdr ? $hdr->title : $_->name
+                )
+            }
+            die 'disambiguate by providing --select=<index>'
+        }
         $hdr = eval{ $entry->header };  # Might be malformed.
     } elsif ($opts{T}) {
-        die 'Mandatory title' unless @ARGV;
+        die 'mandatory title' unless @ARGV;
         $hdr = PFT::Header->new(
             title => join(' ', @ARGV),
             author => $conf->{site}{author},
@@ -494,13 +622,13 @@ do {
                 },
             )
         } elsif ($opts{P}) {
-            die 'Mandatory title' unless @ARGV;
+            die 'mandatory title' unless @ARGV;
             $hdr = PFT::Header->new(
                 title => join(' ', @ARGV),
                 author => $conf->{site}{author},
                 tags => $opts{tags} || [],
             )
-        } else { die "Unhandled?" }
+        } else { die "unhandled case? This is a bug" }
 
         $entry = $tree->content->new_entry($hdr)
     }
