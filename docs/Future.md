@@ -25,8 +25,6 @@ entry exists. How? By rewriting header if needed.
 Other improvements
 ------------------
 
-More-to-least (perceived) complexity
-
 - Nested sites (useful?)
 - Optional per-{post,entry} picture
 - Source code coloring (e.g. `| highlight_code` filter?)
@@ -42,6 +40,13 @@ More-to-least (perceived) complexity
  * Additional template variables
     - Random value (e.g. for random css effects)
     - Random quote from a pool
+
+### Perceived while using
+
+- Sorted result in `pft ls tags` (yeah, there's sort in bash, but do I
+  really want to remember to call it?)
+
+- Bash/Zsh completion
 
 Testing
 -------

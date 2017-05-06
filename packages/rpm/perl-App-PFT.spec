@@ -2,13 +2,13 @@
 %global patchbase https://raw.githubusercontent.com/dacav/%{module}/v%{version}/packages/rpm/%{name}
 
 Name:           perl-%{module}
-Version:        1.1.0
+Version:        1.1.2
 Release:        1%{?dist}
 Summary:        Hacker friendly static blog generator
 
 License:        GPLv3+
 URL:            https://github.com/dacav/%{module}
-Source0:        https://github.com/dacav/%{module}/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
+Source0:        https://github.com/dacav/%{module}/archive/v%{version}.tar.gz#/%{module}-%{version}.tar.gz
 
 # This software packet is composed by a toolkit of executable scripts, which
 # are chain loaded by a main script named 'pft`. The position of the scripts is
@@ -21,6 +21,7 @@ Patch0:         %{patchbase}.libexec.patch
 
 BuildArch:      noarch
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+Provides:       pft = %{version}-%{release}
 
 BuildRequires:  perl
 BuildRequires:  perl-generators
@@ -104,8 +105,19 @@ LC_ALL="en_US.utf8" make test
 
 
 %changelog
-* Tue Dec 27 2016 <Giovanni Simoni <dacav@openmailbox.org>
-> - 1.1.0-1
+* Wed Mar 01 2017 dacav <dacav@openmailbox.org> - 1.1.2-1
+- Release 1.1.2
+
+* Sat Feb 11 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1.1.0-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Fri Dec 30 2016 dacav <dacav@openmailbox.org> - 1.1.0-3
+- Added "pft" as Provides
+
+* Thu Dec 29 2016 dacav <dacav@openmailbox.org> - 1.1.0-2
+- Fixed source name
+
+* Tue Dec 27 2016 dacav@openmailbox.org - 1.1.0-1
 - Release 1.1.0
 
 * Thu Sep 29 2016 dacav@openmailbox.org - 1.0.6-2

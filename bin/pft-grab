@@ -35,7 +35,7 @@ place under C<ROOT/content>.
 The command will assume by default that the file is an I<attachment>, that
 is a binary file to be stored under C<ROOT/content/attachments>. This
 behavior can be overridden by specifying the C<--picture> option: as
-result the C<ROOT/content/pcitures> directory will be used instead as
+result the C<ROOT/content/pics> directory will be used instead as
 destination.
 
 This command outputs the I<Markdown> code for linking, which can be pasted

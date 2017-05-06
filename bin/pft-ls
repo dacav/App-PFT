@@ -83,7 +83,7 @@ Show this help.
 
 Show paths and titles, namely quick alias for:
 
-    --pretty='%h:%t'
+    --pretty='%t:%p'
 
 =item --pretty=<fmt>
 
@@ -171,7 +171,7 @@ if (defined $cls and my $handle = $classes{$cls}) {
 else {
     say STDERR "Usage: $App::PFT::Name <class> [options]";
     say STDERR "Available classes:";
-    say "  * $_" for keys %classes;
+    say STDERR "  * $_" for keys %classes;
     exit 1;
 }
 
@@ -242,8 +242,4 @@ sub list_pages {
 
 sub list_blog {
     $content->blog_ls
-}
-
-sub list_tagpages {
-    $content->tags_ls
 }
