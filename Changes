@@ -40,3 +40,7 @@ Revision history for App-PFT
 1.1.1   2016-01-13
         Auto-removal of empty entries
         Binding to PFT library v1.1.1 (and related fixes)
+
+1.2.0   2016-05-08
+        Fixed documentation (thanks Bryan for suggestions)
+        Improved pft edit -r with multi-entry per date support
