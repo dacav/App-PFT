@@ -46,11 +46,18 @@ ok $out eq '' && $err eq '' => "Edit command 2 is silent (out=$out, err=$err)";
 # there won't be a 'welcome` page.
 run ["$pft-make"], \undef, \$out, \$err;
 ok $? != 1 => 'Cannot compile on broken link';
-cmp_ok $err => eq => <<'EXPERR' => 'Explicative error message';
-Unresolved links in PFT::Map::Node[id=b:2017-11-12:pointer-to-test-page, virtual=no]:
-- link: PFT::Text::Symbol[key:"page", args:["welcome"], start:49, len:13]
-  reason: No matching item
-EXPERR
+subtest 'Explicative error message' => sub {
+    my($err1, $err2) = split /\n/, $err, 2;
+    ok(
+        $err1 =~
+        /^Unresolved links in PFT::Map::Node\[id=b:\d{4}-\d{2}-\d{2}:pointer-to-test-page, virtual=no\]:$/,
+        'Correct reference'
+    );
+    cmp_ok $err2 => eq => (<<'    EXPERR' =~ s/^    //rgm) => 'Explicative error message';
+    - link: PFT::Text::Symbol[key:"page", args:["welcome"], start:49, len:13]
+      reason: No matching item
+    EXPERR
+};
 
 # Let's add that welcome page…
 run ["$pft-edit", qw(--stdin -P welcome)], \<<IN, \$out, \$err;
