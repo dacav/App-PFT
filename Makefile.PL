@@ -23,6 +23,10 @@ WriteMakefile1(
     },
     TEST_REQUIRES => {
         'Test::More'                => 0,
+        'File::Temp'                => 0,
+        'Cwd'                       => 0,
+        'IPC::Run'                  => 0,
+        'PFT'                       => '1.2.1',
     },
     PREREQ_PM => {
         'Carp'                  => 0,
