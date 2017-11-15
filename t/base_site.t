@@ -9,8 +9,6 @@ use Test::More tests => 9;
 use Cwd;
 use File::Temp qw(tempdir);
 use IPC::Run 'run';
-use Encode;
-use Encode::Locale;
 
 my $pft = getcwd . '/bin/pft';
 my ($in, $out, $err);
