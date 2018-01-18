@@ -3,7 +3,7 @@ _pft_init()
     local alt="$(
         perl -CO -MPFT::Conf=bash_completion_autogen -wE 'say bash_completion_autogen'
     )"
-    COMPREPLY=($(compgen -W "$alt" -- "$cur"))
+    COMPREPLY=($(compgen -W "$alt" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 
 _pft_edit()
@@ -78,25 +78,25 @@ _pft_ls()
             ;;
     esac
 
-    COMPREPLY=($(compgen -W "$alt" -- "$cur"))
+    COMPREPLY=($(compgen -W "$alt" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 
 _pft_make()
 {
     alt='--help'
-    COMPREPLY=($(compgen -W "$alt" -- "$cur"))
+    COMPREPLY=($(compgen -W "$alt" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 
 _pft_pub()
 {
     alt='--help --list-required-conf'
-    COMPREPLY=($(compgen -W "$alt" -- "$cur"))
+    COMPREPLY=($(compgen -W "$alt" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 
 _pft_clean()
 {
     alt='--verbose --help'
-    COMPREPLY=($(compgen -W "$alt" -- "$cur"))
+    COMPREPLY=($(compgen -W "$alt" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 
 _pft_subcommand()
