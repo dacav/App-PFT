@@ -18,7 +18,7 @@ bin/pft-show
 lib/App/PFT.pm
 lib/App/PFT/Util.pm
 share/templates/default.html
-share/templates/dump_page.html
+share/templates/dump_page.yml
 share/templates/minimal.html
 share/templates/terminal.html
 t/base_site.t

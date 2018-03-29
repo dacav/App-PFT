@@ -1,0 +1,70 @@
+site:
+  title: "[% site.title %]"
+  root: "[% site.root %]"
+
+content:
+  title: "[% content.title %]"
+  is_home: "[% content.is_home %]"
+  html: >
+    [% filters.yaml_indent(4, content.html) %]
+  [% IF content.date %]
+  date:
+    y: "[% content.date.y %]"
+    m: "[% content.date.m %]"
+    d: "[% content.date.d %]"
+    joint: "[% content.date('/') %]"
+  [% END %]
+  [% IF content.tags %]
+  tags:
+    [% FOREACH t = content.tags %]
+      - slug: [% t.slug %]
+        href: [% t.href %]
+    [% END %]
+  [% END %]
+
+links:
+  parent:
+    slug: "[% links.parent.slug %]"
+    href: "[% links.parent.href %]"
+  next;
+    slug: "[% links.next.slug %]"
+    href: "[% links.next.href %]"
+  prev:
+    slug: "[% links.prev.slug %]"
+    href: "[% links.prev.href %]"
+  [% IF links.pages %]
+  pages:
+    [% FOREACH p = links.pages %]
+    - slug: [% p.slug %]
+      href: [% p.href %]
+      is_self: [% p.is_self %]
+    [% END %]
+  [% END %]
+  [% IF links.backlog %]
+  backlog:
+    [% FOREACH l = links.backlog(5) %]
+    - slug: [% l.slug %]
+      href: [% l.href %]
+    [% END %]
+  [% END %]
+  [% IF links.months_backlog %]
+  months_backlog:
+    [% FOREACH l = links.months_backlog(5) %]
+    - slug: [% l.slug %]
+      href: [% l.href %]
+    [% END %]
+  [% END %]
+  [% IF links.tags %]
+  tags:
+    [% FOREACH t = links.tags %]
+    - slug: [% t.slug %]
+      href: [% t.href %]
+    [% END %]
+  [% END %]
+  [% IF links.children %]
+  children:
+    [% FOREACH c = links.children %]
+    - slug: [% c.slug %]
+      href: [% c.href %]
+    [% END %]
+  [% END %]
