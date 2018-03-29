@@ -101,11 +101,11 @@ my $home = $tree->content->new_entry(PFT::Header->new(
 ));
 $home->open('a') unless $home->exists;
 
-my $glob = File::Spec->catdir(
-    File::ShareDir::module_dir('App::PFT'),
-    'templates',
-    '*',
-);
+my $sharedir = exists $ENV{PFT_SHARE_DIR}
+             ? $ENV{PFT_SHARE_DIR}
+             : File::ShareDir::module_dir('App::PFT');
+
+my $glob = File::Spec->catdir($sharedir, 'templates', '*');
 
 foreach (glob encode(locale_fs => $glob)) {
     my $outfn = File::Spec->catfile(
