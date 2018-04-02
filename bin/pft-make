@@ -143,6 +143,7 @@ use PFT::Util;
 
 use App::PFT;
 use App::PFT::Util qw/ln/;
+use App::PFT::Filters qw/%filters/;
 
 use Pod::Usage;
 use Getopt::Long;

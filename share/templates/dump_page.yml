@@ -6,7 +6,7 @@ content:
   title: "[% content.title %]"
   is_home: "[% content.is_home %]"
   html: >
-    [% filters.yaml_indent(4, content.html) %]
+    [% filters.yaml_indent(content.html, 4, chop_first=>1) %]
   [% IF content.date %]
   date:
     y: "[% content.date.y %]"
@@ -26,7 +26,7 @@ links:
   parent:
     slug: "[% links.parent.slug %]"
     href: "[% links.parent.href %]"
-  next;
+  next:
     slug: "[% links.next.slug %]"
     href: "[% links.next.href %]"
   prev:
