@@ -24,3 +24,4 @@ share/templates/minimal.html
 share/templates/terminal.html
 t/base_site.t
 t/editing_cases.t
+t/dump_test.t
