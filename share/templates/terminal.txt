@@ -90,6 +90,17 @@
                 border              : 1px solid [% color.border %];
                 border-radius       : 3px;
             }
+
+            div#text pre code {
+                border              : 0px;
+            }
+
+            code {
+                background-color    : [% color.bg_alt %];
+                border              : 1px solid [% color.border %];
+                font-family         : monospace;
+                border-radius       : 3px;
+            }
         </style>
     </head>
 
@@ -146,7 +157,7 @@
                     [% content.author %]
                     [% END %]
                     [% IF content.date AND NOT content.is_virtual %]-
-                    [% content.date.y %]/[% content.date.m %]/[% content.date.d %]
+                    [% content.date.y %]-[% content.date.m %]-[% content.date.d %]
                     [% END %]
                 </h5>
                 [% FOREACH t = content.tags %]
@@ -172,9 +183,9 @@
                         <td>Date</td>
                         <td>Title</td>
                     </tr>
-                    [% FOREACH p = links.backlog(10) %]
+                    [% FOREACH p = links.backlog(20) %]
                     <tr>
-                        <td>[% p.date(' / ') %]</td>
+                        <td>[% p.date('-') %]</td>
                         <td><a href="[% p.href %]">[% p.slug %]</a></td>
                     </tr>
                     [% END %]
@@ -200,7 +211,7 @@
                 <tr>
                     <td>
                     [% IF l.date %]
-                    [% l.date.y %] / [% l.date.m %] / [% l.date.d %]:
+                    [% l.date.y %]-[% l.date.m %]-[% l.date.d %]:
                     [% END %]
                     </td>
                     <td>
