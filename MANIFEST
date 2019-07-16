@@ -19,3 +19,5 @@ lib/App/PFT/Util.pm
 share/templates/default.html
 share/templates/dump_page.html
 share/templates/minimal.html
+t/base_site.t
+t/editing_cases.t
