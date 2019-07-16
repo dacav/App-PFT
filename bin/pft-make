@@ -302,6 +302,9 @@ sub write_file {
     close $fh;
 
     if (-e "$path") {
+        # This branch enables an upload-time optimization: if the file
+        # created file is exactly the same as the previous compilation (same
+        # checksum) we keep the old one.  Rsync will not upload it again.
         my $md5 = Digest::MD5->new;
         $md5->add(encode($enc, $data));
         my $digest_new = $md5->hexdigest;
