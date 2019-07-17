@@ -31,6 +31,7 @@ WriteMakefile1(
     PREREQ_PM => {
         'Carp'                  => 0,
         'Cwd'                   => 0,
+        'Digest::MD5'           => 0,
         'Encode'                => 0,
         'Encode::Locale'        => 0,
         'Exporter'              => 0,
