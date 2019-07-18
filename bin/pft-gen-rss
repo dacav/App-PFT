@@ -1,4 +1,45 @@
 #!/usr/bin/perl
+#
+# Copyright 2014-2019 - Giovanni Simoni
+#
+# This file is part of PFT.
+#
+# PFT is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# PFT is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with PFT.  If not, see <http://www.gnu.org/licenses/>.
+
+=encoding utf8
+
+=head1 NAME
+
+pft gen-rss - Generate a Feed RSS for the website
+
+=head1 SYNOPSYS
+
+pft gen-rss [options]
+
+=head1 DESCRIPTION
+
+=head1 OPTIONS
+
+=over
+
+=item --help
+
+Show this guide
+
+=back
+
+=cut
 
 use strict;
 use warnings;
@@ -10,6 +51,19 @@ use Digest::MD5;
 use HTML::Escape qw/escape_html/;
 use PFT::Tree;
 use POSIX qw/strftime/;
+
+use Pod::Usage;
+use Getopt::Long;
+Getopt::Long::Configure qw/bundling/;
+
+GetOptions(
+    'help|h!'       => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'gen-rss',
+    },
+) or exit 1;
 
 my $tree = eval{ PFT::Tree->new } || do {
     say STDERR $@ =~ s/ at.*$//rs;
