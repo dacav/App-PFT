@@ -1,0 +1,171 @@
+#!/usr/bin/perl
+#
+# Copyright 2014-2019 - Giovanni Simoni
+#
+# This file is part of PFT.
+#
+# PFT is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# PFT is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with PFT.  If not, see <http://www.gnu.org/licenses/>.
+
+=encoding utf8
+
+=head1 NAME
+
+pft gen-rss - Generate a Feed RSS for the website
+
+=head1 SYNOPSYS
+
+pft gen-rss [options]
+
+=head1 DESCRIPTION
+
+=head1 OPTIONS
+
+=over
+
+=item --help
+
+Show this guide
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+use utf8;
+use v5.16;
+
+use Carp;
+use Digest::MD5;
+use HTML::Escape qw/escape_html/;
+use PFT::Tree;
+use POSIX qw/strftime/;
+use Encode;
+use Encode::Locale;
+use File::Spec::Functions qw/catfile/;
+use File::Path qw/make_path/;
+
+use Pod::Usage;
+use Getopt::Long;
+Getopt::Long::Configure qw/bundling/;
+
+GetOptions(
+    'help|h!'       => sub {
+        pod2usage
+            -exitval => 1,
+            -verbose => 2,
+            -input => App::PFT::help_of 'gen-rss',
+    },
+) or exit 1;
+
+my $tree = eval{ PFT::Tree->new } || do {
+    say STDERR $@ =~ s/ at.*$//rs;
+    exit 2
+};
+
+my $conf = eval{ $tree->conf } || do {
+    say STDERR 'Configuration error: ', $@ =~ s/ at.*$//rs;
+    exit 3;
+};
+
+my $today_rfc822 = strftime "%a, %d %b %Y %H:%M:%S %z", localtime;
+my $digest = Digest::MD5->new;
+
+my $site_title = $conf->{site}{title};
+my $site_url = $conf->{site}{url};
+my $feedfile = $conf->{site}{feedfile} || "feed.rss";
+my $rss_url = "$site_url/$feedfile";
+my $encoding = $conf->{site}{encoding};
+
+make_path encode(locale_fs => $tree->dir_build);
+open(
+    my $outfile,
+    ">:encoding($encoding)",
+    encode(locale_fs => catfile($tree->dir_build, $feedfile))
+) or die "opening $feedfile: $!";
+select $outfile;
+
+sub node_to_href {
+    my($cur_node, $other_node) = @_;
+
+    confess unless $other_node;
+
+    join '/', $site_url, do {
+        my $hdr = $other_node->header;
+        my $k = $other_node->content_type;
+
+        if ($k =~ /::Blog$/) {(
+            'blog',
+            sprintf('%04d-%02d', $hdr->date->y, $hdr->date->m),
+            sprintf('%02d-%s.html', $hdr->date->d, $hdr->slug),
+        )} elsif ($k =~ /::Month$/) {(
+            'blog',
+            sprintf('%04d-%02d.html', $hdr->date->y, $hdr->date->m),
+        )} elsif ($k =~ /::Page$/) {(
+            'pages',
+            $hdr->slug . '.html',
+        )} elsif ($k =~ /::Tag$/) {(
+            'tags',
+            $hdr->slug . '.html',
+        )} elsif ($k =~ /::Picture$/) {(
+            'pics',
+            $other_node->content->relpath
+        )} elsif ($k =~ /::Attachment$/) {(
+            'attachments',
+            $other_node->content->relpath
+        )} else { die $k }
+    }
+}
+
+print <<"END";
+<?xml version="1.0" encoding="$encoding"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+ <channel>
+  <title>$site_title</title>
+  <link>$site_url</link>
+  <lastBuildDate>$today_rfc822</lastBuildDate>
+  <generator>App::PFT</generator>
+  <description>$site_title</description>
+  <atom:link href="$rss_url" rel="self" type="application/rss+xml"/>
+END
+
+foreach my $node ($tree->content_map->blog_recent(10)) {
+    my $guid;
+    my $pubDate;
+
+    $digest->add($node->title);
+    $guid = $digest->hexdigest;
+    $digest->reset;
+
+    $pubDate = do {
+        my($y, $m, $d) = @{$node->date};
+        strftime("%a, %d %b %Y %H:%M:%S %z", 0, 0, 0, $d, $m, $y - 1900)
+    };
+
+    my $content = escape_html $node->html(sub { node_to_href($node, shift) });
+
+    say '<item>',
+        ' <title>', $node->title, '</title>',
+        ' <guid isPermaLink="false">', $guid, '</guid>',
+        ' <pubDate>', $pubDate, '</pubDate>',
+        ' <description>', $content, '</description>',
+        '</item>'
+}
+
+print <<END;
+ </channel>
+</rss>
+END
+
+close $outfile;
