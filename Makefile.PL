@@ -44,6 +44,7 @@ WriteMakefile1(
         'File::Spec::Functions' => 0,
         'FindBin'               => 0,
         'Getopt::Long'          => 0,
+        'HTML::Escape'          => 0,
         'LWP::Simple'           => 0,
         'Pod::Find'             => 0,
         'Pod::Usage'            => 0,

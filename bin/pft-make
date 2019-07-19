@@ -271,7 +271,6 @@ sub site_links {
     },
 }
 
-
 my $home_node_slug = PFT::Header::slugify($conf->{site}{home});
 my $home_node;
 
@@ -359,20 +358,20 @@ sub compile_entry {
             %{$conf->{site}},
         },
         content => {
-            title => $node->title,
-            html  => $node->html(sub { node_to_href($node, shift) }),
-            tags  => nodes_to_anchors($node, $node->tags),
-            date  => sub { node_to_date($node, @_) },
-            is_home => $is_home,
-            author => $node->author,
-            is_virtual => $node->virtual,
+            title       => $node->title,
+            html        => $node->html(sub { node_to_href($node, shift) }),
+            tags        => nodes_to_anchors($node, $node->tags),
+            date        => sub { node_to_date($node, @_) },
+            is_home     => $is_home,
+            author      => $node->author,
+            is_virtual  => $node->virtual,
         },
         links => {
             site_links($node),
-            prev     => node_to_anchor($node, $node->prev),
-            next     => node_to_anchor($node, $node->next),
-            parent   => node_to_anchor($node, $node->month),
-            children => nodes_to_anchors($node, $node->children),
+            prev        => node_to_anchor($node, $node->prev),
+            next        => node_to_anchor($node, $node->next),
+            parent      => node_to_anchor($node, $node->month),
+            children    => nodes_to_anchors($node, $node->children),
         }
     );
 
