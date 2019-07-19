@@ -84,7 +84,7 @@ my $digest = Digest::MD5->new;
 
 my $site_title = $conf->{site}{title};
 my $site_url = $conf->{site}{url};
-my $feedfile = $conf->{site}{feedfile};
+my $feedfile = $conf->{site}{feedfile} || "feed.rss";
 my $rss_url = "$site_url/$feedfile";
 my $encoding = $conf->{site}{encoding};
 
@@ -155,12 +155,12 @@ foreach my $node ($tree->content_map->blog_recent(10)) {
 
     my $content = escape_html $node->html(sub { node_to_href($node, shift) });
 
-    say '    <item>';
-    say '     <title>', $node->title, '</title>';
-    say '     <guid isPermaLink="false">', $guid, '</guid>';
-    say '     <pubDate>', $pubDate, '</pubDate>';
-    say '     <description>', $content, '</description>';
-    say '    </item>'
+    say '<item>',
+        ' <title>', $node->title, '</title>',
+        ' <guid isPermaLink="false">', $guid, '</guid>',
+        ' <pubDate>', $pubDate, '</pubDate>',
+        ' <description>', $content, '</description>',
+        '</item>'
 }
 
 print <<END;
