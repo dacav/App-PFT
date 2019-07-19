@@ -51,6 +51,10 @@ use Digest::MD5;
 use HTML::Escape qw/escape_html/;
 use PFT::Tree;
 use POSIX qw/strftime/;
+use Encode;
+use Encode::Locale;
+use File::Spec::Functions qw/catfile/;
+use File::Path qw/make_path/;
 
 use Pod::Usage;
 use Getopt::Long;
@@ -78,11 +82,19 @@ my $conf = eval{ $tree->conf } || do {
 my $today_rfc822 = strftime "%a, %d %b %Y %H:%M:%S %z", localtime;
 my $digest = Digest::MD5->new;
 
-## TODO: add config?
 my $site_title = $conf->{site}{title};
-my $chan_description = "Latest news from $site_title";
 my $site_url = $conf->{site}{url};
-my $rss_url = "$site_url/rss.xml";  # TODO
+my $feedfile = $conf->{site}{feedfile};
+my $rss_url = "$site_url/$feedfile";
+my $encoding = $conf->{site}{encoding};
+
+make_path encode(locale_fs => $tree->dir_build);
+open(
+    my $outfile,
+    ">:encoding($encoding)",
+    encode(locale_fs => catfile($tree->dir_build, $feedfile))
+) or die "opening $feedfile: $!";
+select $outfile;
 
 sub node_to_href {
     my($cur_node, $other_node) = @_;
@@ -117,14 +129,14 @@ sub node_to_href {
 }
 
 print <<"END";
-<?xml version="1.0" encoding="$conf->{site}{encoding}"?>
+<?xml version="1.0" encoding="$encoding"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
  <channel>
   <title>$site_title</title>
   <link>$site_url</link>
   <lastBuildDate>$today_rfc822</lastBuildDate>
   <generator>App::PFT</generator>
-  <description>$chan_description</description>
+  <description>$site_title</description>
   <atom:link href="$rss_url" rel="self" type="application/rss+xml"/>
 END
 
@@ -155,3 +167,5 @@ print <<END;
  </channel>
 </rss>
 END
+
+close $outfile;
