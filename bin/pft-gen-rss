@@ -23,21 +23,57 @@
 
 pft gen-rss - Generate a Feed RSS for the website
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
-pft gen-rss [options]
+B<pft gen-rss>
 
 =head1 DESCRIPTION
+
+This command will generate an XML file according to the RSS (Really Simple
+Syndacation) specification.
+
+The default behaviour is to position the generated file in the root of the
+C<build> directory, and named C<feed.rss>.  The generated feed will contain
+one C<item> element for each of last 10 blog entries.
+
+The global PFT configuration allows to change the default path of the file
+and the number of listed blog entries (see L<pft-init(1)>).
 
 =head1 OPTIONS
 
 =over
 
-=item --help
+=item B<--help>
 
 Show this guide
 
 =back
+
+=head1 EXIT STATUS
+
+=over
+
+=item * 1 in case of option parsing failure.
+
+=item * 2 if it was impossible to construct the filesystem tree.
+
+=item * 3 in case of corrupt configuration.
+
+=back
+
+=head1 BUGS
+
+In PFT blog entries are timestamped with a day resolution.  There is no
+obvious way to timestamp the publishing date (C<pubDate>) of blog entries
+with a better time resolution, so the hour is rounded up to midnight.
+
+The generated RSS feed will use the publishing date of the most recent entry
+as C<lastBuildDate>.  This makes the implementation simple, but yields
+inaccurate results should the user update an old blog entry.
+
+=head1 SEE ALSO
+
+L<pft(1)>, L<pft-init(1)>
 
 =cut
 
@@ -53,8 +89,10 @@ use PFT::Tree;
 use POSIX qw/strftime/;
 use Encode;
 use Encode::Locale;
+
 use File::Spec::Functions qw/catfile/;
 use File::Path qw/make_path/;
+use File::Basename qw/dirname/;
 
 use Pod::Usage;
 use Getopt::Long;
@@ -79,22 +117,25 @@ my $conf = eval{ $tree->conf } || do {
     exit 3;
 };
 
-my $today_rfc822 = strftime "%a, %d %b %Y %H:%M:%S %z", localtime;
 my $digest = Digest::MD5->new;
 
-my $site_title = $conf->{site}{title};
-my $site_url = $conf->{site}{url};
-my $feedfile = $conf->{site}{feedfile} || "feed.rss";
-my $rss_url = "$site_url/$feedfile";
-my $encoding = $conf->{site}{encoding};
+my $site_title  = $conf->{site}{title};
+my $site_url    = $conf->{site}{url};
+my $feed_path   = $conf->{site}{feed}{path} || "feed.rss";
+my $feed_url    = "$site_url/$feed_path";
+my $encoding    = $conf->{site}{encoding};
+my $description = $conf->{site}{feed}{description} || "News from $site_title";
+my $length      = $conf->{site}{feed}{length} || 10;
 
-make_path encode(locale_fs => $tree->dir_build);
-open(
-    my $outfile,
-    ">:encoding($encoding)",
-    encode(locale_fs => catfile($tree->dir_build, $feedfile))
-) or die "opening $feedfile: $!";
-select $outfile;
+my $outfile;
+do {
+    my $path = catfile($tree->dir_build, $feed_path);
+
+    make_path encode(locale_fs => dirname($path));
+    open($outfile, ">:encoding($encoding)", encode(locale_fs => $path))
+        or die "opening $path $!";
+    select $outfile;
+};
 
 sub node_to_href {
     my($cur_node, $other_node) = @_;
@@ -134,13 +175,14 @@ print <<"END";
  <channel>
   <title>$site_title</title>
   <link>$site_url</link>
-  <lastBuildDate>$today_rfc822</lastBuildDate>
   <generator>App::PFT</generator>
-  <description>$site_title</description>
-  <atom:link href="$rss_url" rel="self" type="application/rss+xml"/>
+  <description>$description</description>
+  <atom:link href="$feed_url" rel="self" type="application/rss+xml"/>
 END
 
-foreach my $node ($tree->content_map->blog_recent(10)) {
+
+my $first = 1;
+foreach my $node ($tree->content_map->blog_recent($length)) {
     my $guid;
     my $pubDate;
 
@@ -154,6 +196,12 @@ foreach my $node ($tree->content_map->blog_recent(10)) {
     };
 
     my $content = escape_html $node->html(sub { node_to_href($node, shift) });
+
+    if ($first) {
+        $first = 0;
+
+        say "<lastBuildDate>$pubDate</lastBuildDate>"
+    }
 
     say '<item>',
         ' <title>', $node->title, '</title>',
