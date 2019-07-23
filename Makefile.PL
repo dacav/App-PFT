@@ -26,7 +26,7 @@ WriteMakefile1(
         'File::Temp'                => 0,
         'Cwd'                       => 0,
         'IPC::Run'                  => 0,
-        'PFT'                       => '1.2.1',
+        'PFT'                       => '1.4.0',
     },
     PREREQ_PM => {
         'Carp'                  => 0,
