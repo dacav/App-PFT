@@ -119,12 +119,6 @@ if ($act eq 'list') {
         pop @rollback_cbs;
     }
 
-    system 'rpmdev-bumpspec',
-        -c => "Release $new_version",
-        -n => $new_version,
-        $rpmspec
-        and die "Cannot bump version in $rpmspec";
-
     select STDOUT;
     my $tag = "v$new_version";
 
