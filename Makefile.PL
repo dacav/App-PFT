@@ -13,7 +13,7 @@ WriteMakefile1(
     AUTHOR           => q{Giovanni Simoni (dacav at openmailbox)},
     VERSION_FROM     => 'lib/App/PFT.pm',
     ABSTRACT         => 'Hacker friendly static blog generator',
-    LICENSE          => 'GNU GPL v3',
+    LICENSE          => 'gpl_3',
     PL_FILES         => {},
     EXE_FILES        => [grep { -x } glob 'bin/*'],
     MIN_PERL_VERSION => 5.006,
