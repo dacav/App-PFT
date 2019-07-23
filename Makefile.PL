@@ -26,7 +26,7 @@ WriteMakefile1(
         'File::Temp'                => 0,
         'Cwd'                       => 0,
         'IPC::Run'                  => 0,
-        'PFT'                       => '1.4.0',
+        'PFT'                       => '1.4.1',
     },
     PREREQ_PM => {
         'Carp'                  => 0,
@@ -51,7 +51,7 @@ WriteMakefile1(
         'Template::Alloy'       => 0,
         'URI'                   => 0,
 
-        'PFT'                   => v1.2.1,
+        'PFT'                   => v1.4.1,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'App-PFT-*' },
