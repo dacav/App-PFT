@@ -1,4 +1,4 @@
-# Copyright 2014 - Giovanni Simoni
+# Copyright 2014-2019 - Giovanni Simoni
 #
 # This file is part of PFT.
 #
