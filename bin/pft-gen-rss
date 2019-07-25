@@ -138,13 +138,12 @@ do {
 };
 
 sub node_to_href {
-    my($cur_node, $other_node) = @_;
-
-    confess unless $other_node;
+    my $node = shift;
+    confess unless $node;
 
     join '/', $site_url, do {
-        my $hdr = $other_node->header;
-        my $k = $other_node->content_type;
+        my $hdr = $node->header;
+        my $k = $node->content_type;
 
         if ($k =~ /::Blog$/) {(
             'blog',
@@ -161,10 +160,10 @@ sub node_to_href {
             $hdr->slug . '.html',
         )} elsif ($k =~ /::Picture$/) {(
             'pics',
-            $other_node->content->relpath
+            $node->content->relpath
         )} elsif ($k =~ /::Attachment$/) {(
             'attachments',
-            $other_node->content->relpath
+            $node->content->relpath
         )} else { die $k }
     }
 }
@@ -195,7 +194,7 @@ foreach my $node ($tree->content_map->blog_recent($length)) {
         strftime("%a, %d %b %Y %H:%M:%S %z", 0, 0, 0, $d, $m, $y - 1900)
     };
 
-    my $content = escape_html $node->html(sub { node_to_href($node, shift) });
+    my $content = escape_html $node->html(\&node_to_href);
 
     if ($first) {
         $first = 0;
@@ -207,6 +206,7 @@ foreach my $node ($tree->content_map->blog_recent($length)) {
         ' <title>', $node->title, '</title>',
         ' <guid isPermaLink="false">', $guid, '</guid>',
         ' <pubDate>', $pubDate, '</pubDate>',
+        ' <link>', node_to_href($node), '</link>',
         ' <description>', $content, '</description>',
         '</item>'
 }
