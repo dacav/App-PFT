@@ -116,7 +116,7 @@ Show this guide.
 
 =head1 SEE ALSO
 
-L<pft(1)>, L<pft-gen-rss(1)>, L<pft-init(1)>
+L<pft(1)>, L<pft-init(1)>
 
 =cut
 
