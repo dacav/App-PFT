@@ -182,6 +182,8 @@ sub node_to_rel {
     my $hdr = $node->header;
     my $k = $node->content_type;
 
+    die unless wantarray;
+
     if ($k =~ /::Blog$/) {(
         'blog',
         sprintf('%04d-%02d', $hdr->date->y, $hdr->date->m),
