@@ -191,7 +191,7 @@ foreach my $node ($tree->content_map->blog_recent($length)) {
 
     $pubDate = do {
         my($y, $m, $d) = @{$node->date};
-        strftime("%a, %d %b %Y %H:%M:%S %z", 0, 0, 0, $d, $m, $y - 1900)
+        strftime("%a, %d %b %Y %H:%M:%S %z", 0, 0, 0, $d, $m - 1, $y - 1900)
     };
 
     my $content = escape_html $node->html(\&node_to_href);
