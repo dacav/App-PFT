@@ -174,6 +174,8 @@ my $template = Template::Alloy->new(
 my $dir_build = $tree->dir_build;
 my $map = $tree->content_map;
 
+my $hasher = Digest::MD5->new;
+
 sub node_to_rel {
     my $node = shift;
     confess unless $node;
@@ -313,16 +315,14 @@ sub write_file {
         # This branch enables an upload-time optimization: if the file
         # created file is exactly the same as the previous compilation (same
         # checksum) we keep the old one.  Rsync will not upload it again.
-        my $md5 = Digest::MD5->new;
-        $md5->add(encode($enc, $data));
-        my $digest_new = $md5->hexdigest;
+        my $digest_new = $hasher->add(encode($enc, $data))->hexdigest;
 
         open($fh, "<:raw", $path)
             or croak "Opening $path: $!";
-        $md5->addfile($fh);
+        my $digest_old = $hasher->addfile($fh)->hexdigest;
         close $fh;
 
-        if ($digest_new eq $md5->hexdigest) {
+        if ($digest_new eq $digest_old) {
             # Unchanged! Leave the old one.
             unlink $temp;
             return;
