@@ -131,6 +131,8 @@ use Carp;
 use Digest::MD5;
 use Encode::Locale;
 use Encode;
+use HTML::Escape qw/escape_html/;
+use POSIX qw/strftime/;
 use Template::Alloy;
 
 use File::Spec;
@@ -442,3 +444,62 @@ if (defined $home_node) {
 } else {
     print STDERR "Warning: I was not able to find any $home_node_slug page";
 }
+
+# feed (rss) generation
+do {
+    my $site_title  = $conf->{site}{title};
+    my $site_url    = $conf->{site}{url};
+    my $feed_path   = $conf->{site}{feed}{path} || "feed.rss";
+    my $feed_url    = "$site_url/$feed_path";
+    my $encoding    = $conf->{site}{encoding};
+    my $description = $conf->{site}{feed}{description} || "News from $site_title";
+    my $length      = $conf->{site}{feed}{length} || 10;
+
+    my $outfile;
+    do {
+        my $path = catfile($dir_build, $feed_path);
+
+        make_path encode(locale_fs => dirname($path));
+        open($outfile, ">:encoding($encoding)", encode(locale_fs => $path))
+            or die "opening $path $!";
+    };
+
+    print $outfile (<<"    END" =~ s/^    //mgr);
+    <?xml version="1.0" encoding="$encoding"?>
+    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+     <channel>
+      <title>$site_title</title>
+      <link>$site_url</link>
+      <generator>App::PFT</generator>
+      <description>$description</description>
+      <atom:link href="$feed_url" rel="self" type="application/rss+xml"/>
+    END
+
+    foreach my $node ($map->blog_recent($length)) {
+        my $guid = $hasher->add(encode($encoding, $node->title))->hexdigest;
+        my $pub_date = do {
+            my($y, $m, $d) = @{$node->date};
+            strftime("%a, %d %b %Y %H:%M:%S %z", 0, 0, 0, $d, $m - 1, $y - 1900)
+        };
+
+        my $content = escape_html $node->html(sub {
+            join '/', $site_url, node_to_rel(@_)
+        });
+
+        say $outfile '<item>',
+            ' <title>', $node->title, '</title>',
+            ' <guid isPermaLink="false">', $guid, '</guid>',
+            ' <pubDate>', $pub_date, '</pubDate>',
+            ' <link>', join('/', $site_url, node_to_rel($node)), '</link>',
+            ' <description>', $content, '</description>',
+            '</item>';
+    }
+
+    print $outfile (<<"    END" =~ s/^    //mgr);
+     </channel>
+    </rss>
+    END
+
+
+    close $outfile;
+};
