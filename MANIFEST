@@ -6,7 +6,6 @@ MANIFEST			This list of files
 README
 README.md
 bash_completion.d/pft
-bin/pft-gen-rss
 bin/pft-show
 bin/pft-ls
 bin/pft-pub
