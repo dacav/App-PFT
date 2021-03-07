@@ -59,10 +59,6 @@ B<make>: Build the website;
 
 =item *
 
-B<gen-rss>: Generate RSS feed XML;
-
-=item *
-
 B<pub>: Publish the website;
 
 =item *
@@ -155,8 +151,8 @@ manual page. Templates are documented in the L<pft-make(1)> manual page.
 
 =head1 SEE ALSO
 
-L<pft-clean(1)>, L<pft-edit(1)>, L<pft-gen-rss(1)>, L<pft-grab(1)>,
-L<pft-help(1)>, L<pft-init(1)>, L<pft-ls(1)>, L<pft-make(1)>, L<pft-pub(1)>,
+L<pft-clean(1)>, L<pft-edit(1)>, L<pft-grab(1)>, L<pft-help(1)>,
+L<pft-init(1)>, L<pft-ls(1)>, L<pft-make(1)>, L<pft-pub(1)>,
 L<pft-show(1)>
 
 =cut

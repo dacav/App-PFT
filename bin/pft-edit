@@ -25,10 +25,13 @@ pft edit - Edit an entry
 
 =head1 SYNOPSIS
 
-    B<pft edit -P> [options] title of your page
-    B<pft edit -B> [options] title of your blog page
-    B<pft edit -M> [options] title of your month page
-    B<pft edit -T> [options] title of your tag page
+B<pft edit -P> [options] title of your page
+
+B<pft edit -B> [options] title of your blog page
+
+B<pft edit -M> [options] title of your month page
+
+B<pft edit -T> [options] title of your tag page
 
 =head1 DESCRIPTION
 

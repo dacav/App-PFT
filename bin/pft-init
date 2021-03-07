@@ -180,7 +180,7 @@ Defaults to C<10>.
 
 =item B<--site-feed-path>=I<PATH>
 
-File name of the RSS XML to be published by L<pft-gen-rss(1)>.
+File name of the RSS XML.
 Defaults to C<feed.rss>.
 
 =item B<--site-home>=I<PAGE_NAME>
